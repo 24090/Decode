@@ -49,6 +49,7 @@ repositories {
 
 dependencies {
     implementation project(':FtcRobotController')
+    implementation project(':CommandViewer')
     implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
     implementation("com.acmerobotics.slothboard:dashboard:0.2.4+0.4.17")
     implementation "dev.frozenmilk.dairy:CachingHardware:1.0.0"

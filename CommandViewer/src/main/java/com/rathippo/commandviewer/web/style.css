@@ -1,0 +1,66 @@
+h1{
+    color: #111;
+}
+body{
+    background-color: #eee;
+    font-family: sans-serif;
+    margin: 0;
+    max-width: min(50rem, 100%);
+}
+button {
+    border: 0;
+    background-color: #eee;
+}
+button:hover {
+    background-color: #ccc;
+}
+button:active {
+    background-color: #999;
+}
+
+.command{
+    padding: 0.2rem;
+    padding-right: 0rem;
+    margin: 0;
+    border-right: 0;
+    background-color: #eee;
+    &.dead{
+        background-color: #ccc;
+    }
+}
+.command:hover:not(:has(.command:hover)){
+    background-color: hsl(60, 80%, 93.33%);
+    &.dead{
+        background-color: hsl(60, 50%, 80%);
+    }
+}
+
+.command + .command{
+    border-top: 0;
+}
+.command > h3 {
+    display: inline;
+    font-weight: normal;
+    margin: 0;
+}
+.command > button{
+    float: right;
+    display: inline;
+}
+.collapsediv {
+    &:empty{
+        display: none;
+    }
+    margin: 0.4rem;
+    margin-right: 0rem;
+    padding: 0.1rem;
+    padding-right: 0rem;
+    border-left: 0.1rem solid #999;
+    &.collapsed{
+        display: none;
+    }
+}
+
+.collapsediv>p{
+    margin: 0;
+}
