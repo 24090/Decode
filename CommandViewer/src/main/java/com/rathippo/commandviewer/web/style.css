@@ -23,15 +23,21 @@ button:active {
     padding-right: 0rem;
     margin: 0;
     border-right: 0;
-    background-color: #eee;
+    background-color: #dfd;
     &.dead{
         background-color: #ccc;
     }
+    &.future{
+        background-color: #eee;
+    }
 }
 .command:hover:not(:has(.command:hover)){
-    background-color: hsl(60, 80%, 93.33%);
+    background-color: hsl(100, 70%, 73.33%);
     &.dead{
         background-color: hsl(60, 50%, 80%);
+    }
+    &.future{
+        background-color: hsl(60, 80%, 93.33%);
     }
 }
 
