@@ -33,13 +33,13 @@ class Drive(hwMap: HardwareMap) {
             val translation = Vector.fromPose(localizer.poseVel).rotated(-localizer.heading)
             return -Pose(translation.x, translation.y, localizer.headingVel)
         }
-    private val flMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "flMotor"));
+    private val flMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "fl"));
         fun setFlPower(power: Double){flMotor.power = power}
-    private val frMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "frMotor"));
+    private val frMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "fr"));
         fun setFrPower(power: Double){frMotor.power = power}
-    private val blMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java,"blMotor"));
+    private val blMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java,"bl"));
         fun setBlPower(power: Double){blMotor.power = power}
-    private val brMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java,"brMotor"));
+    private val brMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java,"br"));
         fun setBrPower(power: Double){brMotor.power = power}
 
     private fun setZeroPowerBehaviours(zeroPowerBehavior: ZeroPowerBehavior){

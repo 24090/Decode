@@ -4,23 +4,28 @@ import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
+import com.qualcomm.robotcore.hardware.DcMotorSimple
 import org.firstinspires.ftc.teamcode.commands.Command
 import org.firstinspires.ftc.teamcode.commands.Instant
 
 @Config
 class Shooter(hwMap: HardwareMap) {
-    val motor: DcMotor = hwMap.get(DcMotor::class.java, "shooter")
+    val motorLeft: DcMotor = hwMap.get(DcMotor::class.java, "shooterLeft")
+    val motorRight: DcMotor = hwMap.get(DcMotor::class.java, "shooterRight")
     var power = 0.0;
 
     init {
-        motor.mode = RunMode.RUN_USING_ENCODER
+        motorLeft.mode = RunMode.RUN_USING_ENCODER
+        motorRight.mode = RunMode.RUN_USING_ENCODER
+        motorRight.direction = DcMotorSimple.Direction.REVERSE
     }
     companion object Params {
-        var shootPower = 0.0
+        @JvmField var shootPower = 0.0
     }
 
     fun update() {
-        motor.power = power;
+        motorLeft.power = power;
+        motorRight.power = power;
     }
 
     fun spinUp(): Command = Instant({
