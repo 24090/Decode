@@ -24,7 +24,7 @@ class Controlled: LinearOpMode() {
             drive.strafe = gamepad1.left_stick_x.toDouble();
             drive.drive = -gamepad1.left_stick_y.toDouble();
             drive.turn = gamepad1.right_stick_x.toDouble();
-            drive.update()
+            drive.setMotorPowers()
         }
         waitForStart()
         runBlocking(shooter.spinUp())

@@ -20,7 +20,7 @@ class Shooter(hwMap: HardwareMap) {
         motorRight.direction = DcMotorSimple.Direction.REVERSE
     }
     companion object Params {
-        @JvmField var shootPower = 0.0
+        @JvmField var shootPower = 1.0
     }
 
     fun update() {

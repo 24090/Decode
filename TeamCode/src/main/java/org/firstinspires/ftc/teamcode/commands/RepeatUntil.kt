@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.commands
 
 import com.rathippo.commandviewer.CommandViewer
 
-open class RepeatUntil(val f: () -> Command, val c: () -> Boolean, name: String = "Forever"): OverrideButtonCommand(name) {
+open class RepeatUntil(val f: () -> Command, val c: () -> Boolean, name: String = "RepeatUntil"): OverrideButtonCommand(name) {
     val pastCommands: ArrayList<DeadCommand> = arrayListOf()
     val clearDead = CommandViewer.registerFunction { pastCommands.clear() }
     var currentCommand: Command? = f.invoke()

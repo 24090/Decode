@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands
 
-class Sequence(vararg commands: Command): OverrideButtonCommand("Sequence", true){
+class Sequence(vararg commands: Command, name: String = "Sequence"): OverrideButtonCommand(name, true){
     private val pastCommands: ArrayList<DeadCommand> = ArrayList()
     private val futureCommands:  ArrayList<Command> = ArrayList()
     private var currentCommand: Command?

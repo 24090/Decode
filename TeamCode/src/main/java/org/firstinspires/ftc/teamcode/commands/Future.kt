@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands
 
-class Future(val f: () -> Command, name: String = "Future"): OverrideButtonCommand(name) {
+class Future(val f: () -> Command, name: String): OverrideButtonCommand(name) {
     private var command: Command? = null
     override fun run(): CommandResult {
         command = command ?: f()
@@ -28,3 +28,4 @@ class Future(val f: () -> Command, name: String = "Future"): OverrideButtonComma
         )
     }
 }
+fun Future(f: () -> Command) = Future(f, "Future")
