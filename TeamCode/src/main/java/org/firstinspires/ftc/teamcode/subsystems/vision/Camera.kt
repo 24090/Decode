@@ -30,7 +30,10 @@ class Camera(hwMap: HardwareMap) {
 @TeleOp(name = "VisionTesting")
 class VisionTesting: LinearOpMode() {
     override fun runOpMode() {
-        telemetry.addData("G index", Camera(hardwareMap).getAprilTag())
-        telemetry.update()
+        waitForStart()
+        while (opModeIsActive()){
+            telemetry.addData("G index", Camera(hardwareMap).getAprilTag())
+            telemetry.update()
+        }
     }
 }
