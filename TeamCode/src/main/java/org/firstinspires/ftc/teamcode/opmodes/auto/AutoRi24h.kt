@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.teamcode.commands.*
 import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.drivetrain.Drive
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
@@ -19,22 +19,34 @@ class AutoRi24h: LinearOpMode() {
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
         val farShootCycle = {Sequence(
-            drive.goTo(Pose(12.0, 12.0, 0.4)),
+            drive.goTo(Pose(12.0, 12.0, 0.4 - PI)),
+            intake.spinUp(),
+            shooter.waitForSpeed(),
             intake.releaseBall(),
+            shooter.waitForSpeed(),
             intake.releaseBall(),
+            name = "FarShootCycle"
+        )}
+        val closeShootCycle = {Sequence(
+            drive.goTo(Pose(84.0, 12.0, -3*PI/4)),
+            intake.spinUp(),
+            shooter.waitForSpeed(),
+            intake.releaseBall(),
+            shooter.waitForSpeed(),
             intake.releaseBall(),
             name = "FarShootCycle"
         )}
 
         val grabBallCycle = {n: Int -> Sequence(
             intake.spinUp(),
-            drive.goTo(Pose(36.0 + 24 * n, 24.0, PI/2)),
-            drive.goTo(Pose(36.0 + 24 * n, 60.0, PI/2)),
+            drive.goTo(Pose(36.0 + 24 * n, 24.0, PI/2), 4.0, 0.4),
+            drive.goTo(Pose(36.0 + 24 * n, 50.0, PI/2)),
             intake.spinDown(),
             name = "GrabBallCycle $n"
         )}
         waitForStart()
-        drive.localizer.pose = Pose(12.0, 12.0, PI/4)
+        drive.localizer.pose = Pose(84.0, 12.0, -3 * PI/4)
+        drive.targetPose = Pose(84.0, 12.0, -3 * PI/4)
         runBlocking(Race(
             Forever {
                 bulkReads.update()
@@ -43,13 +55,15 @@ class AutoRi24h: LinearOpMode() {
                 intake.update()
             },
             Sequence(
+                shooter.spinUpFar(),
                 farShootCycle(),
                 grabBallCycle(0),
                 farShootCycle(),
+                shooter.spinUpClose(),
                 grabBallCycle(1),
-                farShootCycle(),
+                closeShootCycle(),
                 grabBallCycle(2),
-                farShootCycle()
+                closeShootCycle()
             )
         ))
     }

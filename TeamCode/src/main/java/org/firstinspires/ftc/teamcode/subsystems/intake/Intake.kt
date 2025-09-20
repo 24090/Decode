@@ -16,7 +16,7 @@ class Intake(hwMap: HardwareMap) {
 
     init {
         motor.mode = RunMode.RUN_USING_ENCODER
-        pusher.power = pusherBack
+        pusher.power = 0.0
     }
     companion object Params {
         @JvmField var runPower = 1.0
@@ -33,7 +33,7 @@ class Intake(hwMap: HardwareMap) {
     }, "SpinUp")
 
     fun spinDown(): Command = Instant({
-        power = 0.0
+        power = 0.2
     }, "SpinDown")
 
     fun releaseBall(): Command = Sequence(

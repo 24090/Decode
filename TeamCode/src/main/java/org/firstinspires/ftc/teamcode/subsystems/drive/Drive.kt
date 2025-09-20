@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drivetrain
+package org.firstinspires.ftc.teamcode.subsystems.drive
 
 import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -9,8 +9,10 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotor
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.commands.*
 import org.firstinspires.ftc.teamcode.util.clamp
-import org.firstinspires.ftc.teamcode.controlsystems.PDLT
-import org.firstinspires.ftc.teamcode.controlsystems.SquID
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.SquID
+import org.firstinspires.ftc.teamcode.drivetrain.Pose
+import org.firstinspires.ftc.teamcode.drivetrain.Vector
 import kotlin.math.min
 
 @Config
@@ -23,11 +25,11 @@ class Drive(hwMap: HardwareMap) {
         @JvmField
         var kSqH = 0.8;
         @JvmField
-        var kPT = 0.2;
+        var kPT = 0.5;
         @JvmField
-        var kDT = 0.03;
+        var kDT = 0.05;
         @JvmField
-        var kLT = 0.3;
+        var kLT = 0.1;
         @JvmField
         var threshT = 0.3;
     }
@@ -37,7 +39,7 @@ class Drive(hwMap: HardwareMap) {
         get() = localizer.fieldPoseToRelative(targetPose)
     val dError: Pose
         get() {
-            val translation = Vector.fromPose(localizer.poseVel).rotated(-localizer.heading)
+            val translation = Vector.Companion.fromPose(localizer.poseVel).rotated(-localizer.heading)
             return -Pose(translation.x, translation.y, localizer.headingVel)
         }
     private val flMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "fl"));
@@ -115,7 +117,7 @@ class Drive(hwMap: HardwareMap) {
 
         turn = SquID(AngleUnit.normalizeRadians(error.heading), kSqH)
         val translational =
-            PDLT(Vector.fromPose(error), Vector.fromPose(dError), kPT, kDT, kLT, threshT)
+            PDLT(Vector.Companion.fromPose(error), Vector.Companion.fromPose(dError), kPT, kDT, kLT, threshT)
         drive = if (translational.x.isNaN()) 0.0 else translational.x
         strafe = if (translational.y.isNaN()) 0.0 else translational.y
         setMotorPowers()
@@ -154,16 +156,16 @@ class Drive(hwMap: HardwareMap) {
     }
 
     private fun getTranslationalVectors() = DriveVectors(
-        left = Vector.fromCartesian(drive, strafe).normalized(),
-        right = Vector.fromCartesian(drive, strafe).normalized()
+        left = Vector.Companion.fromCartesian(drive, strafe).normalized(),
+        right = Vector.Companion.fromCartesian(drive, strafe).normalized()
     )
 
     private fun getHeadingVectors() = DriveVectors(
-        left = Vector.fromCartesian(-turn, 0.0).normalized(),
-        right = Vector.fromCartesian(turn, 0.0).normalized()
+        left = Vector.Companion.fromCartesian(-turn, 0.0).normalized(),
+        right = Vector.Companion.fromCartesian(turn, 0.0).normalized()
     )
 
-    private fun getWheelVector(front: Boolean, left: Boolean) = Vector.fromCartesian(
+    private fun getWheelVector(front: Boolean, left: Boolean) = Vector.Companion.fromCartesian(
         1.0,
         if ((front && left) || (!front && !left)) lateralFactor else -lateralFactor
     ).norm()
@@ -178,7 +180,7 @@ class Drive(hwMap: HardwareMap) {
             (wheelVectorB.x * targetVector.y - targetVector.x * wheelVectorB.y) / (wheelVectorB.x * wheelVectorA.y - wheelVectorA.x * wheelVectorB.y)
         )
 
-    fun goTo( pose: Pose, distanceTolerance: Double = 0.4, headingTolerance: Double = 0.04 ) = Sequence(
+    fun goTo(pose: Pose, distanceTolerance: Double = 0.4, headingTolerance: Double = 0.04 ) = Sequence(
         Instant { targetPose = pose },
         WaitUntil { atTargetCircle(distanceTolerance, headingTolerance) }
     )
