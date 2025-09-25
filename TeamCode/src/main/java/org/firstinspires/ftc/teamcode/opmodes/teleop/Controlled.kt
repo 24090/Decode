@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.commands.*
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
+import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.BulkReads
@@ -24,10 +25,10 @@ class Controlled: LinearOpMode() {
             drive.setMotorPowers()
         }
         waitForStart()
-        runBlocking(shooter.spinUpClose())
         while (opModeIsActive()){
             bulkReads.update()
             driveFunction()
+            shooter.setTargetVelocityFromDistance((scorePosition - Vector.fromPose(drive.localizer.pose)).length)
             shooter.update()
             intake.update()
             telemetry.addData("Shooter velocity", shooter.currentVelocity)
@@ -48,10 +49,16 @@ class Controlled: LinearOpMode() {
                         telemetry.addData("Shooter velocity", shooter.currentVelocity)
                         telemetry.update()
                     },
-                    drive.goTo(Pose(
-                        drive.localizer.x, drive.localizer.y,
-                        (Vector.fromCartesian(132.0, 60.0) - Vector.fromPose(drive.localizer.pose)).angle
-                    )),
+                    Instant {
+                        val relativePose = (scorePosition - Vector.fromPose(drive.localizer.pose))
+                        shooter.setTargetVelocityFromDistance(relativePose.length)
+                        drive.targetPose = Pose(
+                            drive.localizer.x, drive.localizer.y,
+                            relativePose.angle
+                        )
+                    },
+                    WaitUntil { drive.atTargetCircle(0.4, 0.04) },
+                    shooter.waitForVelocity(),
                     intake.releaseBall()
                 ))
             }

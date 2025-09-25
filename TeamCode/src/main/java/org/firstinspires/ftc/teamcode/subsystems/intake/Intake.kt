@@ -6,12 +6,14 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
+import dev.frozenmilk.dairy.cachinghardware.CachingCRServo
+import dev.frozenmilk.dairy.cachinghardware.CachingDcMotor
 import org.firstinspires.ftc.teamcode.commands.*
 
 @Config
 class Intake(hwMap: HardwareMap) {
-    val motor: DcMotor = hwMap.get(DcMotor::class.java, "intake")
-    val pusher: CRServo = hwMap.get(CRServo::class.java, "pusher")
+    val motor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "intake"))
+    val pusher: CachingCRServo = CachingCRServo(hwMap.get(CRServo::class.java, "pusher"))
     var power = 0.0;
 
     init {

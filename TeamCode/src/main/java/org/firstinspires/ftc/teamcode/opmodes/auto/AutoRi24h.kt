@@ -6,6 +6,12 @@ import org.firstinspires.ftc.teamcode.commands.*
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
+import org.firstinspires.ftc.teamcode.drivetrain.Vector
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
+import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
+import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
+import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.BulkReads
@@ -21,32 +27,32 @@ class AutoRi24h: LinearOpMode() {
         val farShootCycle = {Sequence(
             drive.goTo(Pose(12.0, 12.0, 0.4 - PI)),
             intake.spinUp(),
-            shooter.waitForSpeed(),
+            shooter.waitForVelocity(),
             intake.releaseBall(),
-            shooter.waitForSpeed(),
+            shooter.waitForVelocity(),
             intake.releaseBall(),
             name = "FarShootCycle"
         )}
         val closeShootCycle = {Sequence(
             drive.goTo(Pose(84.0, 12.0, -3*PI/4)),
             intake.spinUp(),
-            shooter.waitForSpeed(),
+            shooter.waitForVelocity(),
             intake.releaseBall(),
-            shooter.waitForSpeed(),
+            shooter.waitForVelocity(),
             intake.releaseBall(),
             name = "FarShootCycle"
         )}
 
         val grabBallCycle = {n: Int -> Sequence(
             intake.spinUp(),
-            drive.goTo(Pose(36.0 + 24 * n, 24.0, PI/2), 4.0, 0.4),
+            drive.goTo(Pose(36.0 + 24 * n, 24.0, PI/2), 8.0, 0.4),
             drive.goTo(Pose(36.0 + 24 * n, 50.0, PI/2)),
             intake.spinDown(),
             name = "GrabBallCycle $n"
         )}
         waitForStart()
-        drive.localizer.pose = Pose(84.0, 12.0, -3 * PI/4)
-        drive.targetPose = Pose(84.0, 12.0, -3 * PI/4)
+        drive.localizer.pose = Pose(farPose.x, farPose.y, PI * -3/4)
+        drive.targetPose = closePose
         runBlocking(Race(
             Forever {
                 bulkReads.update()
@@ -55,11 +61,11 @@ class AutoRi24h: LinearOpMode() {
                 intake.update()
             },
             Sequence(
-                shooter.spinUpFar(),
+                shooter.setTargetVelocityFromDistance(farDistance),
                 farShootCycle(),
                 grabBallCycle(0),
                 farShootCycle(),
-                shooter.spinUpClose(),
+                shooter.setTargetVelocityFromDistance(closeDistance),
                 grabBallCycle(1),
                 closeShootCycle(),
                 grabBallCycle(2),
