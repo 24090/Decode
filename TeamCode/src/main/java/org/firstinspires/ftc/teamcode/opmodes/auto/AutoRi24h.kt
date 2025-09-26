@@ -25,7 +25,7 @@ class AutoRi24h: LinearOpMode() {
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
         val farShootCycle = {Sequence(
-            drive.goTo(Pose(12.0, 12.0, 0.4 - PI)),
+            drive.goTo(farPose),
             intake.spinUp(),
             shooter.waitForVelocity(),
             intake.releaseBall(),
@@ -34,7 +34,7 @@ class AutoRi24h: LinearOpMode() {
             name = "FarShootCycle"
         )}
         val closeShootCycle = {Sequence(
-            drive.goTo(Pose(84.0, 12.0, -3*PI/4)),
+            drive.goTo(closePose),
             intake.spinUp(),
             shooter.waitForVelocity(),
             intake.releaseBall(),
@@ -52,7 +52,7 @@ class AutoRi24h: LinearOpMode() {
         )}
         waitForStart()
         drive.localizer.pose = Pose(farPose.x, farPose.y, PI * -3/4)
-        drive.targetPose = closePose
+        drive.targetPose = farPose
         runBlocking(Race(
             Forever {
                 bulkReads.update()
@@ -61,11 +61,11 @@ class AutoRi24h: LinearOpMode() {
                 intake.update()
             },
             Sequence(
-                shooter.setTargetVelocityFromDistance(farDistance),
+                Instant{shooter.setTargetVelocityFromDistance(farDistance)},
                 farShootCycle(),
                 grabBallCycle(0),
                 farShootCycle(),
-                shooter.setTargetVelocityFromDistance(closeDistance),
+                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 grabBallCycle(1),
                 closeShootCycle(),
                 grabBallCycle(2),

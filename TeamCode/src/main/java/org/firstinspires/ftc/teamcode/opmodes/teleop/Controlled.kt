@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.commands.*
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
+import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
@@ -21,17 +22,22 @@ class Controlled: LinearOpMode() {
         val driveFunction = {
             drive.strafe = gamepad1.left_stick_x.toDouble();
             drive.drive = -gamepad1.left_stick_y.toDouble();
-            drive.turn = gamepad1.right_stick_x.toDouble();
+            drive.turn = -gamepad1.right_stick_x.toDouble();
             drive.setMotorPowers()
+            drive.localizer.update()
         }
         waitForStart()
+        drive.localizer.pose = Pose(12.0, 12.0, 0.0)
         while (opModeIsActive()){
             bulkReads.update()
             driveFunction()
             shooter.setTargetVelocityFromDistance((scorePosition - Vector.fromPose(drive.localizer.pose)).length)
             shooter.update()
             intake.update()
+            telemetry.addData("pose", drive.localizer.pose)
+            telemetry.addData("distance", (scorePosition - Vector.fromPose(drive.localizer.pose)).length)
             telemetry.addData("Shooter velocity", shooter.currentVelocity)
+            telemetry.addData("Target velocity", shooter.velocity)
             telemetry.update()
             if (gamepad1.aWasReleased()) {
                 runBlocking(intake.spinUp())
@@ -49,17 +55,19 @@ class Controlled: LinearOpMode() {
                         telemetry.addData("Shooter velocity", shooter.currentVelocity)
                         telemetry.update()
                     },
-                    Instant {
-                        val relativePose = (scorePosition - Vector.fromPose(drive.localizer.pose))
-                        shooter.setTargetVelocityFromDistance(relativePose.length)
-                        drive.targetPose = Pose(
-                            drive.localizer.x, drive.localizer.y,
-                            relativePose.angle
+                    Sequence(
+                        Instant {
+                            val relativePose = (Vector.fromPose(drive.localizer.pose) - scorePosition)
+                            shooter.setTargetVelocityFromDistance(relativePose.length)
+                            drive.targetPose = Pose(
+                                drive.localizer.x, drive.localizer.y,
+                                relativePose.angle
                         )
-                    },
-                    WaitUntil { drive.atTargetCircle(0.4, 0.04) },
-                    shooter.waitForVelocity(),
-                    intake.releaseBall()
+                        },
+                        WaitUntil { drive.atTargetCircle(0.4, 0.04) },
+                        shooter.waitForVelocity(),
+                        intake.releaseBall()
+                    )
                 ))
             }
         }

@@ -18,13 +18,13 @@ import kotlin.math.abs
 class Shooter(hwMap: HardwareMap) {
 
     companion object Params {
-        @JvmField var closeShootVelocity = 950.0
-        @JvmField var farShootVelocity = 1275.0
+        @JvmField var closeShootVelocity = 900.0
+        @JvmField var farShootVelocity = 1225.0
     }
 
     private val motorLeft: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterLeft"))
     private val motorRight: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterRight"))
-    private var velocity = 0.0;
+    var velocity = 0.0;
 
     val currentVelocity
         get() = (motorRight.getVelocity() + motorLeft.getVelocity())/2
@@ -39,8 +39,8 @@ class Shooter(hwMap: HardwareMap) {
         motorLeft.mode = RunMode.RUN_USING_ENCODER
         motorRight.mode = RunMode.RUN_USING_ENCODER
         motorRight.direction = DcMotorSimple.Direction.REVERSE
-        motorLeft.setVelocityPIDFCoefficients(20.0,0.0,0.0,15.0)
-        motorRight.setVelocityPIDFCoefficients(20.0,0.0,0.0,15.0)
+        motorLeft.setVelocityPIDFCoefficients(20.0,1.0,0.0,15.0)
+        motorRight.setVelocityPIDFCoefficients(20.0,1.0,0.0,15.0)
     }
 
     fun update() {
@@ -48,9 +48,9 @@ class Shooter(hwMap: HardwareMap) {
         motorLeft.velocity = velocity
     }
 
-    fun setTargetVelocityFromDistance(distance: Double) = Instant({
+    fun setTargetVelocityFromDistance(distance: Double) {
         velocity = velocityLUT.get(distance)
-    }, "Shooter:SetTargetVelocity")
+    }
 
     fun spinDown(): Command = Instant({
         velocity = 0.0;

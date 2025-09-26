@@ -7,6 +7,12 @@ class InterpolatedLUT(items: Map<Double, Double>) {
     fun get(v: Double): Double{
         val floorEntry = map.floorEntry(v)
         val ceilingEntry = map.ceilingEntry(v)
+        if (floorEntry == null){
+            return ceilingEntry.value
+        }
+        if (ceilingEntry == null){
+            return floorEntry.value
+        }
         val slope = (floorEntry.value - ceilingEntry.value)/(floorEntry.key - ceilingEntry.value)
         return (slope*(v - floorEntry.value) + ceilingEntry.value)
     }
