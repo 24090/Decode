@@ -13,7 +13,7 @@ class InterpolatedLUT(items: Map<Double, Double>) {
         if (ceilingEntry == null){
             return floorEntry.value
         }
-        val slope = (floorEntry.value - ceilingEntry.value)/(floorEntry.key - ceilingEntry.value)
-        return (slope*(v - floorEntry.value) + ceilingEntry.value)
+        val slope = (floorEntry.value - ceilingEntry.value)/(floorEntry.key - ceilingEntry.key)
+        return (slope*(v - floorEntry.key) + floorEntry.value)
     }
 }

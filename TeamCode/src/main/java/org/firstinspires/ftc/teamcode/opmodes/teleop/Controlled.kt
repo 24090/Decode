@@ -39,7 +39,7 @@ class Controlled: LinearOpMode() {
             telemetry.addData("pose", drive.localizer.pose)
             telemetry.addData("distance", (scorePosition - Vector.fromPose(drive.localizer.pose)).length)
             telemetry.addData("Shooter velocity", shooter.currentVelocity)
-            telemetry.addData("Target velocity", shooter.velocity)
+            telemetry.addData("Target velocity", shooter.targetVelocity)
             telemetry.update()
             if (gamepad1.aWasReleased()) {
                 runBlocking(intake.spinUp())

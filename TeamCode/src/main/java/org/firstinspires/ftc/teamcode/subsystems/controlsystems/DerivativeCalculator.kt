@@ -2,14 +2,16 @@ package org.firstinspires.ftc.teamcode.subsystems.controlsystems
 
 import java.util.LinkedList
 
-class DerivativeCalculator {
-    val store_count = 3;
+class DerivativeCalculator(val storeCount: Int) {
     private var pastStates = LinkedList<Pair<Double, Double>>();
-    fun update(new_state: Pair<Double, Double>){
-        if (pastStates.size >= store_count){
+
+    fun update(newX: Number, newY: Number) = update(Pair(newX, newY))
+
+    fun update(newState: Pair<Number, Number>){
+        if (pastStates.size >= storeCount){
             pastStates.removeAt(0)
         }
-        pastStates.add(new_state)
-        (pastStates[0].second - pastStates[pastStates.size - 1].second) / (pastStates[0].first - pastStates[pastStates.size - 1].first)
+        pastStates.add(Pair(newState.first.toDouble(), newState.second.toDouble()))
     }
+    fun get() = (pastStates[0].second - pastStates[pastStates.size - 1].second) / (pastStates[0].first - pastStates[pastStates.size - 1].first)
 }
