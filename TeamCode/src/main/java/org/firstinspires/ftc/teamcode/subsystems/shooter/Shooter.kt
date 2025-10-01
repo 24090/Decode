@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.DerivativeCalcul
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.InterpolatedLUT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.SquID
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 @Config
 class Shooter(hwMap: HardwareMap) {
@@ -29,8 +30,8 @@ class Shooter(hwMap: HardwareMap) {
         @JvmField var kP = 0.0025
     }
 
-    private val motorLeft: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterLeft"))
-    private val motorRight: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterRight"))
+     val motorLeft: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterLeft"))
+     val motorRight: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterRight"))
     var targetVelocity = 0.0;
 
     val currentVelocity
@@ -45,9 +46,10 @@ class Shooter(hwMap: HardwareMap) {
     ))
 
     val distanceToVelocityLUT = InterpolatedLUT(mapOf(
-        Pair(0.0, 0.0),
-        Pair(closeDistance, closeShootVelocity),
-        Pair(farDistance, farShootVelocity)
+        Pair(48 * sqrt(2.0), 930.0),
+        Pair(72 * sqrt(2.0), 950.0),
+        Pair(96 * sqrt(2.0), 1050.0),
+        Pair(108 * sqrt(2.0), 1075.0)
     ))
 
     init {
@@ -73,27 +75,33 @@ class Shooter(hwMap: HardwareMap) {
 }
 
 @TeleOp
+@Config
 class velocityToPowerTuner(): LinearOpMode(){
+    companion object {
+        @JvmField var targetVelocity = 1500.0
+    }
     override fun runOpMode() {
         val shooter: Shooter = Shooter(hardwareMap)
         val dash = FtcDashboard.getInstance()
-        shooter.targetVelocity = 1500.0
         val p = TelemetryPacket()
         p.put("currentVelocity", 0.0)
         p.put("targetVelocity", 1500.0)
+        p.put("powerFeedforward", 0.0)
         dash.sendTelemetryPacket(p)
         waitForStart()
         while (opModeIsActive()){
             if (gamepad1.xWasPressed()) {
-                shooter.targetVelocity += 100
+                targetVelocity += 50
             }
             if (gamepad1.yWasPressed()) {
-                shooter.targetVelocity -= 100
+                targetVelocity -= 50
             }
             shooter.update()
+            shooter.targetVelocity = targetVelocity
             val p = TelemetryPacket()
-            p.put("currentVelocity", shooter.currentVelocity)
-            p.put("targetVelocity", shooter.targetVelocity)
+            p.put("leftVelocity", shooter.motorLeft.velocity)
+            p.put("rightVelocity", shooter.motorRight.velocity)
+            p.put("powerFeedforward", shooter.velocityToPowerLUT.get(shooter.targetVelocity))
             dash.sendTelemetryPacket(p)
         }
     }

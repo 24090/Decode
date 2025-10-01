@@ -25,13 +25,13 @@ class Drive(hwMap: HardwareMap) {
         @JvmField
         var kSqH = 0.8;
         @JvmField
-        var kPT = 0.5;
+        var kPT = 0.65;
         @JvmField
-        var kDT = 0.05;
+        var kDT = 0.08;
         @JvmField
         var kLT = 0.1;
         @JvmField
-        var threshT = 0.3;
+        var threshT = 0.6;
     }
 
     var targetPose = Pose(0.0, 0.0, 0.0)

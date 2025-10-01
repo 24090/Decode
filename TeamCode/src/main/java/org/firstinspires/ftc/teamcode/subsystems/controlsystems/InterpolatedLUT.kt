@@ -10,6 +10,9 @@ class InterpolatedLUT(items: Map<Double, Double>) {
         if (floorEntry == null){
             return ceilingEntry.value
         }
+        if (floorEntry.key == v){
+            return floorEntry.value
+        }
         if (ceilingEntry == null){
             return floorEntry.value
         }

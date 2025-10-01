@@ -13,7 +13,8 @@ class MoveTest2: LinearOpMode() {
         val bulkReads = BulkReads(hardwareMap)
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
         drive.targetPose.x = 24.0
-        drive.targetPose.y = 0.0
+        drive.targetPose.y = 24.0
+        drive.localizer.update()
         waitForStart()
         drive.targetPose.heading = drive.localizer.heading
         while (opModeIsActive()) {
