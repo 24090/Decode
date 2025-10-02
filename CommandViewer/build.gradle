@@ -30,4 +30,11 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
+    sourceSets {
+        main {
+            assets {
+                srcDirs 'src/main/web'
+            }
+        }
+    }
 }

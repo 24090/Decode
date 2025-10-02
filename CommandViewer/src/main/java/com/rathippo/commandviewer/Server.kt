@@ -55,7 +55,7 @@ internal object Server : NanoWSD(24090) {
         "messages" to JsonArray(listOf())
     ))
     private var cachedMessage: JsonElement = initialValue
-    const val WEB_DIRECTORY = "./CommandViewer/src/main/java/com/rathippo/commandviewer/web"
+    const val WEB_DIRECTORY = "./CommandViewer/src/main/web"
     var sockets: HashSet<Socket> = HashSet()
     init {
         start(SOCKET_READ_TIMEOUT, false)
