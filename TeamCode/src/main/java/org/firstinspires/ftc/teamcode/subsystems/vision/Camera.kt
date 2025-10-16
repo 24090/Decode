@@ -38,9 +38,9 @@ class Camera(hwMap: HardwareMap) {
     fun getAprilTag(): Int? {
         for (fiducialResult in limelight.latestResult.fiducialResults){
             when (fiducialResult.fiducialId){
-                22 -> return 0
-                23 -> return 1
-                24 -> return 2
+                21 -> return 0
+                22 -> return 1
+                23 -> return 2
             }
         }
         return null
