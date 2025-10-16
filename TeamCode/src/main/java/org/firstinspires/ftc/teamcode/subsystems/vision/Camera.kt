@@ -5,14 +5,34 @@ import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.teamcode.drivetrain.Vector
 
+import org.firstinspires.ftc.teamcode.util.Ball
 
 class Camera(hwMap: HardwareMap) {
     val limelight: Limelight3A = hwMap.get(Limelight3A::class.java, "limelight")
     init {
-        limelight.setPollRateHz(5) // This sets how often we ask Limelight for data (100 times per second)
-        limelight.start() // This tells Limelight to start looking!
-        limelight.pipelineSwitch(0);
+        initAprilTag()
+    }
+
+    fun initAprilTag() {
+        limelight.setPollRateHz(5)
+        limelight.start()
+        limelight.pipelineSwitch(0)
+    }
+
+    fun initChaseCheck() {
+        limelight.setPollRateHz(100)
+        limelight.start()
+        limelight.pipelineSwitch(1)
+    }
+
+    fun getChase(): Array<Pair<Vector, Ball>>{
+        TODO()
+    }
+
+    fun getCheck(): Array<Ball> {
+        TODO()
     }
 
     fun getAprilTag(): Int? {

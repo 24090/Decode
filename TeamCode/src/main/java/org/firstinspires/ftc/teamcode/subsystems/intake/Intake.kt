@@ -13,12 +13,14 @@ import org.firstinspires.ftc.teamcode.commands.*
 @Config
 class Intake(hwMap: HardwareMap) {
     val motor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "intake"))
-    val pusher: CachingCRServo = CachingCRServo(hwMap.get(CRServo::class.java, "pusher"))
+    val pusherLeft: CachingCRServo = CachingCRServo(hwMap.get(CRServo::class.java, "pusherLeft"))
+    val pusherRight: CachingCRServo = CachingCRServo(hwMap.get(CRServo::class.java, "pusherRight"))
     var power = 0.0;
 
     init {
         motor.mode = RunMode.RUN_USING_ENCODER
-        pusher.power = 0.0
+        pusherLeft.power = 0.0
+        pusherRight.power = 0.0
     }
     companion object Params {
         @JvmField var runPower = 1.0
@@ -38,10 +40,21 @@ class Intake(hwMap: HardwareMap) {
         power = 0.2
     }, "SpinDown")
 
-    fun releaseBall(): Command = Sequence(
-        Instant({ pusher.power = pusherForward}),
+    fun releaseDual(): Command = Parallel(
+        releaseLeft(),
+        releaseRight()
+    )
+    fun releaseLeft(): Command = Sequence(
+        Instant({ pusherLeft.power = pusherForward}),
         Sleep(pusherWait),
-        Instant({ pusher.power = pusherBack}),
-        name = "ReleaseBall"
+        Instant({ pusherLeft.power = pusherBack}),
+        name = "ReleaseLeft"
+    )
+
+    fun releaseRight(): Command = Sequence(
+        Instant({ pusherRight.power = pusherForward}),
+        Sleep(pusherWait),
+        Instant({ pusherRight.power = pusherBack}),
+        name = "ReleaseRight"
     )
 }

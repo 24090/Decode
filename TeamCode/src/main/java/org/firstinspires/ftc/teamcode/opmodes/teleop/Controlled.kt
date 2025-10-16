@@ -38,7 +38,6 @@ class Controlled: LinearOpMode() {
             intake.update()
             telemetry.addData("pose", drive.localizer.pose)
             telemetry.addData("distance", (scorePosition - Vector.fromPose(drive.localizer.pose)).length)
-            telemetry.addData("Shooter velocity", shooter.currentVelocity)
             telemetry.addData("Target velocity", shooter.targetVelocity)
             telemetry.update()
             if (gamepad1.aWasReleased()) {
@@ -69,13 +68,14 @@ class Controlled: LinearOpMode() {
                         drive.turn = SquID(AngleUnit.normalizeRadians(drive.error.heading), Drive.DriveConstants.kSqH)
                         drive.setMotorPowers()
 
-                        telemetry.addData("Shooter velocity", shooter.currentVelocity)
+                        telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
+                        telemetry.addData("Target velocity", shooter.targetVelocity)
                         telemetry.update()
                     },
                     Sequence(
                         WaitUntil { drive.error.heading < 0.04 },
                         shooter.waitForVelocity(),
-                        intake.releaseBall()
+                        intake.releaseDual()
                     )
                 ))
             }

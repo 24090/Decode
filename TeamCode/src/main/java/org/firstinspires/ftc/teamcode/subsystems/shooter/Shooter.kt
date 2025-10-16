@@ -34,9 +34,6 @@ class Shooter(hwMap: HardwareMap) {
      val motorRight: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterRight"))
     var targetVelocity = 0.0;
 
-    val currentVelocity
-        get() = (motorLeft.velocity + motorRight.velocity)/2
-
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0),
         Pair(0.0001, 0.08),
@@ -55,7 +52,8 @@ class Shooter(hwMap: HardwareMap) {
     init {
         motorLeft.mode = RunMode.RUN_WITHOUT_ENCODER
         motorRight.mode = RunMode.RUN_WITHOUT_ENCODER
-        motorRight.direction = DcMotorSimple.Direction.REVERSE
+        motorLeft.direction = DcMotorSimple.Direction.REVERSE
+        motorRight.direction = DcMotorSimple.Direction.FORWARD
     }
 
     fun update() {
@@ -71,7 +69,17 @@ class Shooter(hwMap: HardwareMap) {
         targetVelocity = 0.0;
     }, "Shooter:SpinDown")
 
-    fun waitForVelocity(): Command = WaitUntil { abs(targetVelocity - currentVelocity) < 25.0 }
+    fun waitForRightVelocity(): Command = WaitUntil {
+        abs(targetVelocity - motorLeft.velocity) < 25.0
+    }
+
+    fun waitForLeftVelocity(): Command = WaitUntil {
+        abs(targetVelocity - motorRight.velocity) < 25.0
+    }
+    fun waitForVelocity(): Command = WaitUntil {
+        abs(targetVelocity - motorLeft.velocity) < 25.0
+        && abs(targetVelocity - motorRight.velocity) < 25.0
+    }
 }
 
 @TeleOp
@@ -84,7 +92,8 @@ class velocityToPowerTuner(): LinearOpMode(){
         val shooter: Shooter = Shooter(hardwareMap)
         val dash = FtcDashboard.getInstance()
         val p = TelemetryPacket()
-        p.put("currentVelocity", 0.0)
+        p.put("leftVelocity", 0.0)
+        p.put("rightVelocity", 0.0)
         p.put("targetVelocity", 1500.0)
         p.put("powerFeedforward", 0.0)
         dash.sendTelemetryPacket(p)
