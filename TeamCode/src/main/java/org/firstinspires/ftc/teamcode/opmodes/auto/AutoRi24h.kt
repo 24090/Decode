@@ -28,18 +28,18 @@ class AutoRi24h: LinearOpMode() {
             drive.goTo(farPose),
             intake.spinUp(),
             shooter.waitForVelocity(),
-            intake.releaseBall(),
+            intake.releaseDual(),
             shooter.waitForVelocity(),
-            intake.releaseBall(),
+            intake.releaseDual(),
             name = "FarShootCycle"
         )}
         val closeShootCycle = {Sequence(
             drive.goTo(closePose),
             intake.spinUp(),
             shooter.waitForVelocity(),
-            intake.releaseBall(),
+            intake.releaseDual(),
             shooter.waitForVelocity(),
-            intake.releaseBall(),
+            intake.releaseDual(),
             name = "FarShootCycle"
         )}
 
