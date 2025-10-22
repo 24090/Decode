@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.teamcode.subsystems.vision
 
-import com.qualcomm.hardware.limelightvision.LLResult
 import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
 
-import org.firstinspires.ftc.teamcode.util.Ball
+import org.firstinspires.ftc.teamcode.util.BallColor
+import org.firstinspires.ftc.teamcode.util.Observation
+import org.firstinspires.ftc.teamcode.util.Pattern
 
 class Camera(hwMap: HardwareMap) {
     val limelight: Limelight3A = hwMap.get(Limelight3A::class.java, "limelight")
@@ -22,25 +23,23 @@ class Camera(hwMap: HardwareMap) {
     }
 
     fun initChaseCheck() {
-        limelight.setPollRateHz(100)
+        limelight.setPollRateHz(12)
         limelight.start()
         limelight.pipelineSwitch(1)
     }
 
-    fun getChase(): Array<Pair<Vector, Ball>>{
+    fun getChase(): Array<Pair<Vector, BallColor>>{
         TODO()
     }
 
-    fun getCheck(): Array<Ball> {
-        TODO()
-    }
+    fun getCheck() = Observation.Camera(limelight.latestResult.pythonOutput[0].toInt())
 
-    fun getAprilTag(): Int? {
+    fun getPattern(): Pattern? {
         for (fiducialResult in limelight.latestResult.fiducialResults){
             when (fiducialResult.fiducialId){
-                21 -> return 0
-                22 -> return 1
-                23 -> return 2
+                21 -> return Pattern.GPP
+                22 -> return Pattern.PGP
+                23 -> return Pattern.PPG
             }
         }
         return null
@@ -52,7 +51,7 @@ class VisionTesting: LinearOpMode() {
     override fun runOpMode() {
         waitForStart()
         while (opModeIsActive()){
-            telemetry.addData("G index", Camera(hardwareMap).getAprilTag())
+            telemetry.addData("Pattern", Camera(hardwareMap).getPattern())
             telemetry.update()
         }
     }
