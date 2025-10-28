@@ -4,6 +4,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
 
 import org.firstinspires.ftc.teamcode.util.BallColor
@@ -40,6 +41,16 @@ class Camera(hwMap: HardwareMap) {
                 21 -> return Pattern.GPP
                 22 -> return Pattern.PGP
                 23 -> return Pattern.PPG
+            }
+        }
+        return null
+    }
+    fun getPoseFromAprilTag(): Pose? {
+        for (fiducialResult in limelight.latestResult.fiducialResults){
+            when(fiducialResult.fiducialId){
+                24, 25 -> {
+                    return Pose(fiducialResult.robotPoseFieldSpace.position.x,fiducialResult.robotPoseFieldSpace.position.y,fiducialResult.robotPoseFieldSpace.orientation.yaw)
+                }
             }
         }
         return null
