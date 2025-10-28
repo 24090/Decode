@@ -16,6 +16,11 @@ fun PDLT(error: Vector, dError: Vector, kP: Double, kD: Double, kL: Double, kThr
         PD(error, dError, kP, kD) 
     else PDL(error, dError, kP, kD, kL)
 
+fun PDLT(error: Double, dError: Double, kP: Double, kD: Double, kL: Double, kThresh: Double) =
+    if (error.absoluteValue < kThresh)
+        PD(error, dError, kP, kD)
+    else PDL(error, dError, kP, kD, kL)
+
 fun SquID(error: Vector, kSq: Double) = error.norm() * sqrt(error.length * kSq)
 fun SquID(error: Double, kSq: Double) = error.sign * sqrt(error.absoluteValue * kSq)
 

@@ -15,52 +15,51 @@ import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
 import kotlin.math.min
 
+class OverrideableDouble(private val v: Double){
+    private var vOverride: Double? = null
+    fun get() = vOverride ?: v
+
+    fun override(v: Double?) {
+        vOverride = v ?: vOverride
+    }
+
+    fun reset() {
+        vOverride = null
+    }
+}
 @Config
 class Drive(hwMap: HardwareMap) {
     val localizer = Localizer(hwMap)
 
     companion object DriveConstants {
-        @JvmField
         var lateralFactor = 0.8
-        @JvmField
-        var kSqH = 0.8;
-        @JvmField
-        var kPT = 0.65;
-        @JvmField
-        var kDT = 0.08;
-        @JvmField
-        var kLT = 0.1;
-        @JvmField
-        var threshT = 0.6;
-    }
 
+        @JvmField var kSqH = 0.8
+        @JvmField var kPT = 0.65
+        @JvmField var kDT = 0.08
+        @JvmField var kLT = 0.1
+        @JvmField var kTT = 0.6
+    }
+    
     var targetPose = Pose(0.0, 0.0, 0.0)
     val error
         get() = localizer.fieldPoseToRelative(targetPose)
     val dError: Pose
         get() {
-            val translation = Vector.Companion.fromPose(localizer.poseVel).rotated(-localizer.heading)
+            val translation = Vector.fromPose(localizer.poseVel).rotated(-localizer.heading)
             return -Pose(translation.x, translation.y, localizer.headingVel)
         }
     private val flMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "fl"));
-    fun setFlPower(power: Double) {
-        flMotor.power = power
-    }
+    fun setFlPower(power: Double) { flMotor.power = power }
 
     private val frMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "fr"));
-    fun setFrPower(power: Double) {
-        frMotor.power = power
-    }
+    fun setFrPower(power: Double) { frMotor.power = power }
 
     private val blMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "bl"));
-    fun setBlPower(power: Double) {
-        blMotor.power = power
-    }
+    fun setBlPower(power: Double) { blMotor.power = power }
 
     private val brMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "br"));
-    fun setBrPower(power: Double) {
-        brMotor.power = power
-    }
+    fun setBrPower(power: Double) { brMotor.power = power }
 
     private fun setZeroPowerBehaviours(zeroPowerBehavior: ZeroPowerBehavior) {
         flMotor.zeroPowerBehavior = zeroPowerBehavior
@@ -93,7 +92,7 @@ class Drive(hwMap: HardwareMap) {
 
     // Drive math, etc
 
-    fun setMotorPowers() {
+    private fun setMotorPowers() {
         val driveVectors = getHeadingVectors().addNormalized(getTranslationalVectors())
         val leftPowers = getSidePowers(
             driveVectors.left,
@@ -112,16 +111,26 @@ class Drive(hwMap: HardwareMap) {
         brMotor.power = rightPowers.second
     }
 
-    fun update() {
-        localizer.update()
-
+    fun updateHeading(){
         turn = SquID(AngleUnit.normalizeRadians(error.heading), kSqH)
+    }
+    var currentUpdateHeading: () -> Unit = ::updateHeading
+    fun updateTranslational(){
         val translational =
-            PDLT(Vector.Companion.fromPose(error), Vector.Companion.fromPose(dError), kPT, kDT, kLT, threshT)
+            PDLT(Vector.fromPose(error), Vector.fromPose(dError), kPT, kDT, kLT, kTT)
         drive = if (translational.x.isNaN()) 0.0 else translational.x
         strafe = if (translational.y.isNaN()) 0.0 else translational.y
-        setMotorPowers()
     }
+    var currentUpdateTranslational: () -> Unit = ::updateTranslational
+
+    fun update(updateLocalizer: Boolean = true) {
+        if (updateLocalizer) localizer.update()
+        currentUpdateHeading()
+        currentUpdateTranslational()
+        setMotorPowers()
+        flMotor.direction
+    }
+
 
     // drive vector calculations
 
@@ -156,16 +165,16 @@ class Drive(hwMap: HardwareMap) {
     }
 
     private fun getTranslationalVectors() = DriveVectors(
-        left = Vector.Companion.fromCartesian(drive, strafe).normalized(),
-        right = Vector.Companion.fromCartesian(drive, strafe).normalized()
+        left = Vector.fromCartesian(drive, strafe).normalized(),
+        right = Vector.fromCartesian(drive, strafe).normalized()
     )
 
     private fun getHeadingVectors() = DriveVectors(
-        left = Vector.Companion.fromCartesian(-turn, 0.0).normalized(),
-        right = Vector.Companion.fromCartesian(turn, 0.0).normalized()
+        left = Vector.fromCartesian(-turn, 0.0).normalized(),
+        right = Vector.fromCartesian(turn, 0.0).normalized()
     )
 
-    private fun getWheelVector(front: Boolean, left: Boolean) = Vector.Companion.fromCartesian(
+    private fun getWheelVector(front: Boolean, left: Boolean) = Vector.fromCartesian(
         1.0,
         if ((front && left) || (!front && !left)) lateralFactor else -lateralFactor
     ).norm()
@@ -180,8 +189,14 @@ class Drive(hwMap: HardwareMap) {
             (wheelVectorB.x * targetVector.y - targetVector.x * wheelVectorB.y) / (wheelVectorB.x * wheelVectorA.y - wheelVectorA.x * wheelVectorB.y)
         )
 
-    fun goTo(pose: Pose, distanceTolerance: Double = 0.4, headingTolerance: Double = 0.04 ) = Sequence(
-        Instant { targetPose = pose },
-        WaitUntil { atTargetCircle(distanceTolerance, headingTolerance) }
+    fun goTo(
+        pose: Pose,
+        distanceTolerance: Double = 0.4,
+        headingTolerance: Double = 0.04,
+    ) = Sequence(
+        Instant {
+            targetPose = pose
+        },
+        WaitUntil { atTargetCircle(distanceTolerance, headingTolerance) },
     )
 }

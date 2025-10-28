@@ -49,7 +49,7 @@ class Localizer(hwMap: HardwareMap) {
         pinpoint.update()
     }
     fun fieldPoseToRelative(fieldPose: Pose): Pose {
-        val translation = fieldVecToRelative(Vector.Companion.fromPose(fieldPose))
+        val translation = fieldVecToRelative(Vector.fromPose(fieldPose))
         return Pose(
             translation.x,
             translation.y,
@@ -58,10 +58,10 @@ class Localizer(hwMap: HardwareMap) {
     }
 
     fun fieldVecToRelative(fieldVec: Vector): Vector =
-        (Vector.Companion.fromCartesian(fieldVec.x, fieldVec.y) - Vector.Companion.fromCartesian(x, y)).rotated(-heading)
+        (Vector.fromCartesian(fieldVec.x, fieldVec.y) - Vector.fromCartesian(x, y)).rotated(-heading)
 
     fun relativePoseToField(relativePose: Pose): Pose {
-        val translation = Vector.Companion.fromCartesian(relativePose.x, relativePose.y).rotated(heading) + Vector.Companion.fromCartesian(x, y)
+        val translation = Vector.fromCartesian(relativePose.x, relativePose.y).rotated(heading) + Vector.fromCartesian(x, y)
         return Pose(
             translation.x,
             translation.y,

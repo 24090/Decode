@@ -14,6 +14,9 @@ import kotlin.math.sqrt
 fun Pose(pose2d: Pose2D) = Pose(pose2d.getX(DistanceUnit.INCH), pose2d.getY(DistanceUnit.INCH), pose2d.getHeading(AngleUnit.RADIANS))
 
 class Pose(var x: Double, var y: Double, var heading: Double) {
+    init {
+        heading = AngleUnit.normalizeRadians(heading)
+    }
     fun inSquare(pose: Pose, xTolerance: Double, yTolerance: Double, headingTolerance: Double): Boolean{
         return (this - pose).inSquare(xTolerance, yTolerance, headingTolerance)
     }
@@ -53,6 +56,10 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
     override fun toString(): String {
         return "(x:" + "%.1f".format(x) +  "y:" + "%.1f".format(y) + "θ:" + "%.2f".format(heading) + ")"
     }
+
+    fun mirrored() = Pose(this.x, -this.y, -this.heading)
+
+    fun mirroredIf(v: Boolean) = if (v) this.mirrored() else this
 };
 
 

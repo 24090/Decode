@@ -3,12 +3,15 @@ package org.firstinspires.ftc.teamcode.subsystems.controlsystems
 import java.util.TreeMap
 
 class InterpolatedLUT(items: Map<Double, Double>) {
-    var map = TreeMap<Double, Double>(items)
+    init {
+        assert(items.isNotEmpty())
+    }
+    val map = TreeMap<Double, Double>(items)
     fun get(v: Double): Double{
         val floorEntry = map.floorEntry(v)
         val ceilingEntry = map.ceilingEntry(v)
         if (floorEntry == null){
-            return ceilingEntry.value
+            return ceilingEntry!!.value
         }
         if (floorEntry.key == v){
             return floorEntry.value
