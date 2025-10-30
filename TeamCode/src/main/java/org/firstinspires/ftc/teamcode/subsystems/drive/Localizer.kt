@@ -13,8 +13,8 @@ import org.firstinspires.ftc.teamcode.drivetrain.Vector
 class Localizer(hwMap: HardwareMap) {
     private var pinpoint: GoBildaPinpointDriver = hwMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
     companion object {
-        @JvmStatic var driveY: Double = -3.53;
-        @JvmStatic var strafeX: Double = -6.5;
+        @JvmStatic var driveY: Double = -6.3;
+        @JvmStatic var strafeX: Double = -5.0;
         @JvmStatic var encoderResolution: Double = 0.52216;
     }
     init {

@@ -5,7 +5,7 @@ import org.firstinspires.ftc.teamcode.drivetrain.Vector
 import kotlin.math.PI
 
 val scorePosition = Vector.fromCartesian(144.0, 72.0)
-val farPose = Pose(12.0, 12.0, 0.3805063771 - PI)
+val farPose = Pose(12.0, 12.0, 0.3805063771)
 val farDistance = (scorePosition - Vector.fromPose(farPose)).length
-val closePose = Pose(84.0, 12.0, -3 * PI / 4)
+val closePose = Pose(84.0, 12.0, -1 * PI / 4)
 val closeDistance = (scorePosition - Vector.fromPose(closePose)).length

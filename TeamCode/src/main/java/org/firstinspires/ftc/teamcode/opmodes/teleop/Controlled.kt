@@ -8,6 +8,11 @@ import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftBack
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftForward
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightBack
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightForward
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.BulkReads
 import kotlin.math.PI
@@ -29,7 +34,7 @@ class Controlled: LinearOpMode() {
         drive.currentUpdateHeading = updateHeadingOverride
         drive.currentUpdateTranslational = updateTranslationalOverride
         waitForStart()
-        drive.localizer.pose = Pose(12.0, 12.0, PI)
+        drive.localizer.pose = Pose(12.0, 12.0, 0.0)
         while (opModeIsActive()){
             bulkReads.update()
             drive.update()
@@ -40,20 +45,41 @@ class Controlled: LinearOpMode() {
             telemetry.addData("distance", (scorePosition - Vector.fromPose(drive.localizer.pose)).length)
             telemetry.addData("Target velocity", shooter.targetVelocity)
             telemetry.update()
-            if (gamepad1.aWasReleased()) {
+            if (gamepad1.aWasPressed()) {
                 runBlocking(intake.spinUp())
             }
-            if (gamepad1.bWasReleased()) {
+            if (gamepad1.bWasPressed()) {
                 runBlocking(intake.spinDown())
             }
-            if (gamepad1.xWasReleased()) {
+            if (gamepad1.leftBumperWasPressed()) {
+                runBlocking(
+                    ForeverCommand{
+                        Sequence (
+                            Instant{
+                                intake.pusherLeft.position = pusherLeftForward
+                                intake.pusherRight.position = pusherRightBack
+                            },
+                            Sleep(pusherWait),
+                            Instant{
+                                intake.pusherRight.position = pusherRightForward
+                                intake.pusherLeft.position = pusherLeftBack
+                            },
+                            Sleep(pusherWait),
+                        )
+                    }
+                )
+            }
+            if (gamepad1.rightBumperWasPressed()) {
+                runBlocking(intake.releaseRight())
+            }
+            if (gamepad1.xWasPressed()) {
                 drive.currentUpdateHeading = drive::updateHeading
                 runBlocking(Race(
                     Forever {
                         bulkReads.update()
                         intake.update()
                         drive.localizer.update()
-                        val relativePose = (Vector.fromPose(drive.localizer.pose) - scorePosition)
+                        val relativePose = (scorePosition - Vector.fromPose(drive.localizer.pose))
                         drive.targetPose = Pose(
                             drive.localizer.x, drive.localizer.y,
                             relativePose.angle

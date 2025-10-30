@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.util.BulkReads
 import kotlin.math.PI
 
 @Autonomous(name = "Ri24h Auto")
-class AutoRi24h: LinearOpMode() {
+class AutoBlue: LinearOpMode() {
     override fun runOpMode() {
         val bulkReads = BulkReads(hardwareMap)
         val drive = Drive(hardwareMap)

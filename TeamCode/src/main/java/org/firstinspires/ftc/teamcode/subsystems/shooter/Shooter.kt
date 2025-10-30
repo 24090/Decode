@@ -27,7 +27,7 @@ class Shooter(hwMap: HardwareMap) {
     companion object Params {
         @JvmField var closeShootVelocity = 900.0
         @JvmField var farShootVelocity = 1225.0
-        @JvmField var kP = 0.0025
+        @JvmField var kP = 0.0//0.0025
     }
 
      val motorLeft: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterLeft"))
@@ -37,16 +37,17 @@ class Shooter(hwMap: HardwareMap) {
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0),
         Pair(0.0001, 0.08),
-        Pair(630.0, 0.28),
-        Pair(950.0, 0.4),
-        Pair(1650.0, 0.7),
+        Pair(920.0, 0.43),
+        Pair(1560.0, 0.7),
+        Pair(1800.0, 0.9),
+        Pair(2200.0, 1.0),
     ))
 
     val distanceToVelocityLUT = InterpolatedLUT(mapOf(
-        Pair(48 * sqrt(2.0), 930.0),
-        Pair(72 * sqrt(2.0), 950.0),
-        Pair(96 * sqrt(2.0), 1050.0),
-        Pair(108 * sqrt(2.0), 1075.0)
+        Pair(48 * sqrt(2.0), 1630.0),
+        Pair(72 * sqrt(2.0), 1750.0),
+        Pair(96 * sqrt(2.0), 1850.0),
+        Pair(108 * sqrt(2.0), 2200.0)
     ))
 
     init {

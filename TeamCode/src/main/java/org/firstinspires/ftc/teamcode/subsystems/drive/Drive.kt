@@ -191,7 +191,7 @@ class Drive(hwMap: HardwareMap) {
 
     fun goTo(
         pose: Pose,
-        distanceTolerance: Double = 0.4,
+        distanceTolerance: Double = kTT,
         headingTolerance: Double = 0.04,
     ) = Sequence(
         Instant {

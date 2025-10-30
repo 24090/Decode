@@ -20,14 +20,17 @@ class Intake(hwMap: HardwareMap) {
 
     init {
         motor.mode = RunMode.RUN_USING_ENCODER
-        pusherLeft.position = 0.0
-        pusherRight.position = 0.0
+        pusherLeft.position = pusherLeftBack
+        pusherRight.position = pusherRightBack
     }
     companion object Params {
-        @JvmField var runPower = 1.0
-        @JvmField var pusherForward = -1.0
-        @JvmField var pusherBack = 1.0
-        @JvmField var pusherWait = 1.0
+        @JvmField var runPower = 0.2
+        @JvmField var pusherLeftForward = 0.0
+        @JvmField var pusherLeftBack = 0.22
+
+        @JvmField var pusherRightForward = 1.0
+        @JvmField var pusherRightBack = 0.88
+        @JvmField var pusherWait = 0.5
     }
 
     fun update() {
@@ -47,16 +50,16 @@ class Intake(hwMap: HardwareMap) {
         releaseRight()
     )
     fun releaseLeft(): Command = Sequence(
-        Instant({ pusherLeft.position = pusherForward}),
+        Instant({ pusherLeft.position = pusherLeftForward}),
         Sleep(pusherWait),
-        Instant({ pusherLeft.position = pusherBack}),
+        Instant({ pusherLeft.position = pusherLeftBack}),
         name = "ReleaseLeft"
     )
 
     fun releaseRight(): Command = Sequence(
-        Instant({ pusherRight.position = pusherForward}),
+        Instant({ pusherRight.position = pusherRightForward}),
         Sleep(pusherWait),
-        Instant({ pusherRight.position = pusherBack}),
+        Instant({ pusherRight.position = pusherRightBack}),
         name = "ReleaseRight"
     )
 }
