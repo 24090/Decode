@@ -1,5 +1,6 @@
 package com.rathippo.commandviewer
 
+import android.content.Context
 import com.qualcomm.ftccommon.FtcEventLoop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier.Notifications
@@ -9,7 +10,9 @@ import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
+import org.firstinspires.ftc.ftccommon.external.OnCreate
 import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
+
 
 open class CommandViewerParams{
     companion object {
@@ -19,11 +22,20 @@ open class CommandViewerParams{
 
 object CommandViewer : Notifications {
     val commandLog = ArrayList<CommandMessage>()
+    private var server: Server? = null
+
+    @OnCreate
+    fun start(context: Context?) {
+        if (server == null && context != null) {
+            server = Server(context)
+        }
+    }
 
     @OnCreateEventLoop
     fun onEventLoopRegistered(ftcEventLoop: FtcEventLoop){
         ftcEventLoop.opModeManager.registerListener(this)
     }
+
 
     private val functions = ArrayList<() -> Unit>()
     fun runFunction(i: Int){
@@ -83,7 +95,7 @@ object CommandViewer : Notifications {
                 }}
             }
         }
-        Server.update(msg)
+        server?.update(msg)
         commandLog.clear()
     }
 

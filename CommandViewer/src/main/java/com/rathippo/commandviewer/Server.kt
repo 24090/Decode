@@ -1,6 +1,7 @@
 package com.rathippo.commandviewer
 
-import com.rathippo.commandviewer.Server.sockets
+import android.content.Context
+import android.content.res.AssetManager
 import com.reidsync.kxjsonpatch.JsonDiff
 import fi.iki.elonen.NanoHTTPD.IHTTPSession
 import fi.iki.elonen.NanoWSD
@@ -34,7 +35,6 @@ internal class Socket(handshakeRequest: IHTTPSession?, private val initialMessag
         println(".              reason: $reason")
         println(".              byRemote: $initiatedByRemote")
         pingHandle!!.cancel(true)
-        sockets.remove(this)
     }
 
     override fun onMessage(webSocketFrame: WebSocketFrame) {
@@ -50,13 +50,12 @@ internal class Socket(handshakeRequest: IHTTPSession?, private val initialMessag
     }
 }
 
-internal object Server : NanoWSD(24090) {
+internal class Server(val context: Context) : NanoWSD(24090) {
     private val initialValue: JsonElement = JsonObject(mapOf(
         "messages" to JsonArray(listOf())
     ))
     private var cachedMessage: JsonElement = initialValue
-    const val WEB_DIRECTORY = "./CommandViewer/src/main/web"
-    var sockets: HashSet<Socket> = HashSet()
+    var sockets: LinkedHashSet<Socket> = LinkedHashSet()
     init {
         start(SOCKET_READ_TIMEOUT, false)
         println("CommandViewer: Server Running")
@@ -68,6 +67,7 @@ internal object Server : NanoWSD(24090) {
             cachedMessage = msg
             return
         }
+        sockets = LinkedHashSet(sockets.filter { socket ->  socket.isOpen })
         for (socket in sockets){
             if (!socket.isOpen){
                 continue
@@ -88,16 +88,17 @@ internal object Server : NanoWSD(24090) {
         ){
             return newFixedLengthResponse("404")
         }
+        val getFile = { path: String -> context.assets.open("main.html").bufferedReader().readText()}
         return newFixedLengthResponse(
-            File("$WEB_DIRECTORY/main.html").readText().replace(
+            getFile("main.html").replace(
                 "@INSERT_JSONPATCH",
-                File("$WEB_DIRECTORY/jsonpatch.min.js").readText().split("\n").last()
+                getFile("jsonpatch.min.js").split("\n").last()
             ).replace(
                 "@INSERT_JS",
-                File("$WEB_DIRECTORY/main.js").readText()
+                getFile("main.js")
             ).replace(
                 "@INSERT_CSS",
-                File("$WEB_DIRECTORY/style.css").readText()
+                getFile("style.css")
             ).replace(
                 "@INSERT_CUSTOMCSS",
                 CommandViewerParams.customCss
