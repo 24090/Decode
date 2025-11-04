@@ -26,10 +26,10 @@ class Intake(hwMap: HardwareMap) {
     companion object Params {
         @JvmField var runPower = 0.2
         @JvmField var pusherLeftForward = 0.0
-        @JvmField var pusherLeftBack = 0.22
+        @JvmField var pusherLeftBack = 0.54
 
-        @JvmField var pusherRightForward = 1.0
-        @JvmField var pusherRightBack = 0.88
+        @JvmField var pusherRightForward = 0.67
+        @JvmField var pusherRightBack = 0.0
         @JvmField var pusherWait = 0.5
     }
 
