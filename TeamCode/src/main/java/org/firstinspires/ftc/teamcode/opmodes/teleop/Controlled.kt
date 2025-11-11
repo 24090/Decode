@@ -74,7 +74,9 @@ class Controlled: LinearOpMode() {
             }
             if (gamepad1.xWasPressed()) {
                 drive.currentUpdateHeading = drive::updateHeading
+                drive.currentUpdateTranslational = drive::updateTranslational
                 runBlocking(Race(
+                    WaitUntil { !gamepad1.x },
                     Forever {
                         bulkReads.update()
                         intake.update()
@@ -94,10 +96,18 @@ class Controlled: LinearOpMode() {
                     Sequence(
                         WaitUntil { drive.error.heading < 0.04 },
                         shooter.waitForVelocity(),
-                        intake.releaseDual()
+                        intake.spinReverse(),
+                        Sleep(0.5),
+                        intake.spinUp(),
+                        intake.releaseDual(),
+                        intake.releaseDual(),
+                        intake.spinUp()
                     )
                 ))
+                runBlocking(intake.spinUp())
+                intake.resetPushers()
                 drive.currentUpdateHeading = updateHeadingOverride
+                drive.currentUpdateTranslational = updateTranslationalOverride
             }
         }
     }

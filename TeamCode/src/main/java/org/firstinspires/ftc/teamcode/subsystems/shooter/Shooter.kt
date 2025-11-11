@@ -85,7 +85,7 @@ class Shooter(hwMap: HardwareMap) {
 
 @TeleOp
 @Config
-class velocityToPowerTuner(): LinearOpMode(){
+class shooterVelocityToPowerTuner(): LinearOpMode(){
     companion object {
         @JvmField var targetVelocity = 1500.0
     }
