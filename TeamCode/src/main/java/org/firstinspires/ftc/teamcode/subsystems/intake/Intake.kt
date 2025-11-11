@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
 import dev.frozenmilk.dairy.cachinghardware.CachingServo
 import org.firstinspires.ftc.teamcode.commands.*
+import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.clamp
 
 @Config
@@ -81,26 +82,16 @@ class Intake(hwMap: HardwareMap) {
 
 @TeleOp
 @Config
-class intakeVelocityToPowerTuner(): LinearOpMode(){
+class intakeTesting(): LinearOpMode(){
     companion object {
         @JvmField var targetVelocity = 1000.0
     }
     override fun runOpMode() {
         val intake: Intake = Intake(hardwareMap)
+        val shooter: Shooter = Shooter(hardwareMap)
         val dash = FtcDashboard.getInstance()
         val p = TelemetryPacket()
-        p.put("velocity", 0.0)
-        p.put("targetVelocity", 1500.0)
-        p.put("powerFeedforward", 0.0)
-        dash.sendTelemetryPacket(p)
-        waitForStart()
-        while (opModeIsActive()){
-            if (gamepad1.xWasPressed()) {
-                targetVelocity += 50
-            }
-            if (gamepad1.yWasPressed()) {
-                targetVelocity -= 50
-            }
+        val f = {
             intake.update()
             intake.targetVelocity = targetVelocity
             val p = TelemetryPacket()
@@ -108,6 +99,29 @@ class intakeVelocityToPowerTuner(): LinearOpMode(){
             p.put("targetVelocity", intake.targetVelocity)
             p.put("powerFeedforward", Intake.kF * intake.targetVelocity)
             dash.sendTelemetryPacket(p)
+        }
+        p.put("velocity", 0.0)
+        p.put("targetVelocity", 1500.0)
+        p.put("powerFeedforward", 0.0)
+        dash.sendTelemetryPacket(p)
+        waitForStart()
+        shooter.motorLeft.power = 0.15
+        shooter.motorRight.power = 0.15
+        while (opModeIsActive()){
+            if (gamepad1.leftBumperWasPressed()){
+                runBlocking(Race(
+                    Forever(f),
+                    intake.releaseLeft()
+                ))
+            } 
+            if (gamepad1.rightBumperWasPressed()){
+                runBlocking(Race(
+                    Forever(f),
+                    intake.releaseRight()
+                ))
+            }
+            f()
+
         }
     }
 
