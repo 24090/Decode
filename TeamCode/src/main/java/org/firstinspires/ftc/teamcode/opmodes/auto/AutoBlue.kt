@@ -45,7 +45,7 @@ class AutoBlue: LinearOpMode() {
             intake.spinUp(),
             drive.goTo(Pose(36.0 + 24 * n, 24.0, PI/2), 8.0, 0.4),
             drive.goTo(Pose(36.0 + 24 * n, 50.0, PI/2)),
-            intake.spinDown(),
+            intake.stop(),
             name = "GrabBallCycle $n"
         )}
         waitForStart()

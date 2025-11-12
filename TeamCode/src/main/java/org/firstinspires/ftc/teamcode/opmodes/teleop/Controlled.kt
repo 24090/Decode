@@ -49,7 +49,7 @@ class Controlled: LinearOpMode() {
                 runBlocking(intake.spinUp())
             }
             if (gamepad1.bWasPressed()) {
-                runBlocking(intake.spinDown())
+                runBlocking(intake.stop())
             }
             if (gamepad1.leftBumperWasPressed()) {
                 runBlocking(
@@ -94,12 +94,15 @@ class Controlled: LinearOpMode() {
                         telemetry.update()
                     },
                     Sequence(
-                        WaitUntil { drive.error.heading < 0.04 },
-                        shooter.waitForVelocity(),
-                        intake.spinReverse(),
-                        Sleep(0.5),
-                        intake.spinUp(),
+                        Parallel(
+                            WaitUntil { drive.error.heading < 0.04 },
+                            shooter.waitForVelocity(),
+                            intake.fullAdjustThird(),
+                        ),
                         intake.releaseDual(),
+                        Sleep(1.0),
+                        intake.spinUp(),
+                        Sleep(0.5),
                         intake.releaseDual(),
                         intake.spinUp()
                     )
