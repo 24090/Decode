@@ -75,10 +75,10 @@ class Shooter(hwMap: HardwareMap) {
     fun waitForLeftVelocity(): Command = WaitUntil {
         abs(targetVelocity - motorRight.velocity) <= 30.0
     }
-    fun waitForVelocity(): Command = WaitUntil {
+    fun waitForVelocity(): Command = WaitUntil ({
         abs(targetVelocity - motorLeft.velocity) <= 50.0
         && abs((targetVelocity + 30) - motorRight.velocity) <= 50.0
-    }
+    }, "WaitForVelocity")
 }
 
 @TeleOp

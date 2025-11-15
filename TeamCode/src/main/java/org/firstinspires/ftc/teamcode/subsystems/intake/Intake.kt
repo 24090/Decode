@@ -71,15 +71,17 @@ class Intake(hwMap: HardwareMap) {
 
     fun fullAdjustThird(): Command = Sequence(
         setAdjustThird(),
-        WaitUntil { behaviour.target >= motor.currentPosition }
+        WaitUntil { behaviour.target >= motor.currentPosition },
+        name = "FullAdjustThird"
     )
     fun stop(): Command = Instant({
         behaviour = IntakeBehaviour.Velocity(0.0)
-    }, "SpinDown")
+    }, "StopIntake")
 
     fun releaseDual(): Command = Parallel(
         releaseLeft(),
-        releaseRight()
+        releaseRight(),
+        name = "ReleaseDual"
     )
 
     fun resetPushers(){
@@ -148,7 +150,6 @@ class intakeTesting(): LinearOpMode(){
                         intake.fullAdjustThird(),
                         intake.stop()
                     )
-
                 ))
             }
             f()

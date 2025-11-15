@@ -62,6 +62,9 @@ internal class Server(val page: Response) : NanoWSD(24090) {
     }
 
     fun update(msg: JsonElement){
+        if (sockets.isEmpty()) {
+            return
+        }
         val patch = JsonDiff.asJson(cachedMessage, msg)
         if (patch.isEmpty()){
             cachedMessage = msg

@@ -1,3 +1,6 @@
+//
+// Not part of jsonpatch
+//
 var json = {"messages":[]}
 var collapseInfo = {}
 // Create WebSocket connection.
@@ -31,7 +34,7 @@ function renderMessage(message, rootElement, nestingLevel){
       div.id = message.uid
       div.className = message.class
       div.classList.add("command")
-      let dead = div.classList.contains("dead")
+      let autocollapse = div.classList.contains("dead") || div.classList.contains("future")
       div.style = `--nesting-level: ${nestingLevel};`
       let title = document.createElement("h3")
       title.innerText = message.name
@@ -51,11 +54,11 @@ function renderMessage(message, rootElement, nestingLevel){
       collapsediv = div.appendChild(document.createElement("div"))
       if (collapseInfo.hasOwnProperty(message.uid)){
         collapsediv.className = collapseInfo[message.uid] ? "collapsediv collapsed": "collapsediv"
-        if (collapseInfo[message.uid] == dead){
+        if (collapseInfo[message.uid] == autocollapse){
           delete collapseInfo[message.uid]
         }
       } else {
-        collapsediv.className = dead ? "collapsediv collapsed": "collapsediv"
+        collapsediv.className = autocollapse ? "collapsediv collapsed": "collapsediv"
       }
       collapsediv.id = `collapsediv-${message.uid}`
       rootElement = collapsediv

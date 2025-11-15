@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands
 
-class Parallel(vararg commands: Command): OverrideButtonCommand("Parallel", true){
+class Parallel(vararg commands: Command, name: String = "Parallel"): OverrideButtonCommand(name, true){
     val commands = ArrayList(commands.map {c -> c})
     override fun getFuture(): FutureCommand{
         return FutureCommand(commands.map(Command::getFuture), name, selfCondense, uid)

@@ -8,7 +8,6 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
-import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.storedPose
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
@@ -83,16 +82,15 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
         )}
         waitForStart()
         drive.localizer.pose = Pose(9.0, 8.0, 0.0).mirroredIf(isRed)
-        drive.targetPose = farPose.mirroredIf(isRed)
+        drive.targetPose = closePose.mirroredIf(isRed)
         var time = System.currentTimeMillis()
         val recordtime = { name:String ->
             val newtime = System.currentTimeMillis()
             telemetry.addData("$name (ms)", newtime - time)
             time = newtime
         }
-
         runBlocking(Race(
-            Forever {
+            Forever( {
                 recordtime("other")
                 bulkReads.update()
                 recordtime("bulkreads")
@@ -105,7 +103,7 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
                 intake.update()
                 recordtime("intake")
                 telemetry.update()
-            },
+            }, "Updates" ),
             Sequence(
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 intake.spinUp(),
@@ -116,7 +114,8 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
                 grabBallCycle(1),
                 closeShootCycle(),
                 grabBallCycle(0),
-                closeShootCycle()
+                closeShootCycle(),
+                name = "Auto"
             )
         ))
         storedPose = drive.localizer.pose

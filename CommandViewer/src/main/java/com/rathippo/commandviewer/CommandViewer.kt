@@ -2,6 +2,7 @@ package com.rathippo.commandviewer
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import com.qualcomm.ftccommon.FtcEventLoop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier.Notifications
@@ -26,21 +27,25 @@ object CommandViewer : Notifications {
     val commandLog = ArrayList<CommandMessage>()
 
     private var server: Server? = null
-
+    val active: Boolean = server?.sockets?.isEmpty() ?: false
     @OnCreate
     @JvmStatic fun start(context: Context?) {
-        val getFile = { path: String -> context!!.assets.open("main.html").bufferedReader().readText()}
+        val getFile = { path: String -> context!!.assets.open(path).bufferedReader().readText()}
         val page = newFixedLengthResponse(
-            getFile("main.html").replace(
+            getFile("main.html")
+            .replace(
                 "@INSERT_JSONPATCH",
-                getFile("jsonpatch.min.js").split("\n").last()
-            ).replace(
+                getFile("jsonpatch.min.js")
+            )
+            .replace(
                 "@INSERT_JS",
                 getFile("main.js")
-            ).replace(
+            )
+            .replace(
                 "@INSERT_CSS",
                 getFile("style.css")
-            ).replace(
+            )
+            .replace(
                 "@INSERT_CUSTOMCSS",
                 CommandViewerParams.customCss
             )
@@ -72,6 +77,8 @@ object CommandViewer : Notifications {
         return s.replace("\\","\\\\")
     }
     fun update(){
+        if (!active) return
+
         val msg: JsonElement = buildJsonObject {
             putJsonArray("messages"){
                 for (cm in commandLog) { addJsonObject {
