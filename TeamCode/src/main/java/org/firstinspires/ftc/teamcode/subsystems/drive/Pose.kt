@@ -112,4 +112,8 @@ class Vector {
     override fun toString(): String {
         return "[$x, $y]"
     }
+
+    fun mirrored() = Vector(this.x, -this.y)
+
+    fun mirroredIf(v: Boolean) = if (v) this.mirrored() else this
 }

@@ -32,12 +32,12 @@ class Drive(hwMap: HardwareMap) {
     val localizer = Localizer(hwMap)
 
     companion object DriveConstants {
-        var lateralFactor = 0.8
+        @JvmField var lateralFactor = 0.7
 
         @JvmField var kSqH = 0.8
-        @JvmField var kPT = 0.65
-        @JvmField var kDT = 0.08
-        @JvmField var kLT = 0.1
+        @JvmField var kPT = 0.2
+        @JvmField var kDT = 0.05
+        @JvmField var kLT = 0.3
         @JvmField var kTT = 0.6
     }
     

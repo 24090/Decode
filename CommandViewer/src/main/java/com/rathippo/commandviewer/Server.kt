@@ -50,7 +50,7 @@ internal class Socket(handshakeRequest: IHTTPSession?, private val initialMessag
     }
 }
 
-internal class Server(val context: Context) : NanoWSD(24090) {
+internal class Server(val page: Response) : NanoWSD(24090) {
     private val initialValue: JsonElement = JsonObject(mapOf(
         "messages" to JsonArray(listOf())
     ))
@@ -88,22 +88,7 @@ internal class Server(val context: Context) : NanoWSD(24090) {
         ){
             return newFixedLengthResponse("404")
         }
-        val getFile = { path: String -> context.assets.open("main.html").bufferedReader().readText()}
-        return newFixedLengthResponse(
-            getFile("main.html").replace(
-                "@INSERT_JSONPATCH",
-                getFile("jsonpatch.min.js").split("\n").last()
-            ).replace(
-                "@INSERT_JS",
-                getFile("main.js")
-            ).replace(
-                "@INSERT_CSS",
-                getFile("style.css")
-            ).replace(
-                "@INSERT_CUSTOMCSS",
-                CommandViewerParams.customCss
-            )
-        )
+        return page
     }
 
     override fun openWebSocket(ihttpSession: IHTTPSession): WebSocket {

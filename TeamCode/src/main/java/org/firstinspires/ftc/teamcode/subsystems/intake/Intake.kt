@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorEx
+import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
@@ -19,13 +20,14 @@ import kotlin.math.abs
 
 @Config
 class Intake(hwMap: HardwareMap) {
-    val motor: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "intake"))
+    val motor: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "intake"), 0.1)
     val pusherLeft: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherLeft"))
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Velocity(0.0)
     init {
-        motor.mode = RunMode.RUN_USING_ENCODER
+        motor.mode = RunMode.RUN_WITHOUT_ENCODER
+        motor.direction = DcMotorSimple.Direction.REVERSE
         pusherLeft.position = pusherLeftBack
         pusherRight.position = pusherRightBack
     }
@@ -34,22 +36,22 @@ class Intake(hwMap: HardwareMap) {
         class Position(target: Int): IntakeBehaviour(target.toDouble())
     }
     companion object Params {
-        @JvmField var runVelocity = 600.0
-        @JvmField var kF = 0.2/480
-        @JvmField var kP = 0.005
+        @JvmField var runVelocity = 1500.0
+        @JvmField var kF = 0.5/1000
+        @JvmField var kP = 0.001
         @JvmField var powerMax = 0.5
         @JvmField var pusherLeftForward = 0.0
-        @JvmField var pusherLeftBack = 0.45
+        @JvmField var pusherLeftBack = 0.46
 
-        @JvmField var pusherRightForward = 0.67
-        @JvmField var pusherRightBack = 0.12
+        @JvmField var pusherRightForward = 0.6
+        @JvmField var pusherRightBack = 0.13
         @JvmField var pusherWait = 0.5
     }
 
     fun update() {
         motor.power = when (behaviour) {
             is IntakeBehaviour.Position ->
-                PDLT((behaviour.target - motor.currentPosition), -motor.velocity, 0.05, 0.012, 0.7, 0.0)
+                PDLT((behaviour.target - motor.currentPosition), -motor.velocity, 0.01, 0.001, 0.25, 0.0)
             is IntakeBehaviour.Velocity ->
                 clamp(behaviour.target * kF + (behaviour.target - motor.velocity) * kP, -1.0, powerMax)
         }
@@ -60,11 +62,11 @@ class Intake(hwMap: HardwareMap) {
     }, "SpinUp")
 
     fun spinReverse(): Command = Instant({
-        behaviour = IntakeBehaviour.Velocity(-300.0)
+        behaviour = IntakeBehaviour.Velocity(-900.0)
     }, "SpinUp")
 
     fun setAdjustThird(): Command = Instant({
-        behaviour = IntakeBehaviour.Position(motor.currentPosition - 21)
+        behaviour = IntakeBehaviour.Position(motor.currentPosition - 53)
     }, "setAdjustThird")
 
     fun fullAdjustThird(): Command = Sequence(

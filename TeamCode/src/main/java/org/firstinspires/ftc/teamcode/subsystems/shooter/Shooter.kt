@@ -25,13 +25,11 @@ import kotlin.math.sqrt
 class Shooter(hwMap: HardwareMap) {
 
     companion object Params {
-        @JvmField var closeShootVelocity = 900.0
-        @JvmField var farShootVelocity = 1225.0
-        @JvmField var kP = 0.0035
+        @JvmField var kP = 0.005
     }
 
-     val motorLeft: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterLeft"))
-     val motorRight: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterRight"))
+     val motorLeft: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterLeft"), 0.02)
+     val motorRight: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterRight"), 0.02)
     var targetVelocity = 0.0;
 
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
@@ -39,15 +37,15 @@ class Shooter(hwMap: HardwareMap) {
         Pair(0.0001, 0.08),
         Pair(920.0, 0.43),
         Pair(1560.0, 0.7),
-        Pair(1800.0, 0.9),
-        Pair(2200.0, 1.0),
+        Pair(1800.0, 0.95),
+        Pair(2200.0, 0.95),
     ))
 
     val distanceToVelocityLUT = InterpolatedLUT(mapOf(
         Pair(48 * sqrt(2.0), 1530.0),
-        Pair(72 * sqrt(2.0), 1650.0),
-        Pair(96 * sqrt(2.0), 1750.0),
-        Pair(108 * sqrt(2.0), 2000.0)
+        Pair(72 * sqrt(2.0), 1700.0),
+        Pair(96 * sqrt(2.0), 1800.0),
+        Pair(108 * sqrt(2.0), 2025.0)
     ))
 
     init {
@@ -59,7 +57,7 @@ class Shooter(hwMap: HardwareMap) {
 
     fun update() {
         motorLeft.power  = velocityToPowerLUT.get(targetVelocity) + (targetVelocity - motorLeft.velocity) * kP
-        motorRight.power = velocityToPowerLUT.get(targetVelocity) + (targetVelocity - motorRight.velocity) * kP
+        motorRight.power = velocityToPowerLUT.get(targetVelocity + 30) + (targetVelocity + 30 - motorRight.velocity) * kP
     }
 
     fun setTargetVelocityFromDistance(distance: Double) {
@@ -71,15 +69,15 @@ class Shooter(hwMap: HardwareMap) {
     }, "Shooter:SpinDown")
 
     fun waitForRightVelocity(): Command = WaitUntil {
-        abs(targetVelocity - motorLeft.velocity) < 25.0
+        abs(targetVelocity - motorLeft.velocity) <= 30.0
     }
 
     fun waitForLeftVelocity(): Command = WaitUntil {
-        abs(targetVelocity - motorRight.velocity) < 25.0
+        abs(targetVelocity - motorRight.velocity) <= 30.0
     }
     fun waitForVelocity(): Command = WaitUntil {
-        abs(targetVelocity - motorLeft.velocity) < 25.0
-        && abs(targetVelocity - motorRight.velocity) < 25.0
+        abs(targetVelocity - motorLeft.velocity) <= 50.0
+        && abs((targetVelocity + 30) - motorRight.velocity) <= 50.0
     }
 }
 
@@ -90,7 +88,7 @@ class shooterVelocityToPowerTuner(): LinearOpMode(){
         @JvmField var targetVelocity = 1500.0
     }
     override fun runOpMode() {
-        val shooter: Shooter = Shooter(hardwareMap)
+        val shooter = Shooter(hardwareMap)
         val dash = FtcDashboard.getInstance()
         val p = TelemetryPacket()
         p.put("leftVelocity", 0.0)

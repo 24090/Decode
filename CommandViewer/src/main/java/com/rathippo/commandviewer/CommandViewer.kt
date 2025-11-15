@@ -1,10 +1,12 @@
 package com.rathippo.commandviewer
 
+import android.annotation.SuppressLint
 import android.content.Context
 import com.qualcomm.ftccommon.FtcEventLoop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier.Notifications
 import com.rathippo.commandviewer.CommandViewer.commandLog
+import fi.iki.elonen.NanoHTTPD.newFixedLengthResponse
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -22,12 +24,29 @@ open class CommandViewerParams{
 
 object CommandViewer : Notifications {
     val commandLog = ArrayList<CommandMessage>()
+
     private var server: Server? = null
 
     @OnCreate
-    fun start(context: Context?) {
+    @JvmStatic fun start(context: Context?) {
+        val getFile = { path: String -> context!!.assets.open("main.html").bufferedReader().readText()}
+        val page = newFixedLengthResponse(
+            getFile("main.html").replace(
+                "@INSERT_JSONPATCH",
+                getFile("jsonpatch.min.js").split("\n").last()
+            ).replace(
+                "@INSERT_JS",
+                getFile("main.js")
+            ).replace(
+                "@INSERT_CSS",
+                getFile("style.css")
+            ).replace(
+                "@INSERT_CUSTOMCSS",
+                CommandViewerParams.customCss
+            )
+        )
         if (server == null && context != null) {
-            server = Server(context)
+            server = Server(page)
         }
     }
 
