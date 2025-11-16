@@ -113,8 +113,7 @@ class Drive(hwMap: HardwareMap) {
     }
     var currentUpdateTranslational: () -> Unit = ::updateTranslational
 
-    fun update(updateLocalizer: Boolean = true) {
-        if (updateLocalizer) localizer.update()
+    fun update() {
         currentUpdateHeading()
         currentUpdateTranslational()
         setMotorPowers()

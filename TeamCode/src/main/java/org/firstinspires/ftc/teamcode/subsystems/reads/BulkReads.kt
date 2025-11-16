@@ -1,15 +1,13 @@
-package org.firstinspires.ftc.teamcode.util
+package org.firstinspires.ftc.teamcode.subsystems.reads
 
 import com.qualcomm.hardware.lynx.LynxModule
-import com.qualcomm.hardware.lynx.LynxModule.BulkCachingMode
 import com.qualcomm.robotcore.hardware.HardwareMap
-
 
 class BulkReads(hardwareMap: HardwareMap){
     private val lynxModules = hardwareMap.getAll(LynxModule::class.java)
     init {
         for (module in lynxModules) {
-            module.bulkCachingMode = BulkCachingMode.MANUAL
+            module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
         }
     }
     fun update(){

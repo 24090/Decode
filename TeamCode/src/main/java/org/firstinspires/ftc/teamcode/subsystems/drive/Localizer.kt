@@ -45,9 +45,6 @@ class Localizer(hwMap: HardwareMap) {
     val headingVel
         get() = pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS);
 
-    fun update(){
-        pinpoint.update()
-    }
     fun fieldPoseToRelative(fieldPose: Pose): Pose {
         val translation = fieldVecToRelative(Vector.fromPose(fieldPose))
         return Pose(

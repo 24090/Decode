@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.storedPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
-import org.firstinspires.ftc.teamcode.util.Reads
+import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import kotlin.math.PI
 
 @Autonomous(name="AutoRed", group="Auto")
@@ -99,9 +99,8 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
         runBlocking(Race(
             Forever( {
                 recordtime("other")
-                reads.update()
-                drive.localizer.update(); recordtime("localizer")
-                drive.update(updateLocalizer = false); recordtime("drive")
+                reads.update(); recordtime("reads")
+                drive.update(); recordtime("drive")
                 shooter.update(); recordtime("shooter")
                 intake.update(); recordtime("intake")
                 telemetry.update()

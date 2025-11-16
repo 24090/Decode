@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
-import org.firstinspires.ftc.teamcode.util.Reads
+import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 
 @TeleOp
 class MoveTest2: LinearOpMode() {
@@ -14,7 +14,7 @@ class MoveTest2: LinearOpMode() {
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
         drive.targetPose.x = 5.0
         drive.targetPose.y = 5.0
-        drive.localizer.update()
+        reads.update()
         waitForStart()
         drive.targetPose.heading = drive.localizer.heading
         while (opModeIsActive()) {

@@ -1,8 +1,7 @@
-package org.firstinspires.ftc.teamcode.util
+package org.firstinspires.ftc.teamcode.subsystems.reads
 
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.VoltageSensor
-
 
 object VoltageReader {
     var controlHubVoltage: Double = 13.0

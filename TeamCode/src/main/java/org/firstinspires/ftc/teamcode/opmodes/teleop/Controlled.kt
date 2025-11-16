@@ -24,7 +24,7 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRigh
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightForward
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
-import org.firstinspires.ftc.teamcode.util.Reads
+import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
@@ -102,13 +102,12 @@ class Controlled: LinearOpMode() {
                     Forever {
                         reads.update()
                         intake.update()
-                        drive.localizer.update()
                         val relativePose = (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose))
                         drive.targetPose = Pose(
                             drive.localizer.x, drive.localizer.y,
                             relativePose.angle
                         )
-                        drive.update(updateLocalizer = false)
+                        drive.update()
                         shooter.setTargetVelocityFromDistance(relativePose.length)
                         shooter.update()
                         telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
