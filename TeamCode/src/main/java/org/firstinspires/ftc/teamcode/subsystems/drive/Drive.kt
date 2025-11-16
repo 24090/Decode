@@ -9,8 +9,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
-import org.firstinspires.ftc.teamcode.drivetrain.Pose
-import org.firstinspires.ftc.teamcode.drivetrain.Vector
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.SquID
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
@@ -58,9 +56,9 @@ class Drive(hwMap: HardwareMap) {
         brMotor.zeroPowerBehavior = zeroPowerBehavior
     }
 
-    var drive = 0.0;
-    var strafe = 0.0;
-    var turn = 0.0;
+    var drive = 0.0
+    var strafe = 0.0
+    var turn = 0.0
 
     init {
         flMotor.direction = Direction.REVERSE
@@ -86,13 +84,13 @@ class Drive(hwMap: HardwareMap) {
         val driveVectors = getHeadingVectors().addNormalized(getTranslationalVectors())
         val leftPowers = getSidePowers(
             driveVectors.left,
-            getWheelVector(true, true),
-            getWheelVector(false, true)
+            getWheelVector(front = true, left = true),
+            getWheelVector(front = false, left = true)
         )
         val rightPowers = getSidePowers(
             driveVectors.right,
-            getWheelVector(true, false),
-            getWheelVector(false, false)
+            getWheelVector(front = true, left = false),
+            getWheelVector(front = false, left = false)
         )
 
         flMotor.power = leftPowers.first

@@ -1,8 +1,8 @@
-package org.firstinspires.ftc.teamcode.opmodes.auto
+package org.firstinspires.ftc.teamcode.opmodes.tests
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.drivetrain.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 

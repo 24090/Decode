@@ -95,7 +95,7 @@ class DeadCommand(
     selfCondense: Boolean = false,
     uid: Int = registerCommandID(),
     cssClass: String = ""
-): Command(name, selfCondense, uid, cssClass + " dead") {
+): Command(name, selfCondense, uid, "$cssClass dead") {
     override fun run(): CommandResult {
         reason.result.fold(
             {v -> CommandMessage.Log(v).send()},
@@ -116,7 +116,7 @@ class FutureCommand(
     selfCondense: Boolean = false,
     uid: Int = registerCommandID(),
     cssClass: String = ""
-): Command(name, selfCondense, uid, cssClass + " future") {
+): Command(name, selfCondense, uid, "$cssClass future") {
     override fun run(): CommandResult {
         subcommands.forEach {c -> c.update()}
         return CommandResult.Continue
@@ -133,15 +133,15 @@ abstract class OverrideButtonCommand(
     uid: Int = registerCommandID(),
     cssClass: String = "",
 ): Command(name, selfCondense, uid, cssClass){
-    open val pause = registerFunction({commandOverride = CommandOverride.Pause})
-    open val skip = registerFunction({commandOverride = CommandOverride.Skip})
-    open val none = registerFunction({commandOverride = CommandOverride.None})
+    open val pause = registerFunction { commandOverride = CommandOverride.Pause }
+    open val skip = registerFunction { commandOverride = CommandOverride.Skip }
+    open val none = registerFunction { commandOverride = CommandOverride.None }
     override fun getButtons(): ArrayList<Pair<Int, String>> {
         val buttons = ArrayList<Pair<Int, String>>()
         if (commandOverride != CommandOverride.None)  buttons.add(Pair(none, "▶"))
         if (commandOverride != CommandOverride.Pause)  buttons.add(Pair(pause, "⏸"))
         if (commandOverride != CommandOverride.Skip)  buttons.add(Pair(skip, "▶▶"))
-        return buttons;
+        return buttons
     }
 }
 

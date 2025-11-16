@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.controlsystems
 
-import org.firstinspires.ftc.teamcode.drivetrain.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 import kotlin.math.sqrt

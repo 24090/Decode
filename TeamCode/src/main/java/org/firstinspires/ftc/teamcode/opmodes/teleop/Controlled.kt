@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.drivetrain.Pose
-import org.firstinspires.ftc.teamcode.drivetrain.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.storedPose
@@ -23,8 +23,8 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeft
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightBack
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightForward
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
-import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
+import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
@@ -35,11 +35,11 @@ class Controlled: LinearOpMode() {
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
         val updateHeadingOverride = {
-            drive.turn = -gamepad1.right_stick_x.toDouble();
+            drive.turn = -gamepad1.right_stick_x.toDouble()
         }
         val updateTranslationalOverride = {
-            drive.strafe = -gamepad1.left_stick_x.toDouble();
-            drive.drive = -gamepad1.left_stick_y.toDouble();
+            drive.strafe = -gamepad1.left_stick_x.toDouble()
+            drive.drive = -gamepad1.left_stick_y.toDouble()
         }
         drive.currentUpdateHeading = updateHeadingOverride
         drive.currentUpdateTranslational = updateTranslationalOverride

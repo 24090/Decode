@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.commands
 
-import com.rathippo.commandviewer.CommandViewer
-
 class WaitUntil(val f: () -> Boolean, name: String = "WaitUntil"): OverrideButtonCommand(name) {
     override fun getButtons(): ArrayList<Pair<Int, String>> {
         val buttons = super.getButtons()

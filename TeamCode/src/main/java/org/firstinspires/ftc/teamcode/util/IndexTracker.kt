@@ -21,7 +21,7 @@ sealed class Observation {
 
 class IndexTracker(){
     var pattern = Pattern.GPP
-    var rampCount = 0;
+    var rampCount = 0
 
     fun processObservation(observation: Observation){
         rampCount = when (observation) {
@@ -37,5 +37,5 @@ class IndexTracker(){
         }
     }
 
-    fun getReccomendation() = if (rampCount%3 == pattern.n) BallColor.GREEN else BallColor.PURPLE
+    fun getRecommendation() = if (rampCount%3 == pattern.n) BallColor.GREEN else BallColor.PURPLE
 }

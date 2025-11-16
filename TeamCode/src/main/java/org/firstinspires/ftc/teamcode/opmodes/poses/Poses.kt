@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.poses
 
-import org.firstinspires.ftc.teamcode.drivetrain.Pose
-import org.firstinspires.ftc.teamcode.drivetrain.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 import kotlin.math.PI
 
 const val robotWidth = 18.0

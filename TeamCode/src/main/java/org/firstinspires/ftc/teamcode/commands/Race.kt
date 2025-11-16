@@ -19,9 +19,9 @@ class Race(vararg commands: Command): OverrideButtonCommand("Race", true){
     }
 
     override fun run(): CommandResult {
-        var allliving = true
+        var allLiving = true
         for (i in 0..commands.size-1){
-            allliving = allliving && (commands[i] !is DeadCommand)
+            allLiving = allLiving && (commands[i] !is DeadCommand)
             val result = commands[i].update()
             when(result){
                 CommandResult.Continue -> continue
@@ -33,7 +33,7 @@ class Race(vararg commands: Command): OverrideButtonCommand("Race", true){
                 }
             }
         }
-        return if (!allliving) {
+        return if (!allLiving) {
             CommandResult.End(Result.success("A child won the race!"))
         } else {
             CommandResult.Continue

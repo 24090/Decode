@@ -1,8 +1,6 @@
 package com.rathippo.commandviewer
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import com.qualcomm.ftccommon.FtcEventLoop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier.Notifications

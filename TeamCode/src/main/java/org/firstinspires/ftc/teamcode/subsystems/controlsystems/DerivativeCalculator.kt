@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems.controlsystems
 import java.util.LinkedList
 
 class DerivativeCalculator(val storeCount: Int) {
-    private var pastStates = LinkedList<Pair<Double, Double>>();
+    private var pastStates = LinkedList<Pair<Double, Double>>()
 
     fun update(newX: Number, newY: Number) = update(Pair(newX, newY))
 

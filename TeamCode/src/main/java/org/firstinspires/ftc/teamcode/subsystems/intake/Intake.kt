@@ -1,10 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.intake
 
-import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -12,17 +8,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import dev.frozenmilk.dairy.cachinghardware.CachingServo
 import org.firstinspires.ftc.teamcode.commands.Command
-import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
-import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
-import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
-import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.clamp
 
 @Config
@@ -53,12 +45,18 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var pusherRightForward = 0.6
         @JvmField var pusherRightBack = 0.13
         @JvmField var pusherWait = 0.5
+        @JvmField var adjustDistance = 53
+
+        @JvmField var kP_pos = 0.5/1000
+        @JvmField var kD_Pos = 0.001
+        @JvmField var kL_Pos = 0.25
+        @JvmField var kT_Pos = 0.0
     }
 
     fun update() {
         motor.power = when (behaviour) {
             is IntakeBehaviour.Position ->
-                PDLT((behaviour.target - motor.currentPosition), -motor.velocity, 0.01, 0.001, 0.25, 0.0)
+                PDLT((behaviour.target - motor.currentPosition), -motor.velocity, kP_pos, kD_Pos, kL_Pos, kT_Pos)
             is IntakeBehaviour.Velocity ->
                 clamp(behaviour.target * kF + (behaviour.target - motor.velocity) * kP, -1.0, powerMax)
         }
@@ -68,12 +66,8 @@ class Intake(hwMap: HardwareMap) {
         behaviour = IntakeBehaviour.Velocity(runVelocity)
     }, "SpinUp")
 
-    fun spinReverse(): Command = Instant({
-        behaviour = IntakeBehaviour.Velocity(-900.0)
-    }, "SpinUp")
-
     fun setAdjustThird(): Command = Instant({
-        behaviour = IntakeBehaviour.Position(motor.currentPosition - 53)
+        behaviour = IntakeBehaviour.Position(motor.currentPosition - adjustDistance)
     }, "setAdjustThird")
 
     fun fullAdjustThird(): Command = Sequence(
@@ -96,72 +90,16 @@ class Intake(hwMap: HardwareMap) {
         pusherRight.position = pusherRightBack
     }
     fun releaseLeft(): Command = Sequence(
-        Instant({ pusherLeft.position = pusherLeftForward}),
+        Instant { pusherLeft.position = pusherLeftForward },
         Sleep(pusherWait),
-        Instant({ pusherLeft.position = pusherLeftBack}),
+        Instant { pusherLeft.position = pusherLeftBack },
         name = "ReleaseLeft"
     )
 
     fun releaseRight(): Command = Sequence(
-        Instant({ pusherRight.position = pusherRightForward}),
+        Instant { pusherRight.position = pusherRightForward },
         Sleep(pusherWait),
-        Instant({ pusherRight.position = pusherRightBack}),
+        Instant { pusherRight.position = pusherRightBack },
         name = "ReleaseRight"
     )
-}
-
-@TeleOp
-@Config
-class intakeTesting(): LinearOpMode(){
-    companion object {
-        @JvmField var targetVelocity = 0.0
-    }
-    override fun runOpMode() {
-        val intake: Intake = Intake(hardwareMap)
-        val shooter: Shooter = Shooter(hardwareMap)
-        val dash = FtcDashboard.getInstance()
-        val p = TelemetryPacket()
-        val f = {
-            intake.update()
-            intake.behaviour.target = targetVelocity
-            val p = TelemetryPacket()
-            p.put("velocity", intake.motor.velocity)
-            p.put("targetVelocity", intake.behaviour.target)
-            p.put("powerFeedforward", Intake.kF * intake.behaviour.target)
-            dash.sendTelemetryPacket(p)
-        }
-        p.put("velocity", 0.0)
-        p.put("targetVelocity", 1500.0)
-        p.put("powerFeedforward", 0.0)
-        dash.sendTelemetryPacket(p)
-        waitForStart()
-        shooter.motorLeft.power = 0.12
-        shooter.motorRight.power = 0.12
-        while (opModeIsActive()){
-            if (gamepad1.leftBumperWasPressed()){
-                runBlocking(Race(
-                    Forever(f),
-                    intake.releaseLeft()
-                ))
-            }
-            if (gamepad1.rightBumperWasPressed()){
-                runBlocking(Race(
-                    Forever(f),
-                    intake.releaseRight()
-                ))
-            }
-            if (gamepad1.xWasPressed()){
-                runBlocking(Race(
-                    Forever(intake::update),
-                    Sequence(
-                        intake.fullAdjustThird(),
-                        intake.stop()
-                    )
-                ))
-            }
-            f()
-
-        }
-    }
-
 }

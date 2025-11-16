@@ -19,9 +19,9 @@ class Parallel(vararg commands: Command, name: String = "Parallel"): OverrideBut
     }
 
     override fun run(): CommandResult {
-        var alldead = true
+        var allDead = true
         for (i in 0..commands.size-1){
-            alldead = alldead && (commands[i] is DeadCommand)
+            allDead = allDead && (commands[i] is DeadCommand)
             val result = commands[i].update()
             when(result){
                 CommandResult.Continue -> continue
@@ -33,7 +33,7 @@ class Parallel(vararg commands: Command, name: String = "Parallel"): OverrideBut
                 }
             }
         }
-        return if (alldead) {
+        return if (allDead) {
             CommandResult.End(Result.success("No Commands Left"))
         } else {
             CommandResult.Continue

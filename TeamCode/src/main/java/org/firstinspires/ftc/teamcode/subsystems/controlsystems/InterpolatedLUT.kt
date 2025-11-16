@@ -6,7 +6,7 @@ class InterpolatedLUT(items: Map<Double, Double>) {
     init {
         assert(items.isNotEmpty())
     }
-    val map = TreeMap<Double, Double>(items)
+    val map = TreeMap(items)
     fun get(v: Double): Double{
         val floorEntry = map.floorEntry(v)
         val ceilingEntry = map.ceilingEntry(v)

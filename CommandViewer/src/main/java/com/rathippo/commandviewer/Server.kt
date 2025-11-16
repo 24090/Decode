@@ -1,7 +1,5 @@
 package com.rathippo.commandviewer
 
-import android.content.Context
-import android.content.res.AssetManager
 import com.reidsync.kxjsonpatch.JsonDiff
 import fi.iki.elonen.NanoHTTPD.IHTTPSession
 import fi.iki.elonen.NanoWSD
@@ -10,7 +8,6 @@ import fi.iki.elonen.NanoWSD.WebSocketFrame
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import java.io.File
 import java.io.IOException
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture

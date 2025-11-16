@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drivetrain
+package org.firstinspires.ftc.teamcode.subsystems.drive
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
@@ -60,7 +60,7 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
     fun mirrored() = Pose(this.x, -this.y, -this.heading)
 
     fun mirroredIf(v: Boolean) = if (v) this.mirrored() else this
-};
+}
 
 
 class Vector {
@@ -88,7 +88,7 @@ class Vector {
         fun fromPose(pose: Pose) = fromCartesian(pose.x, pose.y)
     }
 
-    fun norm(): Vector = Vector(angle, 1.0);
+    fun norm(): Vector = Vector(angle, 1.0)
     fun normalized(): Vector = Vector(angle, clamp(length, 0.0, 1.0))
     fun clampedLength(max: Double) = Vector(angle, clamp(length, 0.0, max))
     // dot product
@@ -97,16 +97,16 @@ class Vector {
     }
 
     operator fun times(x: Number): Vector {
-        return Vector(angle, length * x.toDouble());
+        return Vector(angle, length * x.toDouble())
     }
     operator fun plus(v: Vector): Vector {
-        return fromCartesian(x+v.x, y+v.y);
+        return fromCartesian(x+v.x, y+v.y)
     }
     operator fun minus(v: Vector): Vector {
-        return fromCartesian(x-v.x, y-v.y);
+        return fromCartesian(x-v.x, y-v.y)
     }
     fun rotated(x: Number): Vector {
-        return Vector(angle + x.toDouble(), length);
+        return Vector(angle + x.toDouble(), length)
     }
 
     override fun toString(): String {

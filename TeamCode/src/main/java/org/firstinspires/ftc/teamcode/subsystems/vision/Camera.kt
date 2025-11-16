@@ -4,8 +4,8 @@ import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.teamcode.drivetrain.Pose
-import org.firstinspires.ftc.teamcode.drivetrain.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 
 import org.firstinspires.ftc.teamcode.util.BallColor
 import org.firstinspires.ftc.teamcode.util.Observation

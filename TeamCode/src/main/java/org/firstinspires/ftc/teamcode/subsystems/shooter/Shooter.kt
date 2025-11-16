@@ -1,10 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.shooter
 
-import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -22,11 +18,13 @@ class Shooter(hwMap: HardwareMap) {
 
     companion object Params {
         @JvmField var kP = 0.005
+        @JvmField var rightVelocityOffset: Double = 30.0
+        @JvmField var velocityThreshold: Double = 30.0
     }
 
-     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
-     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
-    var targetVelocity = 0.0;
+    val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
+    val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
+    var targetVelocity = 0.0
 
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0),
@@ -53,61 +51,26 @@ class Shooter(hwMap: HardwareMap) {
 
     fun update() {
         motorLeft.power  = velocityToPowerLUT.get(targetVelocity) + (targetVelocity - motorLeft.velocity) * kP
-        motorRight.power = velocityToPowerLUT.get(targetVelocity + 30) + (targetVelocity + 30 - motorRight.velocity) * kP
+        motorRight.power = velocityToPowerLUT.get(targetVelocity + rightVelocityOffset) + (targetVelocity + rightVelocityOffset - motorRight.velocity) * kP
     }
 
     fun setTargetVelocityFromDistance(distance: Double) {
         targetVelocity = distanceToVelocityLUT.get(distance)
     }
 
-    fun spinDown(): Command = Instant({
-        targetVelocity = 0.0;
+    fun stop(): Command = Instant({
+        targetVelocity = 0.0
     }, "Shooter:SpinDown")
 
     fun waitForRightVelocity(): Command = WaitUntil {
-        abs(targetVelocity - motorLeft.velocity) <= 30.0
+        abs(targetVelocity - motorLeft.velocity) <= velocityThreshold
     }
 
     fun waitForLeftVelocity(): Command = WaitUntil {
-        abs(targetVelocity - motorRight.velocity) <= 30.0
+        abs(targetVelocity - motorRight.velocity) <= velocityThreshold
     }
     fun waitForVelocity(): Command = WaitUntil ({
-        abs(targetVelocity - motorLeft.velocity) <= 50.0
-        && abs((targetVelocity + 30) - motorRight.velocity) <= 50.0
+        abs(targetVelocity - motorLeft.velocity) <= velocityThreshold
+        && abs((targetVelocity + rightVelocityOffset) - motorRight.velocity) <= velocityThreshold
     }, "WaitForVelocity")
-}
-
-@TeleOp
-@Config
-class shooterVelocityToPowerTuner(): LinearOpMode(){
-    companion object {
-        @JvmField var targetVelocity = 1500.0
-    }
-    override fun runOpMode() {
-        val shooter = Shooter(hardwareMap)
-        val dash = FtcDashboard.getInstance()
-        val p = TelemetryPacket()
-        p.put("leftVelocity", 0.0)
-        p.put("rightVelocity", 0.0)
-        p.put("targetVelocity", 1500.0)
-        p.put("powerFeedforward", 0.0)
-        dash.sendTelemetryPacket(p)
-        waitForStart()
-        while (opModeIsActive()){
-            if (gamepad1.xWasPressed()) {
-                targetVelocity += 50
-            }
-            if (gamepad1.yWasPressed()) {
-                targetVelocity -= 50
-            }
-            shooter.update()
-            shooter.targetVelocity = targetVelocity
-            val p = TelemetryPacket()
-            p.put("leftVelocity", shooter.motorLeft.velocity)
-            p.put("rightVelocity", shooter.motorRight.velocity)
-            p.put("powerFeedforward", shooter.velocityToPowerLUT.get(shooter.targetVelocity))
-            dash.sendTelemetryPacket(p)
-        }
-    }
-
 }

@@ -8,15 +8,15 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.drivetrain.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.storedPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
-import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
+import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import kotlin.math.PI
 
 @Autonomous(name="AutoRed", group="Auto")
@@ -90,19 +90,19 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
         drive.localizer.pose = Pose(9.0, 8.0, 0.0).mirroredIf(isRed)
         drive.targetPose = closePose.mirroredIf(isRed)
         var time = System.currentTimeMillis()
-        val recordtime = { name:String ->
-            val newtime = System.currentTimeMillis()
-            telemetry.addData("$name (ms)", newtime - time)
-            time = newtime
+        val recordTime = { name:String ->
+            val newTime = System.currentTimeMillis()
+            telemetry.addData("$name (ms)", newTime - time)
+            time = newTime
         }
 
         runBlocking(Race(
             Forever( {
-                recordtime("other")
-                reads.update(); recordtime("reads")
-                drive.update(); recordtime("drive")
-                shooter.update(); recordtime("shooter")
-                intake.update(); recordtime("intake")
+                recordTime("other")
+                reads.update(); recordTime("reads")
+                drive.update(); recordTime("drive")
+                shooter.update(); recordTime("shooter")
+                intake.update(); recordTime("intake")
                 telemetry.update()
             }, "Updates" ),
             Sequence(
