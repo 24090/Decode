@@ -1,32 +1,22 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive
 
 import com.acmerobotics.dashboard.config.Config
-import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior
+import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction
 import com.qualcomm.robotcore.hardware.HardwareMap
-import dev.frozenmilk.dairy.cachinghardware.CachingDcMotor
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.teamcode.commands.*
-import org.firstinspires.ftc.teamcode.util.clamp
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.SquID
+import org.firstinspires.ftc.teamcode.commands.Instant
+import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.SquID
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
+import org.firstinspires.ftc.teamcode.util.clamp
 import kotlin.math.min
 
-class OverrideableDouble(private val v: Double){
-    private var vOverride: Double? = null
-    fun get() = vOverride ?: v
-
-    fun override(v: Double?) {
-        vOverride = v ?: vOverride
-    }
-
-    fun reset() {
-        vOverride = null
-    }
-}
 @Config
 class Drive(hwMap: HardwareMap) {
     val localizer = Localizer(hwMap)
@@ -49,16 +39,16 @@ class Drive(hwMap: HardwareMap) {
             val translation = Vector.fromPose(localizer.poseVel).rotated(-localizer.heading)
             return -Pose(translation.x, translation.y, localizer.headingVel)
         }
-    private val flMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "fl"));
+    private val flMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fl"), true, 0.01)
     fun setFlPower(power: Double) { flMotor.power = power }
 
-    private val frMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "fr"));
+    private val frMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fr"), true, 0.01)
     fun setFrPower(power: Double) { frMotor.power = power }
 
-    private val blMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "bl"));
+    private val blMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "bl"), true, 0.01)
     fun setBlPower(power: Double) { blMotor.power = power }
 
-    private val brMotor: CachingDcMotor = CachingDcMotor(hwMap.get(DcMotor::class.java, "br"));
+    private val brMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "br"), true, 0.01)
     fun setBrPower(power: Double) { brMotor.power = power }
 
     private fun setZeroPowerBehaviours(zeroPowerBehavior: ZeroPowerBehavior) {

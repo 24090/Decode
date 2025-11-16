@@ -2,13 +2,21 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.commands.*
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
+import org.firstinspires.ftc.teamcode.commands.Forever
+import org.firstinspires.ftc.teamcode.commands.ForeverCommand
+import org.firstinspires.ftc.teamcode.commands.Instant
+import org.firstinspires.ftc.teamcode.commands.Parallel
+import org.firstinspires.ftc.teamcode.commands.Race
+import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
+import org.firstinspires.ftc.teamcode.commands.WaitUntil
+import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.drivetrain.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.storedPose
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftBack
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftForward
@@ -16,13 +24,12 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRigh
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightForward
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
-import org.firstinspires.ftc.teamcode.util.BulkReads
-import kotlin.math.PI
+import org.firstinspires.ftc.teamcode.util.Reads
 
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
     override fun runOpMode() {
-        val bulkReads = BulkReads(hardwareMap)
+        val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
         var mirror = false
         val shooter = Shooter(hardwareMap)
@@ -37,6 +44,7 @@ class Controlled: LinearOpMode() {
         drive.currentUpdateHeading = updateHeadingOverride
         drive.currentUpdateTranslational = updateTranslationalOverride
         waitForStart()
+
         if (!opModeIsActive()){
             return
         }
@@ -44,7 +52,7 @@ class Controlled: LinearOpMode() {
         drive.localizer.pose = storedPose ?: startPose
 
         while (opModeIsActive()){
-            bulkReads.update()
+            reads.update()
             drive.update()
             shooter.setTargetVelocityFromDistance((scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose)).length)
             shooter.update()
@@ -92,7 +100,7 @@ class Controlled: LinearOpMode() {
                 runBlocking(Race(
                     WaitUntil { !gamepad1.x },
                     Forever {
-                        bulkReads.update()
+                        reads.update()
                         intake.update()
                         drive.localizer.update()
                         val relativePose = (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose))
@@ -130,7 +138,7 @@ class Controlled: LinearOpMode() {
                 runBlocking(Race(
                     WaitUntil { !gamepad1.y },
                     Forever {
-                        bulkReads.update()
+                        reads.update()
                         intake.update()
                         val relativePose = (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose))
                         drive.update()

@@ -5,19 +5,15 @@ import com.acmerobotics.dashboard.config.Config
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
-import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
+import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.commands.Command
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
-import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
-import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.DerivativeCalculator
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.InterpolatedLUT
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.SquID
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -28,8 +24,8 @@ class Shooter(hwMap: HardwareMap) {
         @JvmField var kP = 0.005
     }
 
-     val motorLeft: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterLeft"), 0.02)
-     val motorRight: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "shooterRight"), 0.02)
+     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
+     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
     var targetVelocity = 0.0;
 
     val velocityToPowerLUT = InterpolatedLUT(mapOf(

@@ -10,17 +10,24 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
-import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
 import dev.frozenmilk.dairy.cachinghardware.CachingServo
-import org.firstinspires.ftc.teamcode.commands.*
+import org.firstinspires.ftc.teamcode.commands.Command
+import org.firstinspires.ftc.teamcode.commands.Forever
+import org.firstinspires.ftc.teamcode.commands.Instant
+import org.firstinspires.ftc.teamcode.commands.Parallel
+import org.firstinspires.ftc.teamcode.commands.Race
+import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
+import org.firstinspires.ftc.teamcode.commands.WaitUntil
+import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.clamp
-import kotlin.math.abs
 
 @Config
 class Intake(hwMap: HardwareMap) {
-    val motor: CachingDcMotorEx = CachingDcMotorEx(hwMap.get(DcMotorEx::class.java, "intake"), 0.1)
+    val motor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "intake"), false, 0.02)
     val pusherLeft: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherLeft"))
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 

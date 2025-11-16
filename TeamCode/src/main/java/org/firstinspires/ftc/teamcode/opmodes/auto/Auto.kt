@@ -2,17 +2,21 @@ package org.firstinspires.ftc.teamcode.opmodes.auto
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import org.firstinspires.ftc.teamcode.commands.*
+import org.firstinspires.ftc.teamcode.commands.Forever
+import org.firstinspires.ftc.teamcode.commands.Instant
+import org.firstinspires.ftc.teamcode.commands.Race
+import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.drivetrain.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.storedPose
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
-import org.firstinspires.ftc.teamcode.util.BulkReads
+import org.firstinspires.ftc.teamcode.util.Reads
 import kotlin.math.PI
 
 @Autonomous(name="AutoRed", group="Auto")
@@ -30,13 +34,13 @@ class AutoLeaveRed: AutoLeave(true)
 open class AutoLeave(val isRed: Boolean): LinearOpMode() {
     override fun runOpMode() {
         val drive = Drive(hardwareMap)
-        val bulkReads = BulkReads(hardwareMap)
+        val reads = Reads(hardwareMap)
         waitForStart()
         drive.localizer.pose = Pose(9.0,9.0,0.0).mirroredIf(isRed)
         drive.targetPose = farPose.mirroredIf(isRed)
         runBlocking(Race(
             Forever {
-                bulkReads.update()
+                reads.update()
                 drive.update()
             },
             drive.goTo(Pose(26.0, 26.0, 26.0).mirroredIf(isRed)),
@@ -49,7 +53,7 @@ open class AutoLeave(val isRed: Boolean): LinearOpMode() {
 
 open class Auto(val isRed: Boolean): LinearOpMode() {
     override fun runOpMode() {
-        val bulkReads = BulkReads(hardwareMap)
+        val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
@@ -80,7 +84,9 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             intake.stop(),
             name = "GrabBallCycle $n"
         )}
+
         waitForStart()
+
         drive.localizer.pose = Pose(9.0, 8.0, 0.0).mirroredIf(isRed)
         drive.targetPose = closePose.mirroredIf(isRed)
         var time = System.currentTimeMillis()
@@ -89,19 +95,15 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             telemetry.addData("$name (ms)", newtime - time)
             time = newtime
         }
+
         runBlocking(Race(
             Forever( {
                 recordtime("other")
-                bulkReads.update()
-                recordtime("bulkreads")
-                drive.localizer.update()
-                recordtime("localizer")
-                drive.update(updateLocalizer = false)
-                recordtime("drive")
-                shooter.update()
-                recordtime("shooter")
-                intake.update()
-                recordtime("intake")
+                reads.update()
+                drive.localizer.update(); recordtime("localizer")
+                drive.update(updateLocalizer = false); recordtime("drive")
+                shooter.update(); recordtime("shooter")
+                intake.update(); recordtime("intake")
                 telemetry.update()
             }, "Updates" ),
             Sequence(
