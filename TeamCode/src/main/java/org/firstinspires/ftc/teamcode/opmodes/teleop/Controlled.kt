@@ -34,12 +34,37 @@ class Controlled: LinearOpMode() {
         var mirror = false
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
+        
+        var lastLeftStickZero = false
+        var lastRightStickZero = false
+        val isRightStickZero = {gamepad1.right_stick_x.toDouble() == 0.0}
+        val isLeftStickZero = {gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0}
+
         val updateHeadingOverride = {
-            drive.turn = -gamepad1.right_stick_x.toDouble()
+            val rightStickZero = isRightStickZero()
+            if (rightStickZero){
+                if (!lastRightStickZero){
+                    drive.targetPose.heading = drive.localizer.heading
+                }
+                drive.updateHeading()
+            } else {
+                drive.turn = -gamepad1.right_stick_x.toDouble()
+            }
+            lastRightStickZero = rightStickZero
         }
         val updateTranslationalOverride = {
-            drive.strafe = -gamepad1.left_stick_x.toDouble()
-            drive.drive = -gamepad1.left_stick_y.toDouble()
+            val leftStickZero = isLeftStickZero()
+            if (leftStickZero) {
+                if (!lastLeftStickZero) {
+                    drive.targetPose.x = drive.localizer.x
+                    drive.targetPose.y = drive.localizer.y
+                }
+                drive.updateTranslational()
+            } else {
+                drive.strafe = -gamepad1.left_stick_x.toDouble()
+                drive.drive = -gamepad1.left_stick_y.toDouble()
+            }
+            lastLeftStickZero = isLeftStickZero()
         }
         drive.currentUpdateHeading = updateHeadingOverride
         drive.currentUpdateTranslational = updateTranslationalOverride
