@@ -53,14 +53,7 @@ class Controlled: LinearOpMode() {
 
         while (opModeIsActive()){
             reads.update()
-            drive.update()
-            shooter.setTargetVelocityFromDistance((scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose)).length)
-            shooter.update()
-            intake.update()
-            telemetry.addData("pose", drive.localizer.pose)
-            telemetry.addData("distance", (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose)).length)
-            telemetry.addData("Target velocity", shooter.targetVelocity)
-            telemetry.update()
+
             if (gamepad1.backWasPressed()) {
                 drive.localizer.pose = Pose(72.0, 0.0, 0.0)
             }
@@ -101,18 +94,6 @@ class Controlled: LinearOpMode() {
                     WaitUntil { !gamepad1.x },
                     Forever {
                         reads.update()
-                        intake.update()
-                        val relativePose = (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose))
-                        drive.targetPose = Pose(
-                            drive.localizer.x, drive.localizer.y,
-                            relativePose.angle
-                        )
-                        drive.update()
-                        shooter.setTargetVelocityFromDistance(relativePose.length)
-                        shooter.update()
-                        telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
-                        telemetry.addData("Target velocity", shooter.targetVelocity)
-                        telemetry.update()
                     },
                     Sequence(
                         Parallel(
@@ -126,7 +107,21 @@ class Controlled: LinearOpMode() {
                         Sleep(0.5),
                         intake.releaseDual(),
                         intake.spinUp()
-                    )
+                    ),
+                    Forever {
+                        intake.update()
+                        val relativePose = (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose))
+                        drive.targetPose = Pose(
+                            drive.localizer.x, drive.localizer.y,
+                            relativePose.angle
+                        )
+                        drive.update()
+                        shooter.setTargetVelocityFromDistance(relativePose.length)
+                        shooter.update()
+                        telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
+                        telemetry.addData("Target velocity", shooter.targetVelocity)
+                        telemetry.update()
+                    }
                 ))
                 runBlocking(intake.spinUp())
                 intake.resetPushers()
@@ -138,14 +133,6 @@ class Controlled: LinearOpMode() {
                     WaitUntil { !gamepad1.y },
                     Forever {
                         reads.update()
-                        intake.update()
-                        val relativePose = (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose))
-                        drive.update()
-                        shooter.setTargetVelocityFromDistance(relativePose.length)
-                        shooter.update()
-                        telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
-                        telemetry.addData("Target velocity", shooter.targetVelocity)
-                        telemetry.update()
                     },
                     Sequence(
                         Parallel(
@@ -158,13 +145,32 @@ class Controlled: LinearOpMode() {
                         Sleep(0.5),
                         intake.releaseDual(),
                         intake.spinUp()
-                    )
+                    ),
+                    Forever {
+                        intake.update()
+                        val relativePose = (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose))
+                        drive.update()
+                        shooter.setTargetVelocityFromDistance(relativePose.length)
+                        shooter.update()
+                        telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
+                        telemetry.addData("Target velocity", shooter.targetVelocity)
+                        telemetry.update()
+                    }
                 ))
                 runBlocking(intake.spinUp())
                 intake.resetPushers()
                 drive.currentUpdateHeading = updateHeadingOverride
                 drive.currentUpdateTranslational = updateTranslationalOverride
             }
+
+            drive.update()
+            shooter.setTargetVelocityFromDistance((scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose)).length)
+            shooter.update()
+            intake.update()
+            telemetry.addData("pose", drive.localizer.pose)
+            telemetry.addData("distance", (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose)).length)
+            telemetry.addData("Target velocity", shooter.targetVelocity)
+            telemetry.update()
         }
     }
 

@@ -41,10 +41,14 @@ open class AutoLeave(val isRed: Boolean): LinearOpMode() {
         runBlocking(Race(
             Forever {
                 reads.update()
-                drive.update()
             },
-            drive.goTo(Pose(26.0, 26.0, 26.0).mirroredIf(isRed)),
-            Sleep(1.0)
+            Sequence(
+                drive.goTo(Pose(26.0, 26.0, 26.0).mirroredIf(isRed)),
+                Sleep(2.0)
+            ),
+            Forever {
+                drive.update()
+            }
         ))
         storedPose = drive.localizer.pose
     }
@@ -100,11 +104,7 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             Forever( {
                 recordTime("other")
                 reads.update(); recordTime("reads")
-                drive.update(); recordTime("drive")
-                shooter.update(); recordTime("shooter")
-                intake.update(); recordTime("intake")
-                telemetry.update()
-            }, "Updates" ),
+            }, "Reads" ),
             Sequence(
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 intake.spinUp(),
@@ -117,7 +117,13 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
                 grabBallCycle(0),
                 closeShootCycle(),
                 name = "Auto"
-            )
+            ),
+            Forever({
+                drive.update(); recordTime("drive")
+                shooter.update(); recordTime("shooter")
+                intake.update(); recordTime("intake")
+                telemetry.update()
+            }, "Writes")
         ))
         storedPose = drive.localizer.pose
     }
