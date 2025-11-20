@@ -18,7 +18,7 @@ class Shooter(hwMap: HardwareMap) {
 
     companion object Params {
         @JvmField var kP = 0.005
-        @JvmField var rightVelocityOffset: Double = 30.0
+        @JvmField var rightVelocityOffset: Double = 0.0
         @JvmField var velocityThreshold: Double = 30.0
     }
 
@@ -29,17 +29,16 @@ class Shooter(hwMap: HardwareMap) {
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0),
         Pair(0.0001, 0.08),
-        Pair(920.0, 0.43),
-        Pair(1560.0, 0.7),
-        Pair(1800.0, 0.95),
-        Pair(2200.0, 0.95),
+        Pair(1340.0, 0.5),
+        Pair(1690.0, 0.6),
+        Pair(2000.0, 0.7779296875),
     ))
 
     val distanceToVelocityLUT = InterpolatedLUT(mapOf(
-        Pair(48 * sqrt(2.0), 1530.0),
-        Pair(72 * sqrt(2.0), 1700.0),
-        Pair(96 * sqrt(2.0), 1800.0),
-        Pair(108 * sqrt(2.0), 2025.0)
+        Pair(48 * sqrt(2.0), 1500.0),
+        Pair(72 * sqrt(2.0), 1560.0),
+        Pair(96 * sqrt(2.0), 1720.0),
+        Pair(108 * sqrt(2.0), 1890.0)
     ))
 
     init {

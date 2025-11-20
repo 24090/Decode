@@ -4,38 +4,63 @@ import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.teamcode.commands.*
+import org.firstinspires.ftc.teamcode.commands.Race
+import org.firstinspires.ftc.teamcode.commands.Sleep
+import org.firstinspires.ftc.teamcode.commands.WaitUntil
+import org.firstinspires.ftc.teamcode.subsystems.drive.Localizer
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
-import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 
-import org.firstinspires.ftc.teamcode.util.BallColor
 import org.firstinspires.ftc.teamcode.util.Observation
 import org.firstinspires.ftc.teamcode.util.Pattern
 
+
 class Camera(hwMap: HardwareMap) {
+    enum class Pipeline {
+        Pattern,
+        Localize,
+        RampAnalysis,
+        FieldAnalysis
+    }
     val limelight: Limelight3A = hwMap.get(Limelight3A::class.java, "limelight")
+    var currentPipeline: Pipeline = Pipeline.Pattern
+
     init {
-        initAprilTag()
+        initPattern()
     }
 
-    fun initAprilTag() {
+    fun initLocalize() {
+        limelight.setPollRateHz(20)
+        limelight.start()
+        limelight.pipelineSwitch(2)
+        currentPipeline = Pipeline.Localize
+    }
+    fun initPattern() {
         limelight.setPollRateHz(5)
         limelight.start()
         limelight.pipelineSwitch(0)
+        currentPipeline = Pipeline.Pattern
     }
 
-    fun initChaseCheck() {
+    fun initRampAnalysis() {
         limelight.setPollRateHz(12)
         limelight.start()
         limelight.pipelineSwitch(1)
+        currentPipeline = Pipeline.RampAnalysis
     }
 
-    fun getChase(): Array<Pair<Vector, BallColor>>{
-        TODO()
+    fun getFieldAnalysis(): Int? {
+        if (currentPipeline != Pipeline.FieldAnalysis) error("Wrong Pipeline")
+        return TODO()
     }
 
-    fun getCheck() = Observation.Camera(limelight.latestResult.pythonOutput[0].toInt())
+    fun getRampAnalysis(): Observation.Camera? {
+        if (currentPipeline != Pipeline.RampAnalysis) error("Wrong Pipeline")
+        return Observation.Camera(limelight.latestResult.pythonOutput[0].toInt())
+    }
 
     fun getPattern(): Pattern? {
+        if (currentPipeline != Pipeline.Pattern) error("Wrong Pipeline")
         for (fiducialResult in limelight.latestResult.fiducialResults){
             when (fiducialResult.fiducialId){
                 21 -> return Pattern.GPP
@@ -45,24 +70,55 @@ class Camera(hwMap: HardwareMap) {
         }
         return null
     }
-    fun getPoseFromAprilTag(): Pose? {
+
+    fun getPose(): Pose? {
+        if (currentPipeline != Pipeline.Localize) error("Wrong Pipeline")
         for (fiducialResult in limelight.latestResult.fiducialResults){
             when(fiducialResult.fiducialId){
                 24, 25 -> {
-                    return Pose(fiducialResult.robotPoseFieldSpace.position.x,fiducialResult.robotPoseFieldSpace.position.y,fiducialResult.robotPoseFieldSpace.orientation.yaw)
+                    return Pose(fiducialResult.robotPoseFieldSpace.position.x,fiducialResult.robotPoseFieldSpace.position.y + 72.0,fiducialResult.robotPoseFieldSpace.orientation.yaw)
                 }
             }
         }
         return null
     }
+
+    fun aprilTagRelocalize(localizer: Localizer,  timeout: Double = 1.0): Command = Sequence(
+        Instant{ initPattern() },
+        Race(
+            Sleep(timeout),
+            WaitUntil {
+                val pose = getPose()
+                if (pose!=null) localizer.pose = pose
+                return@WaitUntil (pose != null)
+            }
+        )
+    )
 }
 
 @TeleOp(name = "VisionTesting")
 class VisionTesting: LinearOpMode() {
     override fun runOpMode() {
+        val camera = Camera(hardwareMap)
         waitForStart()
         while (opModeIsActive()){
-            telemetry.addData("Pattern", Camera(hardwareMap).getPattern())
+            if (gamepad1.xWasPressed()){camera.initLocalize()}
+            if (gamepad1.yWasPressed()){camera.initPattern()}
+            if (gamepad1.aWasPressed()){camera.initRampAnalysis()}
+            if (gamepad1.bWasPressed()){}
+            when (camera.currentPipeline) {
+                Camera.Pipeline.Localize -> {
+                    telemetry.addData("Pose", camera.getPose())
+                }
+                Camera.Pipeline.Pattern -> {
+                    telemetry.addData("Pattern", camera.getPattern())
+                }
+                Camera.Pipeline.RampAnalysis -> {
+                    telemetry.addData("Ramp", camera.getRampAnalysis())
+                }
+
+                Camera.Pipeline.FieldAnalysis -> TODO()
+            }
             telemetry.update()
         }
     }

@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
+import kotlin.math.PI
 
 @TeleOp
 class MoveTest2: LinearOpMode() {
@@ -12,8 +13,9 @@ class MoveTest2: LinearOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
-        drive.targetPose.x = 5.0
-        drive.targetPose.y = 5.0
+        drive.targetPose.x = 0.0
+        drive.targetPose.y = 20.0
+        drive.targetPose.heading = 0.0
         reads.update()
         waitForStart()
         drive.targetPose.heading = drive.localizer.heading

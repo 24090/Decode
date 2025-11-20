@@ -34,28 +34,27 @@ class Controlled: LinearOpMode() {
         var mirror = false
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
-        
-        var lastLeftStickZero = false
-        var lastRightStickZero = false
-        val isRightStickZero = {gamepad1.right_stick_x.toDouble() == 0.0}
-        val isLeftStickZero = {gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0}
 
+        var lastLockHeading = false
+        var lastLockTranslational = false
+        val isLockHeading = { gamepad1.right_stick_x.toDouble() == 0.0 && (drive.localizer.headingVel < 0.1 || lastLockHeading)}
+        val isleftStickZero = { gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0 && ((drive.localizer.xVel < 3.0 && drive.localizer.yVel < 3.0) || lastLockHeading)}
         val updateHeadingOverride = {
-            val rightStickZero = isRightStickZero()
+            val rightStickZero = isLockHeading()
             if (rightStickZero){
-                if (!lastRightStickZero){
+                if (!lastLockTranslational){
                     drive.targetPose.heading = drive.localizer.heading
                 }
                 drive.updateHeading()
             } else {
                 drive.turn = -gamepad1.right_stick_x.toDouble()
             }
-            lastRightStickZero = rightStickZero
+            lastLockTranslational = rightStickZero
         }
         val updateTranslationalOverride = {
-            val leftStickZero = isLeftStickZero()
-            if (leftStickZero) {
-                if (!lastLeftStickZero) {
+            val leftStickZero = isleftStickZero()
+            if (leftStickZero && drive.localizer.xVel < 3.0 && drive.localizer.yVel < 3.0) {
+                if (!lastLockHeading) {
                     drive.targetPose.x = drive.localizer.x
                     drive.targetPose.y = drive.localizer.y
                 }
@@ -64,21 +63,27 @@ class Controlled: LinearOpMode() {
                 drive.strafe = -gamepad1.left_stick_x.toDouble()
                 drive.drive = -gamepad1.left_stick_y.toDouble()
             }
-            lastLeftStickZero = isLeftStickZero()
+            lastLockHeading = isleftStickZero()
         }
         drive.currentUpdateHeading = updateHeadingOverride
         drive.currentUpdateTranslational = updateTranslationalOverride
-        waitForStart()
 
+        waitForStart()
         if (!opModeIsActive()){
             return
         }
 
         drive.localizer.pose = storedPose ?: startPose
+        var time = System.currentTimeMillis()
+        val recordTime = { name:String ->
+            val newTime = System.currentTimeMillis()
+            telemetry.addData("$name (ms)", newTime - time)
+            time = newTime
+        }
 
         while (opModeIsActive()){
             reads.update()
-
+            recordTime("loop")
             if (gamepad1.backWasPressed()) {
                 drive.localizer.pose = Pose(72.0, 0.0, 0.0)
             }

@@ -35,21 +35,21 @@ class Intake(hwMap: HardwareMap) {
         class Position(target: Int): IntakeBehaviour(target.toDouble())
     }
     companion object Params {
-        @JvmField var runVelocity = 1500.0
+        @JvmField var runVelocity = 900.0
         @JvmField var kF = 0.5/1000
         @JvmField var kP = 0.001
         @JvmField var powerMax = 0.5
         @JvmField var pusherLeftForward = 0.0
-        @JvmField var pusherLeftBack = 0.46
+        @JvmField var pusherLeftBack = 0.53
 
         @JvmField var pusherRightForward = 0.6
-        @JvmField var pusherRightBack = 0.13
+        @JvmField var pusherRightBack = 0.07
         @JvmField var pusherWait = 0.5
-        @JvmField var adjustDistance = 53
+        @JvmField var adjustDistance = 32
 
         @JvmField var kP_pos = 0.5/1000
         @JvmField var kD_Pos = 0.001
-        @JvmField var kL_Pos = 0.25
+        @JvmField var kL_Pos = 0.5
         @JvmField var kT_Pos = 0.0
     }
 

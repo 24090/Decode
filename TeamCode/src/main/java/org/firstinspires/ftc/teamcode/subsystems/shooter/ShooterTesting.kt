@@ -5,6 +5,9 @@ import com.acmerobotics.dashboard.config.Config
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
+import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
+import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.expansionHubVoltage
 
 
 @TeleOp
@@ -14,9 +17,13 @@ class ShooterVelocityToPowerTuner(): LinearOpMode(){
         @JvmField var targetVelocity = 1500.0
     }
     override fun runOpMode() {
+        val reads = Reads(hardwareMap)
         val shooter = Shooter(hardwareMap)
+        val intake = Intake(hardwareMap)
         val dash = FtcDashboard.getInstance()
         val p = TelemetryPacket()
+
+        reads.update()
         p.put("leftVelocity", 0.0)
         p.put("rightVelocity", 0.0)
         p.put("targetVelocity", 1500.0)
@@ -24,6 +31,7 @@ class ShooterVelocityToPowerTuner(): LinearOpMode(){
         dash.sendTelemetryPacket(p)
         waitForStart()
         while (opModeIsActive()){
+            reads.update()
             if (gamepad1.xWasPressed()) {
                 targetVelocity += 50
             }
@@ -33,6 +41,7 @@ class ShooterVelocityToPowerTuner(): LinearOpMode(){
             shooter.update()
             shooter.targetVelocity = targetVelocity
             val p = TelemetryPacket()
+            p.put("voltage", expansionHubVoltage)
             p.put("leftVelocity", shooter.motorLeft.velocity)
             p.put("rightVelocity", shooter.motorRight.velocity)
             p.put("powerFeedforward", shooter.velocityToPowerLUT.get(shooter.targetVelocity))

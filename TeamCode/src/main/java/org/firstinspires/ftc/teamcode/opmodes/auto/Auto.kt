@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Instant
+import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
@@ -36,6 +37,11 @@ open class AutoLeave(val isRed: Boolean): LinearOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         waitForStart()
+
+        if (!opModeIsActive()){
+            return
+        }
+
         drive.localizer.pose = Pose(9.0,9.0,0.0).mirroredIf(isRed)
         drive.targetPose = farPose.mirroredIf(isRed)
         runBlocking(Race(
@@ -78,18 +84,25 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             intake.fullAdjustThird(),
             shooter.waitForVelocity(),
             intake.releaseDual(),
+            Sleep(0.67),
+            intake.spinUp(),
+            Sleep(0.67),
+            intake.releaseDual(),
             name = "CloseShootCycle"
         )}
 
         val grabBallCycle = {n: Int -> Sequence(
             intake.spinUp(),
-            drive.goTo(Pose(36.0 + 24 * n, 24.0, PI/2).mirroredIf(isRed), 5.0, PI/2),
-            drive.goTo(Pose(36.0 + 24 * n, if (n == 2) 50.0 else 50.0, PI/2).mirroredIf(isRed)),
-            intake.stop(),
+            drive.goTo(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed), 5.0, PI/2),
+            drive.goTo(Pose(36.0 + 24.0 * n, 50.0, PI/2).mirroredIf(isRed)),
             name = "GrabBallCycle $n"
         )}
 
         waitForStart()
+
+        if (!opModeIsActive()){
+            return
+        }
 
         drive.localizer.pose = Pose(9.0, 8.0, 0.0).mirroredIf(isRed)
         drive.targetPose = closePose.mirroredIf(isRed)
@@ -101,21 +114,40 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
         }
 
         runBlocking(Race(
-            Forever( {
+            Forever({
                 recordTime("other")
-                reads.update(); recordTime("reads")
+                reads.update();
+                recordTime("reads")
             }, "Reads" ),
             Sequence(
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 intake.spinUp(),
                 closeShootCycle(),
                 grabBallCycle(2),
-                closeShootCycle(),
+                Parallel(
+                    Sequence(
+                        Sleep(1.0),
+                        intake.stop()
+                    ),
+                    closeShootCycle()
+                ),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 grabBallCycle(1),
-                closeShootCycle(),
+                Parallel(
+                    Sequence(
+                        Sleep(1.0),
+                        intake.stop()
+                    ),
+                    closeShootCycle()
+                ),
                 grabBallCycle(0),
-                closeShootCycle(),
+                Parallel(
+                    Sequence(
+                        Sleep(1.0),
+                        intake.stop()
+                    ),
+                    closeShootCycle()
+                ),
                 name = "Auto"
             ),
             Forever({
