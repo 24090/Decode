@@ -25,13 +25,14 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRigh
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
+import kotlin.math.PI
 
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
     override fun runOpMode() {
         val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
-        var mirror = false
+        var isRed = false
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
 
@@ -60,8 +61,10 @@ class Controlled: LinearOpMode() {
                 }
                 drive.updateTranslational()
             } else {
-                drive.strafe = -gamepad1.left_stick_x.toDouble()
-                drive.drive = -gamepad1.left_stick_y.toDouble()
+                var v = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), -gamepad1.left_stick_y.toDouble())
+                if (isRed) v = v.rotated(PI)
+                drive.strafe = v.rotated(-drive.localizer.heading).y
+                drive.drive =  v.rotated(-drive.localizer.heading).x
             }
             lastLockHeading = isleftStickZero()
         }
@@ -88,7 +91,7 @@ class Controlled: LinearOpMode() {
                 drive.localizer.pose = Pose(72.0, 0.0, 0.0)
             }
             if (gamepad1.guideWasPressed()) {
-                mirror = !mirror
+                isRed = !isRed
             }
             if (gamepad1.aWasPressed()) {
                 runBlocking(intake.spinUp())
@@ -140,7 +143,7 @@ class Controlled: LinearOpMode() {
                     ),
                     Forever {
                         intake.update()
-                        val relativePose = (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose))
+                        val relativePose = (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose))
                         drive.targetPose = Pose(
                             drive.localizer.x, drive.localizer.y,
                             relativePose.angle
@@ -178,7 +181,7 @@ class Controlled: LinearOpMode() {
                     ),
                     Forever {
                         intake.update()
-                        val relativePose = (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose))
+                        val relativePose = (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose))
                         drive.update()
                         shooter.setTargetVelocityFromDistance(relativePose.length)
                         shooter.update()
@@ -194,11 +197,11 @@ class Controlled: LinearOpMode() {
             }
 
             drive.update()
-            shooter.setTargetVelocityFromDistance((scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose)).length)
+            shooter.setTargetVelocityFromDistance((scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose)).length)
             shooter.update()
             intake.update()
             telemetry.addData("pose", drive.localizer.pose)
-            telemetry.addData("distance", (scorePosition.mirroredIf(mirror) - Vector.fromPose(drive.localizer.pose)).length)
+            telemetry.addData("distance", (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose)).length)
             telemetry.addData("Target velocity", shooter.targetVelocity)
             telemetry.update()
         }

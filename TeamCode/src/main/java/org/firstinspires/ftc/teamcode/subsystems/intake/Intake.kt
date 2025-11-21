@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.util.clamp
+import kotlin.math.abs
 
 @Config
 class Intake(hwMap: HardwareMap) {
@@ -35,7 +36,7 @@ class Intake(hwMap: HardwareMap) {
         class Position(target: Int): IntakeBehaviour(target.toDouble())
     }
     companion object Params {
-        @JvmField var runVelocity = 900.0
+        @JvmField var runVelocity = 1000.0
         @JvmField var kF = 0.5/1000
         @JvmField var kP = 0.001
         @JvmField var powerMax = 0.5
@@ -45,11 +46,11 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var pusherRightForward = 0.6
         @JvmField var pusherRightBack = 0.07
         @JvmField var pusherWait = 0.5
-        @JvmField var adjustDistance = 32
+        @JvmField var adjustDistance = 48
 
-        @JvmField var kP_pos = 0.5/1000
+        @JvmField var kP_pos = 0.5/80
         @JvmField var kD_Pos = 0.001
-        @JvmField var kL_Pos = 0.5
+        @JvmField var kL_Pos = 0.2
         @JvmField var kT_Pos = 0.0
     }
 
@@ -84,6 +85,26 @@ class Intake(hwMap: HardwareMap) {
         releaseRight(),
         name = "ReleaseDual"
     )
+
+    fun waitForStall(): Command =
+        WaitUntil({
+            if (behaviour is IntakeBehaviour.Velocity){
+                abs(motor.velocity) < 100
+            } else {
+                true
+            }
+        }, "waitForIntakeVelocity")
+
+
+    fun waitForVelocity(): Command = WaitUntil({
+            if (behaviour is IntakeBehaviour.Velocity){
+                abs(motor.velocity - behaviour.target) < 30
+            } else {
+                true
+            }
+        }, "waitForIntakeVelocity"
+        )
+
 
     fun resetPushers(){
         pusherLeft.position = pusherLeftBack

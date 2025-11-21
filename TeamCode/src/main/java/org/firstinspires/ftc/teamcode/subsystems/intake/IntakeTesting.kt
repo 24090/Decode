@@ -8,7 +8,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.runBlocking
+import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 
 @TeleOp
@@ -20,9 +22,11 @@ class IntakeTesting(): LinearOpMode(){
     override fun runOpMode() {
         val intake = Intake(hardwareMap)
         val shooter = Shooter(hardwareMap)
+        val reads = Reads(hardwareMap)
         val dash = FtcDashboard.getInstance()
         val p = TelemetryPacket()
         val f = {
+            reads.update()
             intake.update()
             intake.behaviour.target = targetVelocity
             val p = TelemetryPacket()
@@ -38,7 +42,21 @@ class IntakeTesting(): LinearOpMode(){
         waitForStart()
         shooter.motorLeft.power = 0.12
         shooter.motorRight.power = 0.12
+        runBlocking(Race(
+            Forever {
+                reads.update()
+                intake.update()
+            },
+            Sequence(
+                intake.spinUp(),
+                Sleep(0.5),
+                intake.waitForStall(),
+                intake.stop()
+            )
+        ))
         while (opModeIsActive()){
+            reads.update()
+
             if (gamepad1.leftBumperWasPressed()){
                 runBlocking(Race(
                     Forever(f),
