@@ -113,7 +113,7 @@ class Vector {
         return "[$x, $y]"
     }
 
-    fun mirrored() = Vector(this.x, -this.y)
+    fun mirrored() = fromCartesian(this.x, -this.y)
 
     fun mirroredIf(v: Boolean) = if (v) this.mirrored() else this
 }

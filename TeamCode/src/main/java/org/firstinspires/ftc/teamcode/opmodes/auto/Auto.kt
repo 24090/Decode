@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
-import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
@@ -54,7 +53,7 @@ open class AutoLeave(val isRed: Boolean): LinearOpMode() {
                 reads.update()
             },
             Sequence(
-                drive.goTo(Pose(26.0, 26.0, 26.0).mirroredIf(isRed)),
+                drive.goToCircle(Pose(26.0, 26.0, 26.0).mirroredIf(isRed)),
                 Sleep(2.0)
             ),
             Forever {
@@ -76,31 +75,32 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             intake.fullAdjustThird(),
             shooter.waitForVelocity(),
             intake.releaseDual(),
-            Sleep(0.67),
+            Sleep(1.0),
             intake.spinUp(),
             Parallel(
-                intake.waitForVelocity(),
+                intake.waitForDistance(200),
                 shooter.waitForVelocity(),
             ),
             intake.releaseDual(),
             name = "ShootCycle"
         )}
         val farShootCycle = {Sequence(
-            drive.goTo(farPose.mirroredIf(isRed)),
+            drive.goToCircle(farPose.mirroredIf(isRed), 2.0),
             shootCycle(),
             name = "FarShootCycle"
         )}
         val closeShootCycle = {Sequence(
-            drive.goTo(closePose.mirroredIf(isRed)),
+            drive.goToCircle(closePose.mirroredIf(isRed), 2.0),
             shootCycle(),
             name = "CloseShootCycle"
         )}
 
         val grabBallCycle = {n: Int -> Sequence(
             intake.spinUp(),
-            drive.goTo(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed), 5.0, PI/2),
+            drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed), 1.0, 6.0),
+            Instant {Drive.DriveConstants.kDT *= 2},
             Race(
-                drive.goTo(Pose(
+                drive.goToCircle(Pose(
                     36.0 + 24.0 * n,
                     if (n==0) 65.0 else 72.0 - robotLength/2.0,
                     PI/2
@@ -114,6 +114,7 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
                     WaitUntil{ abs(drive.localizer.yVel) < 0.3 }
                 ),
             ),
+            Instant {Drive.DriveConstants.kDT /= 2},
             name = "GrabBallCycle $n"
         )}
 
@@ -137,6 +138,8 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
                 recordTime("other")
                 reads.update();
                 recordTime("reads")
+                telemetry.addData("targetPose", drive.targetPose)
+                telemetry.addData("currentPose", drive.localizer.pose)
             }, "Reads" ),
             Sequence(
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},

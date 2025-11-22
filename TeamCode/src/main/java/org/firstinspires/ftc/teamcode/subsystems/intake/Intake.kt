@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import dev.frozenmilk.dairy.cachinghardware.CachingServo
 import org.firstinspires.ftc.teamcode.commands.Command
+import org.firstinspires.ftc.teamcode.commands.Future
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Sequence
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.util.clamp
 import kotlin.math.abs
+import kotlin.math.sign
 
 @Config
 class Intake(hwMap: HardwareMap) {
@@ -46,12 +48,12 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var pusherRightForward = 0.6
         @JvmField var pusherRightBack = 0.07
         @JvmField var pusherWait = 0.5
-        @JvmField var adjustDistance = 48
+        @JvmField var adjustDistance = 45
 
-        @JvmField var kP_pos = 0.5/80
+        @JvmField var kP_pos = 0.02
         @JvmField var kD_Pos = 0.001
-        @JvmField var kL_Pos = 0.2
-        @JvmField var kT_Pos = 0.0
+        @JvmField var kL_Pos = 0.15
+        @JvmField var kT_Pos = 4.0
     }
 
     fun update() {
@@ -95,7 +97,13 @@ class Intake(hwMap: HardwareMap) {
             }
         }, "waitForIntakeVelocity")
 
-
+    fun waitForDistance(distance: Int): Command = Future{
+        val target = motor.currentPosition + distance
+        val sign = sign((target - motor.currentPosition).toDouble())
+        WaitUntil({
+           sign((target - motor.currentPosition).toDouble()) != sign
+        }, "waitForIntakeVelocity")
+    }
     fun waitForVelocity(): Command = WaitUntil({
             if (behaviour is IntakeBehaviour.Velocity){
                 abs(motor.velocity - behaviour.target) < 30

@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
+import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
@@ -48,10 +49,8 @@ class IntakeTesting(): LinearOpMode(){
                 intake.update()
             },
             Sequence(
-                intake.spinUp(),
-                Sleep(0.5),
-                intake.waitForStall(),
-                intake.stop()
+                intake.fullAdjustThird(),
+                WaitUntil { gamepad1.xWasPressed() }
             )
         ))
         while (opModeIsActive()){

@@ -4,7 +4,7 @@ import kotlin.math.min
 
 enum class BallColor {
     GREEN,
-    PURPLE
+    PURPLE,
 }
 
 enum class Pattern(val n: Int) {

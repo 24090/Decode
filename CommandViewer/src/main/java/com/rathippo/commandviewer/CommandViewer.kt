@@ -26,7 +26,7 @@ object CommandViewer : Notifications {
 
     private var server: Server? = null
     val active: Boolean = server?.sockets?.isEmpty() ?: false
-    @OnCreate
+
     @JvmStatic fun start(context: Context?) {
         val getFile = { path: String -> context!!.assets.open(path).bufferedReader().readText()}
         val page = newFixedLengthResponse(

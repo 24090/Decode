@@ -176,7 +176,7 @@ class Drive(hwMap: HardwareMap) {
             (wheelVectorB.x * targetVector.y - targetVector.x * wheelVectorB.y) / (wheelVectorB.x * wheelVectorA.y - wheelVectorA.x * wheelVectorB.y)
         )
 
-    fun goTo(
+    fun goToCircle(
         pose: Pose,
         distanceTolerance: Double = kTT,
         headingTolerance: Double = 0.04,
@@ -185,5 +185,16 @@ class Drive(hwMap: HardwareMap) {
             targetPose = pose
         },
         WaitUntil { atTargetCircle(distanceTolerance, headingTolerance) },
+    )
+    fun goToSquare(
+        pose: Pose,
+        xTolerance: Double = kTT,
+        yTolerance: Double = kTT,
+        headingTolerance: Double = 0.04,
+    ) = Sequence(
+        Instant {
+            targetPose = pose
+        },
+        WaitUntil { atTargetSquare(xTolerance, yTolerance, headingTolerance) },
     )
 }

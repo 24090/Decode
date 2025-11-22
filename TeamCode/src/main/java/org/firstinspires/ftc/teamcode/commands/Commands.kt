@@ -145,8 +145,6 @@ abstract class OverrideButtonCommand(
     }
 }
 
-
-
 fun runBlocking(command: Command){
     var c = command
     while (!Thread.currentThread().isInterrupted){

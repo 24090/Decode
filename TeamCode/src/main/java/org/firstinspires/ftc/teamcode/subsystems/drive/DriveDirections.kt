@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.subsystems.drive
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 
 @TeleOp(group = "Drive")
@@ -12,7 +14,7 @@ class DirectionDebugger: LinearOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         waitForStart()
-        drive.localizer.pose = Pose(0.0,0.0,0.0)
+        drive.localizer.pose = Pose(robotLength/2.0, -robotWidth/2,0.0)
         while (opModeIsActive()){
             reads.update()
             

@@ -30,9 +30,9 @@ import kotlin.math.PI
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
     override fun runOpMode() {
+        var isRed = false
         val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
-        var isRed = false
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
 
@@ -61,10 +61,12 @@ class Controlled: LinearOpMode() {
                 }
                 drive.updateTranslational()
             } else {
-                var v = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), -gamepad1.left_stick_y.toDouble())
-                if (isRed) v = v.rotated(PI)
-                drive.strafe = v.rotated(-drive.localizer.heading).y
-                drive.drive =  v.rotated(-drive.localizer.heading).x
+//                var v = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), gamepad1.left_stick_y.toDouble())
+//                if (isRed) v = v.rotated(PI)
+//                drive.strafe = v.rotated(-drive.localizer.heading).y
+//                drive.drive =  v.rotated(-drive.localizer.heading).x
+                drive.drive = -gamepad1.left_stick_y.toDouble()
+                drive.strafe = -gamepad1.left_stick_x.toDouble()
             }
             lastLockHeading = isleftStickZero()
         }
@@ -89,6 +91,7 @@ class Controlled: LinearOpMode() {
             recordTime("loop")
             if (gamepad1.backWasPressed()) {
                 drive.localizer.pose = Pose(72.0, 0.0, 0.0)
+                drive.targetPose = drive.localizer.pose
             }
             if (gamepad1.guideWasPressed()) {
                 isRed = !isRed
@@ -201,6 +204,7 @@ class Controlled: LinearOpMode() {
             shooter.update()
             intake.update()
             telemetry.addData("pose", drive.localizer.pose)
+            telemetry.addData("scorePose", scorePosition.mirroredIf(isRed))
             telemetry.addData("distance", (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose)).length)
             telemetry.addData("Target velocity", shooter.targetVelocity)
             telemetry.update()

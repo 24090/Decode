@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 class Localizer(hwMap: HardwareMap) {
     private var pinpoint: GoBildaPinpointDriver = hwMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
     companion object {
-        @JvmStatic var driveY: Double = -6.3
+        @JvmStatic var driveY: Double = -6.1
         @JvmStatic var strafeX: Double = -5.0
         @JvmStatic var encoderResolution: Double = 0.52216
     }

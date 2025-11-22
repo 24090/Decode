@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.ColorSensor
 
+import android.R
 import android.graphics.Color
 import androidx.core.graphics.toColor
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor
 import org.firstinspires.ftc.teamcode.util.BallColor
 import java.util.Optional
+import kotlin.math.abs
 
 
 class ColorSensor(hwMap: HardwareMap) {
@@ -18,52 +20,44 @@ class ColorSensor(hwMap: HardwareMap) {
     var rightColor: Optional<BallColor> = Optional.empty()
         private set
 
-    public enum class ColorSensorOut{
-        GREEN,
-        PURPLE,
-        NONE
-    }
-    fun getColor(argb:Int): Optional<BallColor>{
-        TODO("we NEED to TUNE!!!!")
-    }
-    
     fun read(){
         leftColor = getColor(left.normalizedColors.toColor())
         rightColor = getColor(right.normalizedColors.toColor())
     }
-    fun getSensedColor(color_sensor: NormalizedColorSensor): ColorSensorOut? {
-        val color_int: Int = color_sensor.getNormalizedColors().toColor()
+    private fun getColor(color: Int): Optional<BallColor> {
         val hsv = FloatArray(3)
-        Color.colorToHSV(color_int, hsv)
-        if (hsv[1] < 0.3) {
-            return ColorSensorOut.NONE
+        Color.colorToHSV(color, hsv)
+        if (hsv[1] < 0.01) {
+            return Optional.empty()
         }
-        if (hsv[0] <= 45 || hsv[0] > 290) {
-            return ColorSensorOut.GREEN
+        if (abs(hsv[0] - 210) < 30) {
+            return Optional.of(BallColor.PURPLE)
         }
-        if (hsv[0] >= 45 && hsv[0] <= 140) {
-            return ColorSensorOut.PURPLE
+        if (abs(hsv[0] - 160) < 30) {
+            return Optional.of(BallColor.GREEN)
         }
-        return ColorSensorOut.NONE
+        return Optional.empty()
     }
 }
 
 @TeleOp
 class ColorSensorTesting: LinearOpMode(){
-    val left: NormalizedColorSensor = hardwareMap.get(NormalizedColorSensor::class.java, "colorSensorLeft")
-    val right: NormalizedColorSensor = hardwareMap.get(NormalizedColorSensor::class.java, "colorSensorRight")
     override fun runOpMode() {
-        waitForStart();
+        val colorSensor = ColorSensor(hardwareMap)
+        val left: com.qualcomm.robotcore.hardware.ColorSensor = hardwareMap.get(com.qualcomm.robotcore.hardware.ColorSensor::class.java, "colorSensorLeft")
+        val right: com.qualcomm.robotcore.hardware.ColorSensor = hardwareMap.get(com.qualcomm.robotcore.hardware.ColorSensor::class.java, "colorSensorRight")
+
+        waitForStart()
 
         while(opModeIsActive()){
+            colorSensor.read()
+            val alpha = left.alpha()
+            val argb_left = left.argb()
             val hsv_left = FloatArray(3)
-            Color.colorToHSV(left.getNormalizedColors().toColor(), hsv_left)
-
-            val hsv_right = FloatArray(3)
-            Color.colorToHSV(right.getNormalizedColors().toColor(), hsv_right)
-
-            telemetry.addData("left", hsv_left)
-            telemetry.addData("right", hsv_right)
+            Color.colorToHSV(Color.rgb(left.red(), left.green(), left.blue()), hsv_left)
+            telemetry.addData("left - detected color", colorSensor.leftColor)
+            telemetry.addData("left hsva", "${hsv_left[0]}, ${hsv_left[1]}, ${hsv_left[2]}, ${left.alpha()}")
+            telemetry.addLine(if (left.alpha() > 1000) "there" else if (left.alpha() > 100) "hole" else "none")
             telemetry.update()
         }
     }

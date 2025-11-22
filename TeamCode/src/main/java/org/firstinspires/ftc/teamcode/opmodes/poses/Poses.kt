@@ -4,8 +4,8 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 import kotlin.math.PI
 
-const val robotWidth = 16.0
-const val robotLength = 18.0
+const val robotWidth = 18.0
+const val robotLength = 14.0
 val scorePosition = Vector.fromCartesian(144.0, 72.0)
 val farPose = Pose(12.0, 12.0, 0.3805063771)
 val farDistance = (scorePosition - Vector.fromPose(farPose)).length
