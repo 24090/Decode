@@ -37,5 +37,8 @@ class IndexTracker(){
         }
     }
 
-    fun getRecommendation() = if (rampCount%3 == pattern.n) BallColor.GREEN else BallColor.PURPLE
+    fun getRecommendations() = Pair(
+        if (rampCount%3 == pattern.n) BallColor.GREEN else BallColor.PURPLE,
+        if ((rampCount+1)%3 == pattern.n) BallColor.GREEN else BallColor.PURPLE
+    )
 }
