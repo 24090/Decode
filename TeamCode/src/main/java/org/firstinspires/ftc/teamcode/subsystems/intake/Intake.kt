@@ -54,12 +54,12 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var pusherRightForward = 0.6
         @JvmField var pusherRightBack = 0.07
         @JvmField var pusherWait = 0.5
-        @JvmField var adjustDistance = 45
+        @JvmField var adjustDistance = 42
 
         @JvmField var kP_pos = 0.02
         @JvmField var kD_Pos = 0.001
         @JvmField var kL_Pos = 0.15
-        @JvmField var kT_Pos = 4.0
+        @JvmField var kT_Pos = 3.0
     }
 
     fun update() {
@@ -81,7 +81,7 @@ class Intake(hwMap: HardwareMap) {
 
     fun fullAdjustThird(): Command = Sequence(
         setAdjustThird(),
-        WaitUntil { behaviour.target >= motor.currentPosition },
+        WaitUntil { behaviour.target >= motor.currentPosition - kT_Pos },
         name = "FullAdjustThird"
     )
     fun stop(): Command = Instant({

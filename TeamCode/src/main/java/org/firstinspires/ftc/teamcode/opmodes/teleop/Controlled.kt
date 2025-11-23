@@ -25,7 +25,6 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRigh
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
-import kotlin.math.PI
 
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
@@ -38,24 +37,28 @@ class Controlled: LinearOpMode() {
 
         var lastLockHeading = false
         var lastLockTranslational = false
-        val isLockHeading = { gamepad1.right_stick_x.toDouble() == 0.0 && (drive.localizer.headingVel < 0.1 || lastLockHeading)}
-        val isleftStickZero = { gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0 && ((drive.localizer.xVel < 3.0 && drive.localizer.yVel < 3.0) || lastLockHeading)}
+        val isLockHeading = {
+            gamepad1.right_stick_x.toDouble() == 0.0 && (drive.localizer.headingVel < 0.04 || lastLockHeading)
+        }
+        val isLockTranslational = {
+            gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0 && ((drive.localizer.xVel < 1.0 && drive.localizer.yVel < 1.0) || lastLockTranslational)
+        }
         val updateHeadingOverride = {
-            val rightStickZero = isLockHeading()
-            if (rightStickZero){
-                if (!lastLockTranslational){
+            val lockHeading = isLockHeading()
+            if (lockHeading){
+                if (!lastLockHeading){
                     drive.targetPose.heading = drive.localizer.heading
                 }
                 drive.updateHeading()
             } else {
                 drive.turn = -gamepad1.right_stick_x.toDouble()
             }
-            lastLockTranslational = rightStickZero
+            lastLockHeading = lockHeading
         }
         val updateTranslationalOverride = {
-            val leftStickZero = isleftStickZero()
-            if (leftStickZero && drive.localizer.xVel < 3.0 && drive.localizer.yVel < 3.0) {
-                if (!lastLockHeading) {
+            val lockTranslational = isLockTranslational()
+            if (lockTranslational) {
+                if (!lastLockTranslational) {
                     drive.targetPose.x = drive.localizer.x
                     drive.targetPose.y = drive.localizer.y
                 }
@@ -68,7 +71,7 @@ class Controlled: LinearOpMode() {
                 drive.drive = -gamepad1.left_stick_y.toDouble()
                 drive.strafe = -gamepad1.left_stick_x.toDouble()
             }
-            lastLockHeading = isleftStickZero()
+            lastLockTranslational = isLockTranslational()
         }
         drive.currentUpdateHeading = updateHeadingOverride
         drive.currentUpdateTranslational = updateTranslationalOverride
