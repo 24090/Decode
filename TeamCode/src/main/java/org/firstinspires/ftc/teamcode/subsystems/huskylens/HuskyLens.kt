@@ -7,6 +7,8 @@ import java.util.Optional
 
 class HuskyLens(hwMap: HardwareMap) {
     val camera = hwMap.get(HuskyLens::class.java, "huskyLens")
+    var left: Optional<BallColor>? = null
+    var right: Optional<BallColor>? = null
     init {
         camera.selectAlgorithm(HuskyLens.Algorithm.COLOR_RECOGNITION)
     }
@@ -18,8 +20,8 @@ class HuskyLens(hwMap: HardwareMap) {
             .blocks()
             .filter{ block -> block.width * block.height >= 400 }
             .sortedBy{ block -> -(block.width*block.height) }
-        var left: Optional<BallColor>? = null
-        var right: Optional<BallColor>? = null
+        left = null
+        right = null
         for (block in valid_blocks) {
             if ((left != null) && (right != null)){
                 break
@@ -39,5 +41,9 @@ class HuskyLens(hwMap: HardwareMap) {
                 left = color
             }
         }
+    }
+
+    fun getColorPair(): Pair<Optional<BallColor>,Optional<BallColor>> {
+        return Pair<Optional<BallColor>,Optional<BallColor>>(left,right)
     }
 }
