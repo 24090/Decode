@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.reads
 
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
 import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.teamcode.GoBildaPinpointDriver
 
 class Reads(hwMap: HardwareMap, val readPinpoint: Boolean = true, val readVoltages: Boolean = true, val bulkRead: Boolean = true) {
     val bulkReads = BulkReads(hwMap)

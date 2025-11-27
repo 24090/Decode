@@ -1,23 +1,40 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive
 
+import com.acmerobotics.dashboard.FtcDashboard
+import com.acmerobotics.dashboard.canvas.Canvas
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
+import org.firstinspires.ftc.teamcode.util.toDouble
 
 @TeleOp(group = "Drive")
 class DirectionDebugger: LinearOpMode() {
-    fun Boolean.toDouble() = if (this) 1.0 else 0.0
 
     override fun runOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
+        val dash = FtcDashboard.getInstance()
         waitForStart()
-        drive.localizer.pose = Pose(robotLength/2.0, -robotWidth/2,0.0)
+        drive.localizer.pose = Pose(0.0, 0.0, 0.0)//Pose(robotLength/2.0, robotWidth/2.0, 0.0)
         while (opModeIsActive()){
             reads.update()
-            
+
+            val packet = TelemetryPacket()
+            val canvas = packet.fieldOverlay()
+            canvas.setStrokeWidth(1)
+            canvas.strokeCircle(drive.localizer.pose.x - 72.0, drive.localizer.pose.y, robotWidth/2.0)
+            canvas.strokeLine(
+                drive.localizer.pose.x - 72.0,
+                drive.localizer.pose.y,
+                drive.localizer.pose.x - 72.0 + Vector.fromPolar(drive.localizer.heading, robotWidth/2.0).x,
+                drive.localizer.pose.y + Vector.fromPolar(drive.localizer.heading, robotWidth/2.0).y
+            )
+
+            dash.sendTelemetryPacket(packet)
+
             drive.setFlPower(gamepad1.x.toDouble())
             drive.setFrPower(gamepad1.y.toDouble())
             drive.setBlPower(gamepad1.a.toDouble())

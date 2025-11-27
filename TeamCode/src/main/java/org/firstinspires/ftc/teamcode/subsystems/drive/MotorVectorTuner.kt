@@ -9,7 +9,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.teamcode.subsystems.drive.Localizer.Companion.driveY
-import org.firstinspires.ftc.teamcode.subsystems.drive.Localizer.Companion.encoderResolution
 import org.firstinspires.ftc.teamcode.subsystems.drive.Localizer.Companion.strafeX
 
 @TeleOp(group = "Drive")
@@ -17,7 +16,7 @@ class MotorVectorTuner(): LinearOpMode() {
     override fun runOpMode() {
         val pinpoint = hardwareMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
         pinpoint.setOffsets(driveY, strafeX, INCH)
-        pinpoint.setEncoderResolution(encoderResolution, INCH)
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD)
         pinpoint.setYawScalar(0.0)
         pinpoint.position = Pose2D(INCH, 0.0, 0.0, AngleUnit.RADIANS, 0.0)
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD)
