@@ -40,6 +40,7 @@ class DirectionDebugger: LinearOpMode() {
             drive.setBlPower(gamepad1.a.toDouble())
             drive.setBrPower(gamepad1.b.toDouble())
 
+            telemetry.addData("pinpoint lt", drive.localizer.pinpoint.loopTime)
             telemetry.addLine("Switch directions of backwards motors in Drive.kt")
             telemetry.addLine("X -> FL")
             telemetry.addLine("Y -> FR")

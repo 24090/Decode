@@ -39,10 +39,10 @@ class Controlled: LinearOpMode() {
         var lastLockHeading = false
         var lastLockTranslational = false
         val isLockHeading = {
-            gamepad1.right_stick_x.toDouble() == 0.0 && (drive.localizer.headingVel < 0.04 || lastLockHeading)
+            gamepad1.right_stick_x.toDouble() == 0.0 && (drive.localizer.headingVel < 0.02 || lastLockHeading)
         }
         val isLockTranslational = {
-            gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0 && ((drive.localizer.xVel < 0.5 && drive.localizer.yVel < 0.5) || lastLockTranslational)
+            gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0 && ((drive.localizer.xVel < 0.2 && drive.localizer.yVel < 0.2) || lastLockTranslational)
         }
         val updateHeadingOverride = {
             val lockHeading = isLockHeading()

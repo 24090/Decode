@@ -149,7 +149,7 @@ fun runBlocking(command: Command){
     var c = command
     while (!Thread.currentThread().isInterrupted){
         val result = c.update()
-        CommandViewer.update()
+        //CommandViewer.update()
         when (result) {
             is CommandResult.Continue -> continue
             is CommandResult.End -> {
@@ -163,5 +163,5 @@ fun runBlocking(command: Command){
     }
     // run once in order to display dead commands
     c.update()
-    CommandViewer.update()
+    //CommandViewer.update()
 }

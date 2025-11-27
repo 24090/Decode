@@ -23,6 +23,6 @@ val farPose = getScorePose(Vector.fromCartesian(12.0, 12.0))
 val closePose = getScorePose(Vector.fromCartesian(84.0, 12.0))
 val closeDistance = (scorePosition - Vector.fromPose(closePose)).length
 
-val startPose = Pose(robotLength/2, robotWidth/2, 0.0)
+val startPose = Pose(144 - 138.98 + robotLength/2.0, robotWidth/2.0, 0.0)
 
 var storedPose: Pose? = null

@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 
 import org.firstinspires.ftc.teamcode.util.Observation
 import org.firstinspires.ftc.teamcode.util.Pattern
+import kotlin.math.PI
 
 
 class Camera(hwMap: HardwareMap) {
@@ -32,7 +33,7 @@ class Camera(hwMap: HardwareMap) {
     fun initLocalize() {
         limelight.setPollRateHz(20)
         limelight.start()
-        limelight.pipelineSwitch(2)
+        limelight.pipelineSwitch(0)
         currentPipeline = Pipeline.Localize
     }
     fun initPattern() {
@@ -75,8 +76,12 @@ class Camera(hwMap: HardwareMap) {
         if (currentPipeline != Pipeline.Localize) error("Wrong Pipeline")
         for (fiducialResult in limelight.latestResult.fiducialResults){
             when(fiducialResult.fiducialId){
-                24, 25 -> {
-                    return Pose(fiducialResult.robotPoseFieldSpace.position.x,fiducialResult.robotPoseFieldSpace.position.y + 72.0,fiducialResult.robotPoseFieldSpace.orientation.yaw)
+                20, 19 -> {
+                    return Pose(
+                        fiducialResult.robotPoseFieldSpace.position.x * 39.37 + 72.0,
+                        fiducialResult.robotPoseFieldSpace.position.y * 39.37,
+                        fiducialResult.robotPoseFieldSpace.orientation.yaw / 360 * 2*PI
+                    )
                 }
             }
         }
@@ -100,6 +105,7 @@ class Camera(hwMap: HardwareMap) {
 class VisionTesting: LinearOpMode() {
     override fun runOpMode() {
         val camera = Camera(hardwareMap)
+        camera.initLocalize()
         waitForStart()
         while (opModeIsActive()){
             if (gamepad1.xWasPressed()){camera.initLocalize()}

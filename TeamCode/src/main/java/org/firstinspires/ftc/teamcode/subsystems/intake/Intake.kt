@@ -52,7 +52,7 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var pusherLeftBack = 0.53
 
         @JvmField var pusherRightForward = 0.6
-        @JvmField var pusherRightBack = 0.07
+        @JvmField var pusherRightBack = 0.00
         @JvmField var pusherWait = 0.2
         @JvmField var adjustDistance = 38
 

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems.huskylens
 
 import com.qualcomm.hardware.dfrobot.HuskyLens
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.util.BallColor
 import org.firstinspires.ftc.teamcode.util.Pattern
@@ -24,24 +26,24 @@ class HuskyLens(hwMap: HardwareMap) {
         val valid_blocks = camera
             .blocks()
             .filter{ block -> block.width * block.height >= 400 }
-            .sortedBy{ block -> -(block.width*block.height) }
+            .sortedBy{ block -> -(block.width*block.height*(240 - block.y)) }
 
         for (block in valid_blocks) {
             if ((left != null) && (right != null)){
                 break
             }
             val color = when (block.id){
-                0 -> Optional.empty()
-                1 -> Optional.of(BallColor.PURPLE)
-                2 -> Optional.of(BallColor.GREEN)
+                1 -> Optional.empty()
+                2 -> Optional.of(BallColor.PURPLE)
+                3 -> Optional.of(BallColor.GREEN)
                 else -> throw UnsupportedOperationException("id > 2 is invalid")
             }
 
-            if ((block.x > 400) && (right == null)) {
+            if ((block.x < 160) && (right == null)) {
                 right = color
             }
 
-            if ((block.x < 200) && (left == null)) {
+            if ((block.x > 160) && (left == null)) {
                 left = color
             }
         }
@@ -59,4 +61,17 @@ class HuskyLens(hwMap: HardwareMap) {
             Pattern.PPG
         }
     }
+}
+
+@TeleOp
+class HuskyLensTesting: LinearOpMode() {
+    override fun runOpMode() {
+        val huskyLens = HuskyLens(hardwareMap)
+        while (opModeInInit()){
+            huskyLens.read()
+            telemetry.addData("PATTERN", huskyLens.getHeldPattern())
+            telemetry.update()
+        }
+    }
+
 }
