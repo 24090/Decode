@@ -43,16 +43,6 @@ class IntakeTesting(): LinearOpMode(){
         waitForStart()
         shooter.motorLeft.power = 0.12
         shooter.motorRight.power = 0.12
-        runBlocking(Race(
-            Forever {
-                reads.update()
-                intake.update()
-            },
-            Sequence(
-                intake.fullAdjustThird(),
-                WaitUntil { gamepad1.xWasPressed() }
-            )
-        ))
         while (opModeIsActive()){
             reads.update()
 

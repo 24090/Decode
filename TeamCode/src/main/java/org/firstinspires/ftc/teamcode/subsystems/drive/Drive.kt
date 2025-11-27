@@ -10,9 +10,9 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.SquID
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.util.clamp
+import kotlin.math.max
 import kotlin.math.min
 
 @Config
@@ -22,11 +22,14 @@ class Drive(hwMap: HardwareMap) {
     companion object DriveConstants {
         @JvmField var lateralFactor = 0.7
 
-        @JvmField var kSqH = 0.8
-        @JvmField var kPT = 0.2
-        @JvmField var kDT = 0.05
-        @JvmField var kLT = 0.3
-        @JvmField var kTT = 0.6
+        @JvmField var kPH = 2.5
+        @JvmField var kDH = 0.15
+        @JvmField var kLH = 0.15
+        @JvmField var kTH = 0.04
+        @JvmField var kPT = 0.3
+        @JvmField var kDT = 0.04
+        @JvmField var kLT = 0.15
+        @JvmField var kTT = 0.7
     }
     
     var targetPose = Pose(0.0, 0.0, 0.0)
@@ -81,10 +84,11 @@ class Drive(hwMap: HardwareMap) {
     // Drive math, etc
 
     private fun setMotorPowers() {
-        val driveVectors = getHeadingVectors().addNormalized(getTranslationalVectors())
+        val driveVectors = getHeadingVectors().addWithoutPriority(getTranslationalVectors())
         val leftPowers = getSidePowers(
             driveVectors.left,
             getWheelVector(front = true, left = true),
+
             getWheelVector(front = false, left = true)
         )
         val rightPowers = getSidePowers(
@@ -100,7 +104,7 @@ class Drive(hwMap: HardwareMap) {
     }
 
     fun updateHeading(){
-        turn = SquID(AngleUnit.normalizeRadians(error.heading), kSqH)
+        turn = PDLT(AngleUnit.normalizeRadians(error.heading), AngleUnit.normalizeRadians(dError.heading), kPH, kDH, kLH, kTH)
     }
     var currentUpdateHeading: () -> Unit = ::updateHeading
     fun updateTranslational(){
@@ -122,7 +126,16 @@ class Drive(hwMap: HardwareMap) {
     // drive vector calculations
 
     private data class DriveVectors(val left: Vector, val right: Vector) {
-        fun addNormalized(addedVectors: DriveVectors): DriveVectors {
+        fun addWithoutPriority(addedVectors: DriveVectors): DriveVectors {
+            val idealLeft = (this.left + addedVectors.left)
+            val idealRight = (this.right + addedVectors.right)
+            val scaleFactor = 1/max(max(idealLeft.length, idealRight.length), 1.0)
+            return DriveVectors(
+                idealLeft * scaleFactor,
+                idealRight * scaleFactor
+            )
+        }
+        fun addWithPriority(addedVectors: DriveVectors): DriveVectors {
             // extra space available for left vector
             val extraLeft = 1 - this.left.length
             // extra space available for right vector

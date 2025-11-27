@@ -7,6 +7,12 @@ enum class BallColor {
     PURPLE,
 }
 
+fun patternFromG(n: Int) = when (n%3) {
+    0 -> Pattern.GPP
+    1 -> Pattern.PGP
+    2 -> Pattern.PPG
+    else -> throw Error("Unreachable")
+}
 enum class Pattern(val n: Int) {
     GPP(0),
     PGP(1),
@@ -37,8 +43,5 @@ class IndexTracker(){
         }
     }
 
-    fun getRecommendations() = Pair(
-        if (rampCount%3 == pattern.n) BallColor.GREEN else BallColor.PURPLE,
-        if ((rampCount+1)%3 == pattern.n) BallColor.GREEN else BallColor.PURPLE
-    )
+    fun getRecommendations() = patternFromG(pattern.n - rampCount)
 }

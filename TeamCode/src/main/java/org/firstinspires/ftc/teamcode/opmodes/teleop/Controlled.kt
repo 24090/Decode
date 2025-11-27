@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
+import org.firstinspires.ftc.teamcode.opmodes.commands.shootCycle
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
@@ -41,7 +42,7 @@ class Controlled: LinearOpMode() {
             gamepad1.right_stick_x.toDouble() == 0.0 && (drive.localizer.headingVel < 0.04 || lastLockHeading)
         }
         val isLockTranslational = {
-            gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0 && ((drive.localizer.xVel < 1.0 && drive.localizer.yVel < 1.0) || lastLockTranslational)
+            gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0 && ((drive.localizer.xVel < 0.5 && drive.localizer.yVel < 0.5) || lastLockTranslational)
         }
         val updateHeadingOverride = {
             val lockHeading = isLockHeading()
@@ -137,15 +138,8 @@ class Controlled: LinearOpMode() {
                     Sequence(
                         Parallel(
                             WaitUntil { drive.error.heading < 0.04 },
-                            shooter.waitForVelocity(),
-                            intake.fullAdjustThird(),
                         ),
-                        intake.releaseDual(),
-                        Sleep(1.0),
-                        intake.spinUp(),
-                        Sleep(0.5),
-                        intake.releaseDual(),
-                        intake.spinUp()
+                        shootCycle(intake, shooter)
                     ),
                     Forever {
                         intake.update()
@@ -173,18 +167,7 @@ class Controlled: LinearOpMode() {
                     Forever {
                         reads.update()
                     },
-                    Sequence(
-                        Parallel(
-                            shooter.waitForVelocity(),
-                            intake.fullAdjustThird(),
-                        ),
-                        intake.releaseDual(),
-                        Sleep(1.0),
-                        intake.spinUp(),
-                        Sleep(0.5),
-                        intake.releaseDual(),
-                        intake.spinUp()
-                    ),
+                    shootCycle(intake, shooter),
                     Forever {
                         intake.update()
                         val relativePose = (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose))

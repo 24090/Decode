@@ -19,8 +19,10 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensat
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.util.BallColor
 import org.firstinspires.ftc.teamcode.util.IndexTracker
+import org.firstinspires.ftc.teamcode.util.Pattern
 import org.firstinspires.ftc.teamcode.util.clamp
 import java.util.Optional
+import kotlin.jvm.optionals.getOrNull
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -29,8 +31,6 @@ class Intake(hwMap: HardwareMap) {
     val motor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "intake"), false, 0.02)
     val pusherLeft: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherLeft"))
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
-    val huskyLens: HuskyLens = HuskyLens(hwMap)
-    val indexTracker: IndexTracker = IndexTracker()
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Velocity(0.0)
     init {
@@ -53,8 +53,8 @@ class Intake(hwMap: HardwareMap) {
 
         @JvmField var pusherRightForward = 0.6
         @JvmField var pusherRightBack = 0.07
-        @JvmField var pusherWait = 0.5
-        @JvmField var adjustDistance = 42
+        @JvmField var pusherWait = 0.2
+        @JvmField var adjustDistance = 38
 
         @JvmField var kP_pos = 0.02
         @JvmField var kD_Pos = 0.001
@@ -74,6 +74,13 @@ class Intake(hwMap: HardwareMap) {
     fun spinUp(): Command = Instant({
         behaviour = IntakeBehaviour.Velocity(runVelocity)
     }, "SpinUp")
+
+    fun moveInThird() = Sequence(
+        spinUp(),
+        Parallel(
+            waitForDistance(150),
+        ),
+    )
 
     fun setAdjustThird(): Command = Instant({
         behaviour = IntakeBehaviour.Position(motor.currentPosition - adjustDistance)
@@ -138,40 +145,10 @@ class Intake(hwMap: HardwareMap) {
         name = "ReleaseRight"
     )
 
-    fun releaseReccomended(): Command = Instant{
-        huskyLens.read()
-        val currentReccomendation: Pair<Optional<BallColor>, Optional<BallColor>> = Pair<Optional<BallColor>,Optional<BallColor>>(Optional.of(indexTracker.getRecommendations().first), Optional.of(indexTracker.getRecommendations().second))
-        val left: Optional<BallColor> = huskyLens.getColorPair().first
-        val right: Optional<BallColor> = huskyLens.getColorPair().second
-        Sequence(Instant{
-            if ((left == right) && (left == currentReccomendation.first) && (currentReccomendation.first == currentReccomendation.second)){
-                releaseDual()
-            }
-            if ((left == right) && !(left == currentReccomendation.first)){
-                releaseLeft()
-            }
-            if (!(left==right) && (left == currentReccomendation.first)){
-                releaseLeft()
-            }
-            if (!(left==right) && (right == currentReccomendation.first)){
-                releaseRight()
-            }
-        }, Instant{
-            huskyLens.read()
-            if ((left == right) && (left == currentReccomendation.first) && (currentReccomendation.first == currentReccomendation.second)){
-                releaseDual()
-            }
-            if ((left == right) && !(left == currentReccomendation.first)){
-                Sequence(releaseLeft(),releaseRight())
-            }
-            if (!(left==right) && (left == currentReccomendation.first)){
-                Sequence(releaseLeft(),releaseRight())
-            }
-            if (!(left==right) && (right == currentReccomendation.first)){
-                Sequence(releaseRight(),releaseLeft())
-            }
-        }
-        )
-
+    enum class releaseTypes {
+        Left,
+        Right,
+        Third,
     }
+
 }

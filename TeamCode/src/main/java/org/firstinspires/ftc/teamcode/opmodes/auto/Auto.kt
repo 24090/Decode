@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
+import org.firstinspires.ftc.teamcode.opmodes.commands.shootCycle
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
@@ -19,6 +20,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.opmodes.poses.storedPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import kotlin.math.PI
@@ -71,50 +73,55 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
         val drive = Drive(hardwareMap)
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
-        val shootCycle = {Sequence(
-            intake.fullAdjustThird(),
-            shooter.waitForVelocity(),
-            intake.releaseDual(),
-            Sleep(1.0),
-            intake.spinUp(),
-            Parallel(
-                intake.waitForDistance(200),
-                shooter.waitForVelocity(),
-            ),
-            intake.releaseDual(),
-            name = "ShootCycle"
-        )}
+
         val farShootCycle = {Sequence(
             drive.goToCircle(farPose.mirroredIf(isRed), 2.0),
-            shootCycle(),
+            shootCycle(intake, shooter),
             name = "FarShootCycle"
         )}
         val closeShootCycle = {Sequence(
             drive.goToCircle(closePose.mirroredIf(isRed), 2.0),
-            shootCycle(),
+            shootCycle(intake, shooter),
             name = "CloseShootCycle"
         )}
 
+        val postReleaseCycle = {Race(
+            Sequence(
+                intake.spinUp(),
+                Sleep(0.3),
+                intake.waitForStall()
+            ),
+            Sequence(
+                drive.goToCircle(Pose(robotWidth/2.0, 48 + robotLength/2.0, PI/2.0).mirroredIf(isRed), 4.0),
+                Sleep(0.3),
+                drive.goToCircle(Pose(robotLength/2.0, 71.0 - robotWidth/2.0, 0.0).mirroredIf(isRed), 4.0),
+                Sleep(0.3),
+                drive.goToCircle(Pose(robotLength/2.0 + 24.0, 71.0 - robotWidth/2.0, 0.0).mirroredIf(isRed), 4.0)
+            )
+        ) }
+
         val grabBallCycle = {n: Int -> Sequence(
             intake.spinUp(),
-            drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed), 1.0, 6.0),
-            Instant {Drive.DriveConstants.kDT *= 2},
+            drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed)),
+            Instant {Drive.DriveConstants.kPT /= 6},
             Race(
                 drive.goToCircle(Pose(
                     36.0 + 24.0 * n,
-                    if (n==0) 65.0 else 72.0 - robotLength/2.0,
+                    if (n == 2) 75.0 else 80.0,
                     PI/2
                 ).mirroredIf(isRed)),
                 Sequence(
-                    Sleep(0.3),
+                    intake.waitForStall(),
+                    Sleep(0.2),
                     intake.waitForStall()
                 ),
                 Sequence(
-                    Sleep(0.3),
+                    WaitUntil{ abs(drive.localizer.yVel) < 0.3 },
+                    Sleep(0.2),
                     WaitUntil{ abs(drive.localizer.yVel) < 0.3 }
                 ),
             ),
-            Instant {Drive.DriveConstants.kDT /= 2},
+            Instant {Drive.DriveConstants.kPT *= 6},
             name = "GrabBallCycle $n"
         )}
 
@@ -124,7 +131,7 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             return
         }
 
-        drive.localizer.pose = Pose(robotWidth/2.0, robotLength/2.0, 0.0).mirroredIf(isRed)
+        drive.localizer.pose = Pose(144 - 138.98 + robotLength/2.0, robotWidth/2.0, 0.0).mirroredIf(isRed)
         drive.targetPose = closePose.mirroredIf(isRed)
         var time = System.currentTimeMillis()
         val recordTime = { name:String ->
@@ -157,6 +164,11 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
                     closeShootCycle(),
                 ),
                 grabBallCycle(0),
+                Parallel(
+                    Sequence(Sleep(0.5), intake.stop()),
+                    closeShootCycle(),
+                ),
+                postReleaseCycle(),
                 Parallel(
                     Sequence(Sleep(0.5), intake.stop()),
                     closeShootCycle(),
