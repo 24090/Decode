@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
+import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
 import org.firstinspires.ftc.teamcode.opmodes.commands.shootCycle
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
@@ -19,9 +20,14 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.opmodes.poses.storedPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
+import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
+import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
+import org.firstinspires.ftc.teamcode.util.IndexTracker
+import org.firstinspires.ftc.teamcode.util.Observation
+import org.firstinspires.ftc.teamcode.util.Pattern
 import kotlin.math.PI
 import kotlin.math.abs
 
@@ -72,15 +78,18 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
         val drive = Drive(hardwareMap)
         val shooter = Shooter(hardwareMap)
         val intake = Intake(hardwareMap)
-
+        val huskyLens = HuskyLens(hardwareMap)
+        val camera = Camera(hardwareMap)
+        val indexTracker = IndexTracker()
+        indexTracker.rampCount = 0
         val farShootCycle = {Sequence(
             drive.goToCircle(farPose.mirroredIf(isRed), 2.0),
-            shootCycle(intake, shooter),
+            releasePattern(intake,shooter,huskyLens,indexTracker),
             name = "FarShootCycle"
         )}
         val closeShootCycle = {Sequence(
             drive.goToCircle(closePose.mirroredIf(isRed), 2.0),
-            shootCycle(intake, shooter),
+            releasePattern(intake,shooter,huskyLens,indexTracker),
             name = "CloseShootCycle"
         )}
 
@@ -123,7 +132,11 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             Instant {Drive.DriveConstants.kPT *= 6},
             name = "GrabBallCycle $n"
         )}
-
+        while (opModeInInit()){
+            indexTracker.pattern = camera.getPattern() ?: indexTracker.pattern
+            telemetry.addData("pattern", indexTracker.pattern)
+            telemetry.update()
+        }
         waitForStart()
 
         if (!opModeIsActive()){
