@@ -80,7 +80,7 @@ class Camera(hwMap: HardwareMap) {
                     return Pose(
                         fiducialResult.robotPoseFieldSpace.position.x * 39.37 + 72.0,
                         fiducialResult.robotPoseFieldSpace.position.y * 39.37,
-                        fiducialResult.robotPoseFieldSpace.orientation.yaw / 360 * 2*PI
+                        fiducialResult.robotPoseFieldSpace.orientation.yaw / 360.0 * 2*PI
                     )
                 }
             }

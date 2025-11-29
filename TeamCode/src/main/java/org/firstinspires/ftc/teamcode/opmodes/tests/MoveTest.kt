@@ -30,7 +30,7 @@ class MoveTest2: LinearOpMode() {
         }
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
-        drive.localizer.pose = Pose(0.0, 0.0, 0.0) //Pose(144 - 138.98 + robotLength/2.0, robotWidth/2.0, 0.0)
+        drive.localizer.pose = Pose(robotLength/2.0, robotWidth/2.0, 0.0)
         drive.targetPose.x = 36.0
         drive.targetPose.y = robotWidth/2.0
         drive.targetPose.heading = PI/2
