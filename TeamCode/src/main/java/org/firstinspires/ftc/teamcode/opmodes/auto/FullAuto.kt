@@ -10,69 +10,36 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
+import org.firstinspires.ftc.teamcode.opmodes.commands.grabBallCycle
+import org.firstinspires.ftc.teamcode.opmodes.commands.loadZoneCycle
 import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
-import org.firstinspires.ftc.teamcode.opmodes.commands.shootCycle
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
-import org.firstinspires.ftc.teamcode.opmodes.poses.storedPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
+import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
-import org.firstinspires.ftc.teamcode.util.Observation
-import org.firstinspires.ftc.teamcode.util.Pattern
+import org.firstinspires.ftc.teamcode.util.storedPattern
+import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.PI
 import kotlin.math.abs
 
 @Autonomous(name="AutoRed", group="Auto")
-class AutoRed: Auto(true)
+class FullAutoRed: FullAuto(true)
 
 @Autonomous(name="AutoBlue", group="Auto")
-class AutoBlue: Auto(false)
-
-@Autonomous(name="AutoLeaveBlue", group="Auto")
-class AutoLeaveBlue: AutoLeave(false)
-
-@Autonomous(name="AutoLeaveRed", group="Auto")
-class AutoLeaveRed: AutoLeave(true)
-
-open class AutoLeave(val isRed: Boolean): LinearOpMode() {
-    override fun runOpMode() {
-        val drive = Drive(hardwareMap)
-        val reads = Reads(hardwareMap)
-        waitForStart()
-
-        if (!opModeIsActive()){
-            return
-        }
-
-        drive.localizer.pose = Pose(robotLength/2.0,robotWidth/2.0,0.0).mirroredIf(isRed)
-        drive.targetPose = farPose.mirroredIf(isRed)
-        runBlocking(Race(
-            Forever {
-                reads.update()
-            },
-            Sequence(
-                drive.goToCircle(Pose(26.0, 26.0, 26.0).mirroredIf(isRed)),
-                Sleep(2.0)
-            ),
-            Forever {
-                drive.update()
-            }
-        ))
-        storedPose = drive.localizer.pose
-    }
-}
-
-
-open class Auto(val isRed: Boolean): LinearOpMode() {
+class FullAutoBlue: FullAuto(false)
+open class FullAuto(val isRed: Boolean): LinearOpMode() {
     override fun runOpMode() {
         val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
@@ -92,6 +59,11 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             releasePattern(intake,shooter,huskyLens,indexTracker),
             name = "CloseShootCycle"
         )}
+        val leaveShootCycle = {Sequence(
+            drive.goToCircle(getScorePose(Vector.fromCartesian(106.0, 12.0)).mirroredIf(isRed), 2.0),
+            releasePattern(intake,shooter,huskyLens,indexTracker),
+            name = "CloseShootCycle"
+        )}
 
         val postReleaseCycle = {Race(
             Sequence(
@@ -100,38 +72,18 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
                 intake.waitForStall()
             ),
             Sequence(
-                drive.goToCircle(Pose(robotWidth/2.0, 48 + robotLength/2.0, PI/2.0).mirroredIf(isRed), 4.0),
+                Race(
+                    drive.goToCircle(Pose(robotWidth/2.0 + 3.0, 48 + robotLength/2.0 - 3.0, PI/2.0).mirroredIf(isRed), 4.0),
+                    Sleep(4.0)
+                ),
                 Sleep(0.3),
-                drive.goToCircle(Pose(robotLength/2.0, 71.0 - robotWidth/2.0, 0.0).mirroredIf(isRed), 4.0),
-                Sleep(0.3),
-                drive.goToCircle(Pose(robotLength/2.0 + 24.0, 71.0 - robotWidth/2.0, 0.0).mirroredIf(isRed), 4.0)
+                Race(
+                    drive.goToCircle(Pose(robotLength/2.0 + 3.0, 71.0 - robotWidth/2.0, 0.0).mirroredIf(isRed), 4.0),
+
+                )
             )
         ) }
 
-        val grabBallCycle = {n: Int -> Sequence(
-            intake.spinUp(),
-            drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed)),
-            Instant {Drive.DriveConstants.kPT /= 6},
-            Race(
-                drive.goToCircle(Pose(
-                    36.0 + 24.0 * n,
-                    if (n == 2) 75.0 else 80.0,
-                    PI/2
-                ).mirroredIf(isRed)),
-                Sequence(
-                    intake.waitForStall(),
-                    Sleep(0.2),
-                    intake.waitForStall()
-                ),
-                Sequence(
-                    WaitUntil{ abs(drive.localizer.yVel) < 0.3 },
-                    Sleep(0.2),
-                    WaitUntil{ abs(drive.localizer.yVel) < 0.3 }
-                ),
-            ),
-            Instant {Drive.DriveConstants.kPT *= 6},
-            name = "GrabBallCycle $n"
-        )}
         while (opModeInInit()){
             indexTracker.pattern = camera.getPattern() ?: indexTracker.pattern
             telemetry.addData("pattern", indexTracker.pattern)
@@ -143,7 +95,7 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             return
         }
 
-        drive.localizer.pose = Pose(144 - 138.98 + robotLength/2.0, robotWidth/2.0, 0.0).mirroredIf(isRed)
+        drive.localizer.pose = Pose(robotLength/2.0, robotWidth/2.0, 0.0).mirroredIf(isRed)
         drive.targetPose = closePose.mirroredIf(isRed)
         var time = System.currentTimeMillis()
         val recordTime = { name:String ->
@@ -163,28 +115,30 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             Sequence(
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 closeShootCycle(),
+
+                Instant{shooter.targetVelocity = 0.0},
+                grabBallCycle(2, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                grabBallCycle(2),
-                Parallel(
-                    Sequence(Sleep(0.5), intake.stop()),
-                    closeShootCycle(),
-                ),
+
+                closeShootCycle(),
+
+                Instant{shooter.targetVelocity = 0.0},
+                grabBallCycle(2, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                grabBallCycle(1),
-                Parallel(
-                    Sequence(Sleep(0.5), intake.stop()),
-                    closeShootCycle(),
-                ),
-                grabBallCycle(0),
-                Parallel(
-                    Sequence(Sleep(0.5), intake.stop()),
-                    closeShootCycle(),
-                ),
-                postReleaseCycle(),
-                Parallel(
-                    Sequence(Sleep(0.5), intake.stop()),
-                    closeShootCycle(),
-                ),
+
+                closeShootCycle(),
+
+                Instant{shooter.targetVelocity = 0.0},
+                grabBallCycle(2, isRed, intake, drive),
+                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+
+                closeShootCycle(),
+
+                Instant{shooter.setTargetVelocityFromDistance(getScoreDistance(Vector.fromCartesian(96.0, 12.0)))},
+
+                loadZoneCycle(isRed, intake, drive)
+
+                leaveShootCycle(),
                 name = "Auto"
             ),
             Forever({
@@ -195,5 +149,6 @@ open class Auto(val isRed: Boolean): LinearOpMode() {
             }, "Writes")
         ))
         storedPose = drive.localizer.pose
+        storedPattern = indexTracker.pattern
     }
 }

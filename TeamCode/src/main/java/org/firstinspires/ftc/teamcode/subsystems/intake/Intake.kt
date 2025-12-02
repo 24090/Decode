@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.commands.Command
 import org.firstinspires.ftc.teamcode.commands.Future
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
+import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
@@ -77,9 +78,10 @@ class Intake(hwMap: HardwareMap) {
 
     fun moveInThird() = Sequence(
         spinUp(),
-        Parallel(
-            waitForDistance(150),
-        ),
+        Race(
+            waitForDistance(250),
+            Sleep(0.5)
+        )
     )
 
     fun setAdjustThird(): Command = Instant({
