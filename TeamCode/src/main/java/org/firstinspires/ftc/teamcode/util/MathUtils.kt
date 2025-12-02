@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.util
 
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 
 fun Int.factorial() : Int = (1..this).reduce(Int::times)
 /**
@@ -17,4 +18,26 @@ infix fun Int.choose(r: Int) = nCr(this, r)
 fun clamp(x: Double, min: Double, max: Double): Double {
     assert(min <= max)
     return min(max(x, min), max)
+}
+
+fun newtonQuartic(a: Double,b: Double,c: Double,d: Double,e: Double, guess: Double): Double{
+    val derivA: Double = 4*a
+    val derivB: Double = 3*b
+    val derivC: Double = 2*c
+    val derivD: Double = 1*d
+    var initGuess: Double = guess
+    var i = 0
+    while (i<10){
+        val slope: Double = evalCubic(derivA,derivB,derivC, derivD, initGuess)
+        val newGuess: Double = initGuess -(evalQuartic(a,b,c,d,e,initGuess))/slope
+        initGuess = newGuess
+        i++
+    }
+    return initGuess
+}
+fun evalCubic(a: Double, b: Double,c: Double,d: Double, value: Double): Double{
+    return a*(value.pow(3))+b*(value.pow(2))+c*(value.pow(1))+d
+}
+fun evalQuartic(a: Double, b: Double,c: Double,d: Double, e: Double, value: Double): Double{
+    return a*(value.pow(4))+b*(value.pow(3))+c*(value.pow(2))+d*(value.pow(1))+e
 }
