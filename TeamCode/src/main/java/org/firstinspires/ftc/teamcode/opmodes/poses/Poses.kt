@@ -32,3 +32,4 @@ val closeDistance = getScoreDistance(Vector.fromPose(closePose))
 
 val farDistance = getScoreDistance(Vector.fromPose(farPose))
 val startPose = Pose(robotLength/2.0, robotWidth/2.0, 0.0)
+val parkPose = Pose(24.0+(robotLength/2.0), -24.0-(robotWidth/2.0), PI)

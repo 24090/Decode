@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
 import org.firstinspires.ftc.teamcode.opmodes.commands.shootCycle
+import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
@@ -241,6 +242,31 @@ class Controlled: LinearOpMode() {
                 ))
                 runBlocking(intake.spinUp())
                 intake.resetPushers()
+                drive.currentUpdateHeading = updateHeadingOverride
+                drive.currentUpdateTranslational = updateTranslationalOverride
+            }
+            if (gamepad1.rightBumperWasPressed()){
+                drive.currentUpdateHeading = drive::updateHeading
+                drive.currentUpdateTranslational = drive::updateTranslational
+                runBlocking(Race(
+                    WaitUntil { !gamepad1.right_bumper},
+                    Forever {
+                        reads.update()
+                        updateP2()
+                        val relativePose = (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose))
+                        shooter.setTargetVelocityFromDistance(relativePose.length)
+                        drive.targetPose = parkPose
+                    },
+                    WaitUntil{drive.error.inSquare(1.0,1.0,0.04)},
+                    Forever {
+                        intake.update()
+                        drive.update()
+                        shooter.update()
+                        telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
+                        telemetry.addData("Target velocity", shooter.targetVelocity)
+                        telemetry.update()
+                    }
+                ))
                 drive.currentUpdateHeading = updateHeadingOverride
                 drive.currentUpdateTranslational = updateTranslationalOverride
             }

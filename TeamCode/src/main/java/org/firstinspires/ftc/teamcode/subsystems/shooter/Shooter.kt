@@ -17,6 +17,7 @@ import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.pow
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 @Config
@@ -26,13 +27,14 @@ class Shooter(hwMap: HardwareMap) {
         @JvmField var kP = 0.005
         @JvmField var rightVelocityOffset: Double = 45.0
         @JvmField var velocityThreshold: Double = 30.0
-        @JvmField var shooterAngle: Double = 30.0
+        @JvmField var shooterAngle: Double = 0.678
     }
 
     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
     var targetVelocity = 0.0
-
+    val gravity: Double = 385.0
+    val heightDiff: Double = 26.74534 //TODO measure height difference from shooter and goal
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0),
         Pair(0.0001, 0.08),
@@ -46,6 +48,13 @@ class Shooter(hwMap: HardwareMap) {
         Pair(74.5 * sqrt(2.0), 1490.0),
         Pair(98.5 * sqrt(2.0), 1720.0),
         Pair(110.5 * sqrt(2.0), 1810.0)
+    ))
+
+    val exitVelocityToVelocityLUT = InterpolatedLUT(mapOf(
+        Pair(229.166853392, 1380.0),
+        Pair(229.166853392, 1490.0),
+        Pair(268.84613614, 1720.0),
+        Pair(280.03212305, 1810.0)
     ))
 
     init {
@@ -83,10 +92,8 @@ class Shooter(hwMap: HardwareMap) {
     fun solveKinematicsForMoveShoot(relativePose: Pose, relativeVelocity: Vector): Pair<Double, Double>{
         val s_x: Double = relativePose.x
         val s_y: Double = relativePose.y
-        val heightDiff: Double = 0.0 //TODO measure height difference from shooter and goal
         val v_rx: Double = relativeVelocity.x
         val v_ry: Double = relativeVelocity.y
-        val gravity: Double = 385.0
         var v_s: Double = 0.0
         var phi: Double = 0.0
         var t: Double = newtonQuartic(
