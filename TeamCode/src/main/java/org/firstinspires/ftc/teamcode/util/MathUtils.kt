@@ -33,7 +33,7 @@ fun newtonQuartic(a: Double,b: Double,c: Double,d: Double,e: Double, guess: Doub
     val derivD: Double = 1*d
     var initGuess: Double = guess
     var i = 0
-    while (i<10){
+    while (i<100){
         val slope: Double = evalCubic(derivA,derivB,derivC, derivD, initGuess)
         val newGuess: Double = initGuess -(evalQuartic(a,b,c,d,e,initGuess))/slope
         initGuess = newGuess

@@ -34,7 +34,6 @@ class Shooter(hwMap: HardwareMap) {
     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
     var targetVelocity = 0.0
     val gravity: Double = 385.0
-    val heightDiff: Double = 26.74534 //TODO measure height difference from shooter and goal
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0),
         Pair(0.0001, 0.08),
@@ -51,6 +50,7 @@ class Shooter(hwMap: HardwareMap) {
     ))
 
     val exitVelocityToVelocityLUT = InterpolatedLUT(mapOf(
+        Pair(0.0, 0.0),
         Pair(229.166853392, 1380.0),
         Pair(229.166853392, 1490.0),
         Pair(268.84613614, 1720.0),
