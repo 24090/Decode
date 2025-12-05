@@ -18,7 +18,7 @@ class DirectionDebugger: LinearOpMode() {
         val reads = Reads(hardwareMap)
         val dash = FtcDashboard.getInstance()
         waitForStart()
-        drive.localizer.pose = Pose(0.0, 0.0, 0.0)//Pose(robotLength/2.0, robotWidth/2.0, 0.0)
+        drive.localizer.pose = Pose(0.0, 0.0, 0.0) //Pose(robotLength/2.0, robotWidth/2.0, 0.0)
         while (opModeIsActive()){
             reads.update()
 

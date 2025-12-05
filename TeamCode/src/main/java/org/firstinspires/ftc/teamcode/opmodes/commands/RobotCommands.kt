@@ -20,7 +20,6 @@ import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Pattern
 import kotlin.math.PI
 import kotlin.math.abs
-
 fun shootCycle(intake: Intake, shooter: Shooter) = Sequence(
         Parallel(
             intake.fullAdjustThird(),
@@ -35,7 +34,6 @@ fun shootCycle(intake: Intake, shooter: Shooter) = Sequence(
         intake.releaseDual(),
         name = "ShootCycle"
     )
-
 fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, indexTracker: IndexTracker): Command = Future {
     huskyLens.read()
     val held = huskyLens.getHeldPattern()
@@ -112,11 +110,11 @@ fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, index
 }
 fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
     intake.spinUp(),
-    drive.goToSquare(Pose((if (isRed) 34.0 else 39.5) + 24.0 * n, 24.0, PI/2).mirroredIf(isRed)),
+    drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed)),
     Instant {Drive.DriveConstants.kPT /= 6},
     Race(
         drive.goToCircle(Pose(
-            (if (isRed) 36.0 else 39.5) + 24.0 * n,
+            36.0 + 24.0 * n,
             if (n == 2) 75.0 else 80.0,
             PI/2
         ).mirroredIf(isRed)),
@@ -133,7 +131,7 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
     ),
     Instant {Drive.DriveConstants.kPT *= 6},
     if (n == 1) {
-        drive.goToSquare(Pose((if (isRed) 33.0 else 39.5) + 24.0 * n, 24.0, PI/2).mirroredIf(isRed))
+        drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed))
     } else {
         Instant {}
     },

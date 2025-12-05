@@ -88,24 +88,4 @@ class Shooter(hwMap: HardwareMap) {
         abs(targetVelocity - motorLeft.velocity) <= velocityThreshold
         && abs((targetVelocity + rightVelocityOffset) - motorRight.velocity) <= velocityThreshold
     }, "WaitForVelocity")
-
-    fun solveKinematicsForMoveShoot(relativePose: Pose, relativeVelocity: Vector): Pair<Double, Double>{
-        val s_x: Double = relativePose.x
-        val s_y: Double = relativePose.y
-        val v_rx: Double = relativeVelocity.x
-        val v_ry: Double = relativeVelocity.y
-        var v_s: Double = 0.0
-        var phi: Double = 0.0
-        var t: Double = newtonQuartic(
-            ((((cos(shooterAngle)).pow(2))*(gravity.pow(2)))/4)-(v_rx.pow(2)),
-            2*s_y*v_rx,
-            (((cos(shooterAngle)).pow(2))*heightDiff*gravity)-(v_ry.pow(2))-(s_y.pow(2)),
-            2*s_x*v_ry,
-            ((cos(shooterAngle)).pow(2))*(heightDiff.pow(2))-(s_x.pow(2)),
-            0.0
-        )
-        v_s = sqrt((((-s_y+t*v_ry)/(t*Math.cos(shooterAngle))).pow(2))+(((-s_x+t*v_rx)/(cos(shooterAngle))).pow(2)))
-        phi = acos((-s_x+t*v_rx)/(v_s*cos(shooterAngle)))
-        return Pair<Double, Double>(v_s, phi)
-    }
 }

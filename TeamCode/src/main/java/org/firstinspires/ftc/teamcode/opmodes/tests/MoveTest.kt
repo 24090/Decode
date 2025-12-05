@@ -30,99 +30,14 @@ class MoveTest2: LinearOpMode() {
         }
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
-        drive.localizer.pose = Pose(robotLength/2.0, robotWidth/2.0, 0.0)
-        drive.targetPose.x = 36.0
-        drive.targetPose.y = robotWidth/2.0
-        drive.targetPose.heading = PI/2
-
+        drive.localizer.pose = Pose(0.0, 0.0, 0.0)
+        drive.targetPose = Pose(0.0, 0.0, 0.0)
         reads.update()
-
         waitForStart()
-        runBlocking(
-            Race(
-                Forever {
-                    recordTime("runblocking")
-                    dash.sendTelemetryPacket(telemetryPacket)
-                    telemetryPacket = TelemetryPacket()
-                    recordTime("packet")
-                    reads.update()
-                    recordTime("reads")
-                },
-                Sequence(
-                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(48.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(48.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(48.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(48.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(48.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(48.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(48.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(48.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(24.0, 0.0, 0.0)),
-                    Sleep(1.0)
-
-                ),
-                Forever {
-                    recordTime("actions")
-                    drive.update()
-                    recordTime("write")
-                    telemetry.update()
-                }
-            )
-        )
+        while (opModeIsActive()) {
+            reads.update()
+            drive.update()
+        }
         while (opModeIsActive()) {
             reads.update()
             drive.update()

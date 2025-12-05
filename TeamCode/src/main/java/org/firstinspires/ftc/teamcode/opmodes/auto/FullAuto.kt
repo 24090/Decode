@@ -79,7 +79,6 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                 Sleep(0.3),
                 Race(
                     drive.goToCircle(Pose(robotLength/2.0 + 3.0, 71.0 - robotWidth/2.0, 0.0).mirroredIf(isRed), 4.0),
-
                 )
             )
         ) }
@@ -123,20 +122,20 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                 closeShootCycle(),
 
                 Instant{shooter.targetVelocity = 0.0},
-                grabBallCycle(2, isRed, intake, drive),
+                grabBallCycle(1, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
 
                 closeShootCycle(),
 
                 Instant{shooter.targetVelocity = 0.0},
-                grabBallCycle(2, isRed, intake, drive),
+                grabBallCycle(0, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
 
                 closeShootCycle(),
 
                 Instant{shooter.setTargetVelocityFromDistance(getScoreDistance(Vector.fromCartesian(96.0, 12.0)))},
 
-                loadZoneCycle(isRed, intake, drive)
+                loadZoneCycle(isRed, intake, drive),
 
                 leaveShootCycle(),
                 name = "Auto"

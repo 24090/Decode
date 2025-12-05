@@ -60,6 +60,8 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
     fun mirrored() = Pose(this.x, -this.y, -this.heading)
 
     fun mirroredIf(v: Boolean) = if (v) this.mirrored() else this
+
+    fun vector() = Vector.fromPose(this)
 }
 
 

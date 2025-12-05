@@ -1,8 +1,14 @@
 package org.firstinspires.ftc.teamcode.util
 
+import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
+import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter.Params.shooterAngle
+import kotlin.math.acos
+import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.sqrt
 
 fun Int.factorial() : Int = (1..this).reduce(Int::times)
 /**
@@ -40,4 +46,32 @@ fun evalCubic(a: Double, b: Double,c: Double,d: Double, value: Double): Double{
 }
 fun evalQuartic(a: Double, b: Double,c: Double,d: Double, e: Double, value: Double): Double{
     return a*(value.pow(4))+b*(value.pow(3))+c*(value.pow(2))+d*(value.pow(1))+e
+}
+
+fun findLineIntersection(lineA: Pair<Vector, Vector>, lineB: Pair<Vector, Vector>): Vector? {
+    if (lineA.first.x == lineA.second.x) {
+        return null
+    } else if (lineB.first.x == lineB.second.x) {
+        return null
+    }
+    val slopeA = (lineA.first.y - lineA.second.y)/(lineA.first.x - lineA.second.x)
+    val slopeB = (lineB.first.y - lineB.second.y)/(lineB.first.x - lineB.second.x)
+    val interceptA = lineA.first.x - lineA.first.y * slopeA
+    val interceptB = lineB.first.x - lineB.first.y * slopeA
+    val pointInRange = { x: Double, a: Double, b: Double -> x>= min(a, b)&& x<= max(a, b)}
+    if (slopeA == slopeB) {
+        return (
+            if (interceptB != interceptA) null
+            else if (pointInRange(lineB.first.x, lineA.first.x, lineA.second.x)) lineB.first
+            else if (pointInRange(lineB.second.x, lineA.first.x, lineA.second.x)) lineB.second
+            else null
+        )
+    }
+
+    val x =  (interceptB - interceptA) / (slopeA - slopeB)
+
+    if (pointInRange(x, lineA.first.x, lineA.second.x) && pointInRange(x, lineB.first.x, lineB.second.x)) {
+        return Vector.fromCartesian(x, x * slopeA + interceptA)
+    }
+    return null
 }

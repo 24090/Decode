@@ -33,3 +33,7 @@ val closeDistance = getScoreDistance(Vector.fromPose(closePose))
 val farDistance = getScoreDistance(Vector.fromPose(farPose))
 val startPose = Pose(robotLength/2.0, robotWidth/2.0, 0.0)
 val parkPose = Pose(24.0+(robotLength/2.0), -24.0-(robotWidth/2.0), PI)
+
+
+fun inLaunchZone(pose: Pose) = (pose.x - 72.0 >= pose.y && pose.x - 72.0 >= -pose.y)
+                            || (pose.x <= pose.y + 24.0 && pose.x <= -pose.y + 24.0)

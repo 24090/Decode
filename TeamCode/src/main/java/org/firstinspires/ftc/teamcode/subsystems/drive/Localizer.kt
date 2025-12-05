@@ -10,6 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 
@@ -17,7 +18,7 @@ class Localizer(hwMap: HardwareMap) {
     var pinpoint: GoBildaPinpointDriver = hwMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
     companion object {
         @JvmStatic var driveY: Double = -6.1
-        @JvmStatic var strafeX: Double = -2.64
+        @JvmStatic var strafeX: Double = -3.54
     }
     init {
         // X and Y are INTENTIONALLY swapped

@@ -34,6 +34,7 @@ import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
+import kotlin.math.PI
 
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
@@ -134,8 +135,8 @@ class Controlled: LinearOpMode() {
             updateP2()
             recordTime("loop")
             if (gamepad1.backWasPressed()) {
-                drive.localizer.pose = Pose(robotLength/2.0, -72.0 + robotWidth/2.0, 0.0).mirroredIf(isRed)
-                drive.targetPose = drive.localizer.pose
+                drive.localizer.pose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed)
+                drive.targetPose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed)
             }
             if (gamepad1.aWasPressed()) {
                 runBlocking(intake.spinUp())

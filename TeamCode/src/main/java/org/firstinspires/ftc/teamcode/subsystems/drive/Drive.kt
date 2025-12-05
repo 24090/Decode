@@ -21,7 +21,6 @@ class Drive(hwMap: HardwareMap) {
 
     companion object DriveConstants {
         @JvmField var lateralFactor = 0.7
-
         @JvmField var kPH = 2.5
         @JvmField var kDH = 0.15
         @JvmField var kLH = 0.15
@@ -197,7 +196,7 @@ class Drive(hwMap: HardwareMap) {
         Instant {
             targetPose = pose
         },
-        WaitUntil { atTargetCircle(distanceTolerance, headingTolerance) },
+        WaitUntil { atTargetCircle(distanceTolerance, headingTolerance) && localizer.poseVel.inCircle(0.5, 0.04)},
     )
     fun goToSquare(
         pose: Pose,
