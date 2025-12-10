@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.drive.Localizer
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 
 import org.firstinspires.ftc.teamcode.util.Observation
 import org.firstinspires.ftc.teamcode.util.Pattern
@@ -50,9 +51,9 @@ class Camera(hwMap: HardwareMap) {
         currentPipeline = Pipeline.RampAnalysis
     }
 
-    fun getFieldAnalysis(): Int? {
+    fun getFieldAnalysis(): Vector? {
         if (currentPipeline != Pipeline.FieldAnalysis) error("Wrong Pipeline")
-        return TODO()
+        return Vector.fromCartesian(limelight.latestResult.pythonOutput[0],limelight.latestResult.pythonOutput[1])
     }
 
     fun getRampAnalysis(): Observation.Camera? {
