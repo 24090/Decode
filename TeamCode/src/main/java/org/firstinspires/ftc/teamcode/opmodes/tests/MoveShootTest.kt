@@ -15,6 +15,8 @@ import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftBack
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftForward
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightBack
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightForward
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.IndexTracker
@@ -39,7 +41,6 @@ class MoveShootTest: LinearOpMode(){
         }
         waitForStart()
         drive.localizer.pose = startPose
-        shooter.setTargetVelocityFromDistance(48.0 * sqrt(2.0))
         var outputs: Pair<Double, Double>? = null
         drive.currentUpdateTranslational = {
             val v = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), gamepad1.left_stick_y.toDouble())
@@ -53,14 +54,19 @@ class MoveShootTest: LinearOpMode(){
         runBlocking(
             Forever {
                 reads.update()
-                outputs = moveShootKinematics(drive.localizer.pose.vector() - Vector.fromCartesian(144.0, 72.0), Vector.fromCartesian(0.01, 0.01))//calculatePredictiveMoveShoot(drive.localizer.pose, drive.localizer.poseVel)
+                outputs = calculatePredictiveMoveShoot(drive.localizer.pose, drive.localizer.poseVel)
                 recordTime("reads")
                 drive.update()
-                telemetry.addData("exit velocity", outputs?.first)
-                telemetry.addData("heading", outputs?.second)
+                telemetry.addData("target exit velocity", outputs?.first)
+                telemetry.addData("target heading", outputs?.second)
                 telemetry.addData("pose", drive.localizer.pose)
-                intake.pusherLeft.position = if (gamepad1.x) pusherLeftBack else pusherLeftForward
-                shooter.targetVelocity = shooter.exitVelocityToVelocityLUT.get(outputs?.first ?: 0.0)
+                telemetry.addData("pose", drive.localizer.poseVel)
+                telemetry.addData("targetVelocity", shooter.targetVelocity)
+                telemetry.addData("motorLeftVelocity", shooter.motorLeft.velocity)
+                telemetry.addData("motorRightVelocity", shooter.motorRight.velocity)
+                intake.pusherLeft.position = if (gamepad1.x) pusherLeftForward else pusherLeftBack
+                intake.pusherRight.position = if (gamepad1.x) pusherRightForward else pusherRightBack
+                shooter.targetVelocity = shooter.exitVelocityToVelocityLUT.get(outputs?.first ?: 1400.0)
                 shooter.update(); recordTime("shooter")
                 intake.update(); recordTime("intake")
                 telemetry.update()
