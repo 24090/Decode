@@ -1,14 +1,9 @@
 package org.firstinspires.ftc.teamcode.util
 
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
-import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter.Params.shooterAngle
-import kotlin.math.acos
-import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
-import kotlin.math.sqrt
 
 fun Int.factorial() : Int = (1..this).reduce(Int::times)
 /**
@@ -26,7 +21,35 @@ fun clamp(x: Double, min: Double, max: Double): Double {
     return min(max(x, min), max)
 }
 
-fun newtonQuartic(a: Double,b: Double,c: Double,d: Double,e: Double, guess: Double): Double{
+fun solvePolynomialIA(interval: Interval, iterations: Int = 50, vararg coefficients: Double, first: Boolean = true): List<Double>{
+    val length = coefficients.size
+    val out = coefficients.withIndex().map { (i, coefficient) ->  interval.pow(length - i - 1) * coefficient}.reduce(Interval::plus)
+    if (!out.contains(0.0)) {
+        if (first) {
+            val closest = if (out.upper < 0.0) out.upper else out.lower
+            println("Closest to zero: $closest")
+            val newCoefficients = coefficients.dropLast(1).plus(coefficients.last() - closest).toDoubleArray()
+            return solvePolynomialIA(interval, iterations, *newCoefficients)
+        }
+        return listOf()
+    }
+    val pivot = (interval.lower + interval.upper)/2
+    if (iterations == 1) {
+        return listOf(pivot)
+    }
+    return solvePolynomialIA(
+        Interval(interval.lower, pivot),
+        iterations - 1,
+        *coefficients,
+        first = false
+    ) + solvePolynomialIA(
+        Interval(pivot, interval.upper),
+        iterations - 1,
+        *coefficients,
+        first = false
+    )
+}
+fun solveQuarticNewton(a: Double, b: Double, c: Double, d: Double, e: Double, guess: Double): Double{
     val derivA: Double = 4*a
     val derivB: Double = 3*b
     val derivC: Double = 2*c
@@ -34,18 +57,16 @@ fun newtonQuartic(a: Double,b: Double,c: Double,d: Double,e: Double, guess: Doub
     var initGuess: Double = guess
     var i = 0
     while (i<100){
-        val slope: Double = evalCubic(derivA,derivB,derivC, derivD, initGuess)
-        val newGuess: Double = initGuess -(evalQuartic(a,b,c,d,e,initGuess))/slope
+        val slope: Double = evalPolynomial(initGuess, derivA,derivB,derivC, derivD)
+        val newGuess: Double = initGuess -(evalPolynomial(initGuess, a,b,c,d,e))/slope
         initGuess = newGuess
         i++
     }
     return initGuess
 }
-fun evalCubic(a: Double, b: Double,c: Double,d: Double, value: Double): Double{
-    return a*(value.pow(3))+b*(value.pow(2))+c*(value.pow(1))+d
-}
-fun evalQuartic(a: Double, b: Double,c: Double,d: Double, e: Double, value: Double): Double{
-    return a*(value.pow(4))+b*(value.pow(3))+c*(value.pow(2))+d*(value.pow(1))+e
+fun evalPolynomial(value: Double, vararg coefficients: Double): Double{
+    val length = coefficients.size
+    return coefficients.withIndex().map { (i, coefficient) ->  coefficient * value.pow(length - i - 1)}.sum()
 }
 
 fun findLineIntersection(lineA: Pair<Vector, Vector>, lineB: Pair<Vector, Vector>): Vector? {

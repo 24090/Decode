@@ -18,13 +18,22 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
     val v_ry: Double = fieldVelocity.y
     val heightDiff = 26.74534
     val gravity = 386.088
-    val t: Double = newtonQuartic(
+    val t: Double = solvePolynomialIA(
+        interval = Interval(0.0, 10.0),
+        iterations = 50,
         -(0.25*gravity.pow(2))/(tan(shooterAngle).pow(2)),
         0.0,
         v_rx.pow(2)+v_ry.pow(2)-(heightDiff*gravity)/(tan(shooterAngle).pow(2)),
         -2*s_x*v_rx-2*s_y*v_ry,
-        s_x.pow(2)+s_y.pow(2)-(heightDiff.pow(2))/(tan(shooterAngle).pow(2)),
-        3.0
+        s_x.pow(2)+s_y.pow(2)-(heightDiff.pow(2))/(tan(shooterAngle).pow(2))
+    ).last()
+
+    println("COEFFICIENTS\n" +
+            "${-(0.25*gravity.pow(2))/(tan(shooterAngle).pow(2))}, " +
+            "0.0, " +
+            "${v_rx.pow(2)+v_ry.pow(2)-(heightDiff*gravity)/(tan(shooterAngle).pow(2))}, " +
+            "${-2*s_x*v_rx-2*s_y*v_ry}, " +
+            "${s_x.pow(2)+s_y.pow(2)-(heightDiff.pow(2))/(tan(shooterAngle).pow(2))}"
     )
     val v_s = sqrt(
         (((s_y-v_ry*t).pow(2))+((s_x-v_rx*t).pow(2)))/

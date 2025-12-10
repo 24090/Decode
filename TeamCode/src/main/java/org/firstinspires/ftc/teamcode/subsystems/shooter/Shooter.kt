@@ -12,7 +12,6 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.InterpolatedLUT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
-import org.firstinspires.ftc.teamcode.util.newtonQuartic
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.cos
