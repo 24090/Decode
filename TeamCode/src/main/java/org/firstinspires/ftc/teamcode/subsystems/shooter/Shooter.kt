@@ -27,7 +27,6 @@ class Shooter(hwMap: HardwareMap) {
         @JvmField var kP = 0.005
         @JvmField var rightVelocityOffset: Double = 45.0
         @JvmField var velocityThreshold: Double = 30.0
-        val shooterAngle: Double = 0.678
     }
 
     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)

@@ -26,7 +26,7 @@ class Localizer(hwMap: HardwareMap) {
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD)
         pinpoint.setYawScalar(1.0)
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD)
-        pinpoint.resetPosAndIMU()
+        pinpoint.recalibrateIMU()
         pinpoint.update()
     }
     var pose
