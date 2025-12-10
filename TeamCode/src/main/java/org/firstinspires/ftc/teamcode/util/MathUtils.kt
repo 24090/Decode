@@ -49,16 +49,26 @@ fun evalQuartic(a: Double, b: Double,c: Double,d: Double, e: Double, value: Doub
 }
 
 fun findLineIntersection(lineA: Pair<Vector, Vector>, lineB: Pair<Vector, Vector>): Vector? {
-    if (lineA.first.x == lineA.second.x) {
-        return null
-    } else if (lineB.first.x == lineB.second.x) {
-        return null
-    }
+
+    // i'm to lazy to handle vertical lines so adding 0.001 is the solution
+    val lineA = if (lineA.first.x == lineA.second.x) {
+        Pair(Vector.fromCartesian(lineA.first.x + 0.001, lineA.first.y), lineA.second)
+    } else lineA
+
+    val lineB = if (lineB.first.x == lineB.second.x) {
+        Pair(Vector.fromCartesian(lineB.first.x + 0.001, lineB.first.y), lineB.second)
+    } else lineB
+
     val slopeA = (lineA.first.y - lineA.second.y)/(lineA.first.x - lineA.second.x)
     val slopeB = (lineB.first.y - lineB.second.y)/(lineB.first.x - lineB.second.x)
-    val interceptA = lineA.first.x - lineA.first.y * slopeA
-    val interceptB = lineB.first.x - lineB.first.y * slopeA
+    val interceptA = lineA.first.y - lineA.first.x * slopeA
+    val interceptB = lineB.first.y - lineB.first.x * slopeB
     val pointInRange = { x: Double, a: Double, b: Double -> x>= min(a, b)&& x<= max(a, b)}
+    val x = (interceptA - interceptB) / (slopeB - slopeA)
+    if (pointInRange(x, lineA.first.x, lineA.second.x) && pointInRange(x, lineB.first.x, lineB.second.x)) {
+        return Vector.fromCartesian(x, x * slopeA + interceptA)
+    }
+
     if (slopeA == slopeB) {
         return (
             if (interceptB != interceptA) null
@@ -66,12 +76,6 @@ fun findLineIntersection(lineA: Pair<Vector, Vector>, lineB: Pair<Vector, Vector
             else if (pointInRange(lineB.second.x, lineA.first.x, lineA.second.x)) lineB.second
             else null
         )
-    }
-
-    val x =  (interceptB - interceptA) / (slopeA - slopeB)
-
-    if (pointInRange(x, lineA.first.x, lineA.second.x) && pointInRange(x, lineB.first.x, lineB.second.x)) {
-        return Vector.fromCartesian(x, x * slopeA + interceptA)
     }
     return null
 }

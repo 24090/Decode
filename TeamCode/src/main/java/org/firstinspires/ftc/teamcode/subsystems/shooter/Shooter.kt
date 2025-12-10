@@ -28,14 +28,12 @@ class Shooter(hwMap: HardwareMap) {
         @JvmField var kP = 0.005
         @JvmField var rightVelocityOffset: Double = 45.0
         @JvmField var velocityThreshold: Double = 30.0
-        @JvmField var shooterAngle: Double = 0.678
+        val shooterAngle: Double = 0.678
     }
 
     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
     var targetVelocity = 0.0
-    val gravity: Double = 385.0
-    val heightDiff: Double = 26.74534 //TODO measure height difference from shooter and goal
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0),
         Pair(0.0001, 0.08),
@@ -52,10 +50,15 @@ class Shooter(hwMap: HardwareMap) {
     ))
 
     val exitVelocityToVelocityLUT = InterpolatedLUT(mapOf(
-        Pair(229.166853392, 1380.0),
-        Pair(229.166853392, 1490.0),
-        Pair(268.84613614, 1720.0),
-        Pair(280.03212305, 1810.0)
+        Pair(0.0, 0.0), // 0 in
+        Pair(240.54263482458313, 1350.0), // 36 sqrt 2 in
+        Pair(229.166853392, 1300.0), // 48 sqrt 2 in
+        Pair(234.71967122508264, 1315.0),  // 60 sqrt 2 in
+        Pair(244.3611142135543, 1415.0),  // 72 sqrt 2 in
+        Pair(255.26286235651958, 1555.0),  // 84 sqrt 2 in
+        Pair(266.5008999454302, 1680.0),  // 96 sqrt 2 in
+        Pair(277.7149809088336, 1785.0),  // 108 sqrt 2 in
+        Pair(288.75339447421294, 1855.0),  // 120 sqrt 2 in
     ))
 
     init {
@@ -89,27 +92,4 @@ class Shooter(hwMap: HardwareMap) {
         abs(targetVelocity - motorLeft.velocity) <= velocityThreshold
         && abs((targetVelocity + rightVelocityOffset) - motorRight.velocity) <= velocityThreshold
     }, "WaitForVelocity")
-
-    fun solveKinematicsForMoveShoot(relativePose: Pose, relativeVelocity: Vector): Pair<Double, Double>{
-        val s_x: Double = relativePose.x
-        val s_y: Double = relativePose.y
-        val v_rx: Double = relativeVelocity.x
-        val v_ry: Double = relativeVelocity.y
-        var v_s: Double = 0.0
-        var phi: Double = 0.0
-        var t: Double = newtonQuartic(
-            -(0.25*gravity.pow(2))/(tan(shooterAngle).pow(2)),
-            0.0,
-            v_rx.pow(2)+v_ry.pow(2)-(heightDiff*gravity)/(tan(shooterAngle).pow(2)),
-            -2*s_x*v_rx-2*s_y*v_ry,
-            s_x.pow(2)+s_y.pow(2)-(heightDiff.pow(2))/(tan(shooterAngle).pow(2)),
-            3.0
-        )
-        v_s = sqrt(
-            (((s_y-v_ry*t).pow(2))+((s_x-v_rx*t).pow(2)))/
-                    ((cos(shooterAngle)*t).pow(2))
-        )
-        phi = acos((s_x-t*v_rx)/(v_s*cos(shooterAngle)*t))
-        return Pair<Double, Double>(v_s, phi)
-    }
 }
