@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
+import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
@@ -22,6 +23,8 @@ import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Pattern
 import org.firstinspires.ftc.teamcode.util.calculatePredictiveMoveShoot
+import org.firstinspires.ftc.teamcode.util.calculatePredictivePosition
+import org.firstinspires.ftc.teamcode.util.getTime
 import org.firstinspires.ftc.teamcode.util.moveShootKinematics
 import kotlin.math.sqrt
 
@@ -57,13 +60,17 @@ class MoveShootTest: LinearOpMode(){
                 outputs = calculatePredictiveMoveShoot(drive.localizer.pose, drive.localizer.poseVel)
                 recordTime("reads")
                 drive.update()
+                val relativePose = (scorePosition - Vector.fromPose(drive.localizer.pose))
                 telemetry.addData("target exit velocity", outputs?.first)
                 telemetry.addData("target heading", outputs?.second)
-                telemetry.addData("pose", drive.localizer.pose)
+                telemetry.addData("pose", relativePose)
                 telemetry.addData("pose", drive.localizer.poseVel)
                 telemetry.addData("targetVelocity", shooter.targetVelocity)
                 telemetry.addData("motorLeftVelocity", shooter.motorLeft.velocity)
                 telemetry.addData("motorRightVelocity", shooter.motorRight.velocity)
+                telemetry.addData("distanceVelocity", shooter.getDistanceToVelocity(relativePose.length))
+                telemetry.addData("predictedPoint", calculatePredictivePosition(drive.localizer.pose, drive.localizer.poseVel))
+                telemetry.addData("predictedTime", getTime(drive.localizer.pose, drive.localizer.poseVel))
                 intake.pusherLeft.position = if (gamepad1.x) pusherLeftForward else pusherLeftBack
                 intake.pusherRight.position = if (gamepad1.x) pusherRightForward else pusherRightBack
                 shooter.targetVelocity = shooter.exitVelocityToVelocityLUT.get(outputs?.first ?: 1400.0)

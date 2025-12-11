@@ -76,6 +76,9 @@ class Shooter(hwMap: HardwareMap) {
     fun setTargetVelocityFromDistance(distance: Double) {
         targetVelocity = distanceToVelocityLUT.get(distance)
     }
+    fun getDistanceToVelocity(distance : Double): Double{
+        return distanceToVelocityLUT.get(distance)
+    }
 
     fun stop(): Command = Instant({
         targetVelocity = 0.0
