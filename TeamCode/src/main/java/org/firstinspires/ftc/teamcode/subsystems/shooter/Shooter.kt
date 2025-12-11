@@ -12,7 +12,6 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.InterpolatedLUT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
-import org.firstinspires.ftc.teamcode.util.newtonQuartic
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.cos
@@ -28,7 +27,6 @@ class Shooter(hwMap: HardwareMap) {
         @JvmField var kP = 0.005
         @JvmField var rightVelocityOffset: Double = 45.0
         @JvmField var velocityThreshold: Double = 30.0
-        val shooterAngle: Double = 0.678
     }
 
     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)

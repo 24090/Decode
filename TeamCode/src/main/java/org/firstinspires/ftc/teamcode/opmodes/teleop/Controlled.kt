@@ -39,7 +39,6 @@ import kotlin.math.PI
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
     override fun runOpMode() {
-        val runFlywheel = true
         var isRed = false
         val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
