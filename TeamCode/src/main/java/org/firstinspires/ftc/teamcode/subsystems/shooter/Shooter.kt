@@ -10,28 +10,21 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.InterpolatedLUT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
-import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 import kotlin.math.abs
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
 import kotlin.math.sqrt
-import kotlin.math.tan
 
 @Config
 class Shooter(hwMap: HardwareMap) {
 
     companion object Params {
         @JvmField var kP = 0.005
-        @JvmField var rightVelocityOffset: Double = 45.0
         @JvmField var velocityThreshold: Double = 30.0
     }
 
     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
-    var targetVelocity = 0.0
+    var targetVelocityLeft = 0.0
+    var targetVelocityRight = 0.0
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0),
         Pair(0.0001, 0.08),
@@ -47,16 +40,26 @@ class Shooter(hwMap: HardwareMap) {
         Pair(110.5 * sqrt(2.0), 1810.0)
     ))
 
-    val exitVelocityToVelocityLUT = InterpolatedLUT(mapOf(
+    val exitVelocityToLeftVelocityLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0), // 0 in
-        Pair(240.54263482458313, 1350.0), // 36 sqrt 2 in
-        Pair(229.166853392, 1300.0), // 48 sqrt 2 in
-        Pair(234.71967122508264, 1315.0),  // 60 sqrt 2 in
-        Pair(244.3611142135543, 1415.0),  // 72 sqrt 2 in
-        Pair(255.26286235651958, 1555.0),  // 84 sqrt 2 in
-        Pair(266.5008999454302, 1680.0),  // 96 sqrt 2 in
-        Pair(277.7149809088336, 1785.0),  // 108 sqrt 2 in
-        Pair(288.75339447421294, 1855.0),  // 120 sqrt 2 in
+        Pair(186.74179161227147, 1285.0), // 36 sqrt 2 in
+        Pair(198.22446004746948, 1280.0), // 48 sqrt 2 in
+        Pair(211.98762969131045, 1350.0),  // 60 sqrt 2 in
+        Pair(225.90458755348956, 1470.0),  // 72 sqrt 2 in
+        Pair(239.459044216468, 1570.0),  // 84 sqrt 2 in
+        Pair(252.5208774351413, 1730.0),  // 96 sqrt 2 in
+        Pair(265.07623836747837, 1880.0),  // 108 sqrt 2 in
+    ))
+
+    val exitVelocityToRightVelocityLUT = InterpolatedLUT(mapOf(
+        Pair(0.0, 0.0), // 0 in
+        Pair(186.74179161227147, 1405.0), // 36 sqrt 2 in
+        Pair(198.22446004746948, 1390.0), // 48 sqrt 2 in
+        Pair(211.98762969131045, 1450.0),  // 60 sqrt 2 in
+        Pair(225.90458755348956, 1550.0),  // 72 sqrt 2 in
+        Pair(239.459044216468, 1720.0),  // 84 sqrt 2 in
+        Pair(252.5208774351413, 1815.0),  // 96 sqrt 2 in
+        Pair(265.07623836747837, 1920.0),  // 108 sqrt 2 in
     ))
 
     init {
@@ -67,27 +70,29 @@ class Shooter(hwMap: HardwareMap) {
     }
 
     fun update() {
-        motorLeft.power  = velocityToPowerLUT.get(targetVelocity) + (targetVelocity - motorLeft.velocity) * kP
-        motorRight.power = velocityToPowerLUT.get(targetVelocity + rightVelocityOffset) + (targetVelocity + rightVelocityOffset - motorRight.velocity) * kP
+        motorLeft.power  = velocityToPowerLUT.get(targetVelocityLeft) + (targetVelocityLeft - motorLeft.velocity) * kP
+        motorRight.power = velocityToPowerLUT.get(targetVelocityRight) + (targetVelocityRight - motorRight.velocity) * kP
     }
 
     fun setTargetVelocityFromDistance(distance: Double) {
-        targetVelocity = distanceToVelocityLUT.get(distance)
+        targetVelocityLeft = distanceToVelocityLUT.get(distance)
+        targetVelocityRight = distanceToVelocityLUT.get(distance) + 50.0
     }
 
     fun stop(): Command = Instant({
-        targetVelocity = 0.0
+        targetVelocityRight = 0.0
+        targetVelocityLeft = 0.0
     }, "Shooter:SpinDown")
 
     fun waitForRightVelocity(): Command = WaitUntil {
-        abs(targetVelocity - motorLeft.velocity) <= velocityThreshold
+        abs(targetVelocityRight - motorRight.velocity) <= velocityThreshold
     }
 
     fun waitForLeftVelocity(): Command = WaitUntil {
-        abs(targetVelocity - motorRight.velocity) <= velocityThreshold
+        abs(targetVelocityLeft - motorLeft.velocity) <= velocityThreshold
     }
     fun waitForVelocity(): Command = WaitUntil ({
-        abs(targetVelocity - motorLeft.velocity) <= velocityThreshold
-        && abs((targetVelocity + rightVelocityOffset) - motorRight.velocity) <= velocityThreshold
+        abs(targetVelocityLeft - motorLeft.velocity) <= velocityThreshold
+        && abs((targetVelocityRight) - motorRight.velocity) <= velocityThreshold
     }, "WaitForVelocity")
 }

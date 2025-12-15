@@ -175,7 +175,7 @@ class Controlled: LinearOpMode() {
                             "Shooter velocity",
                             (shooter.motorLeft.velocity + shooter.motorRight.velocity) / 2
                         )
-                        telemetry.addData("Target velocity", shooter.targetVelocity)
+                        telemetry.addData("Target velocity: ", "L: ${shooter.targetVelocityLeft}, R: ${shooter.targetVelocityRight}")
                         telemetry.update()
                     }
                 ))
@@ -212,7 +212,7 @@ class Controlled: LinearOpMode() {
                         drive.update()
                         shooter.update()
                         telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
-                        telemetry.addData("Target velocity", shooter.targetVelocity)
+                        telemetry.addData("Target velocity: ", "L: ${shooter.targetVelocityLeft}, R: ${shooter.targetVelocityRight}")
                         telemetry.update()
                     }
                 ))
@@ -236,7 +236,7 @@ class Controlled: LinearOpMode() {
                         drive.update()
                         shooter.update()
                         telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
-                        telemetry.addData("Target velocity", shooter.targetVelocity)
+                        telemetry.addData("Target velocity: ", "L: ${shooter.targetVelocityLeft}, R: ${shooter.targetVelocityRight}")
                         telemetry.update()
                     }
                 ))
@@ -263,7 +263,7 @@ class Controlled: LinearOpMode() {
                         drive.update()
                         shooter.update()
                         telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
-                        telemetry.addData("Target velocity", shooter.targetVelocity)
+                        telemetry.addData("Target velocity: ", "L: ${shooter.targetVelocityLeft}, R: ${shooter.targetVelocityRight}")
                         telemetry.update()
                     }
                 ))
@@ -272,12 +272,12 @@ class Controlled: LinearOpMode() {
             }
 
             drive.update()
-            shooter.targetVelocity = 0.0
+            shooter.stop().update()
             shooter.update()
             intake.update()
             telemetry.addData("pose", drive.localizer.pose)
             telemetry.addData("distance", (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose)).length)
-            telemetry.addData("Target velocity", shooter.targetVelocity)
+            telemetry.addData("Target velocity: ", "L: ${shooter.targetVelocityLeft}, R: ${shooter.targetVelocityRight}")
             telemetry.update()
         }
     }

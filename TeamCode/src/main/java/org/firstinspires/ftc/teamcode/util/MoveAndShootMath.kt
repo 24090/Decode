@@ -3,23 +3,16 @@ package org.firstinspires.ftc.teamcode.util
 import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
-import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter.Params.shooterAngle
 import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.math.tan
 
 fun main(){
-    val results = moveShootKinematics(Vector.fromCartesian(144.0, 144.0), Pose(0.0, 0.0, 0.0).vector())
-    println(solvePolynomialIA(
-        interval = Interval(0.0, 10.0),
-        iterations = 30,
-        -57455.78327361352, 0.0, -15920.458119590417, -0.0, 40369.14763120271
+    for (n in 3 .. 10){
+        val results = moveShootKinematics(Vector.fromCartesian(12.0 * n * sqrt(2.0), 0.001), Pose(0.0, 0.0, 0.0).vector())
+        println("${n * 12}")
+        println(results?.first)
+        println(results?.second)
+    }
 
-
-    ).last())
-    println(solveQuarticNewton(
-        -57455.78327361352, 0.0, -15920.458119590417, -0.0, 40369.14763120271
-        ,guess = 3.0
-    ))
-    println(results?.first)
-    println(results?.second)
 }

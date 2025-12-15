@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.util
 
+import android.util.Log
 import org.firstinspires.ftc.teamcode.opmodes.poses.inLaunchZone
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
@@ -28,24 +29,29 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
         -2*sx*vrx-2*sy*vry,
         sx.pow(2)+sy.pow(2)-(heightDiff.pow(2))*(tan(hoodAngle).pow(2))
     ).last()
-
-    println("COEFFICIENTS\n" +
-            "${-(0.25*gravity.pow(2))/(tan(hoodAngle).pow(2))}, " +
-            "0.0, " +
-            "${vrx.pow(2)+vry.pow(2)-(heightDiff*gravity)*(tan(hoodAngle).pow(2))}, " +
-            "${-2*sx*vrx-2*sy*vry}, " +
-            "${sx.pow(2)+sy.pow(2)-(heightDiff.pow(2))*(tan(hoodAngle).pow(2))}"
+    println(t)
+//    Log.d("t", "$t")
+//    println("COEFFICIENTS\n" +
+//            "${-(0.25*gravity.pow(2))*(tan(hoodAngle).pow(2))}, " +
+//            "0.0, " +
+//            "${vrx.pow(2)+vry.pow(2)-(heightDiff*gravity)*(tan(hoodAngle).pow(2))}, " +
+//            "${-2*sx*vrx-2*sy*vry}, " +
+//            "${sx.pow(2)+sy.pow(2)-(heightDiff.pow(2))*(tan(hoodAngle).pow(2))}"
+//    )
+    val vs = sqrt(
+        ((sy-vry*t).pow(2) + (sx-vrx*t).pow(2))/((sin(hoodAngle)*t).pow(2))
     )
-    val v_s = sqrt(
-        (((sy-vry*t).pow(2))+((sx-vrx*t).pow(2)))/((sin(hoodAngle)*t).pow(2))
-    )
-    val phi = acos((sx-t*vrx)/(v_s*sin(hoodAngle)*t))
-    return Pair(v_s, phi)
+    val phi = acos((sx-t*vrx)/(vs*sin(hoodAngle)*t))
+    return Pair(vs, phi)
 }
 
-fun calculatePredictiveMoveShoot(currentPose: Pose, fieldVelocity: Pose): Pair<Double, Double>?{
+fun calculatePredictiveMoveShoot(minimumTime: Double, currentPose: Pose, fieldVelocity: Pose): Pair<Double, Double>?{
+    val effectivePose = (currentPose + fieldVelocity * minimumTime)
     // Start turning/spinning up 5 seconds ahead
-    val movementLine = Pair(currentPose.vector(), (currentPose + fieldVelocity * 5).vector())
+    val movementLine = Pair(
+        effectivePose.vector(),
+        (currentPose + fieldVelocity * 5).vector()
+    )
     var closestIntersection: Vector? = null
     for (line in arrayOf(
         Pair(Vector.fromCartesian(0.0, -24.0), Vector.fromCartesian(24.0, 0.0)),
@@ -64,8 +70,8 @@ fun calculatePredictiveMoveShoot(currentPose: Pose, fieldVelocity: Pose): Pair<D
             closestIntersection
         }
     }
-    if (inLaunchZone(currentPose)) {
-        closestIntersection = currentPose.vector()
+    if (inLaunchZone(effectivePose)) {
+        closestIntersection = effectivePose.vector()
     }
     if (closestIntersection == null) {
         return null
