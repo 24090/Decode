@@ -25,7 +25,7 @@ class Localizer(hwMap: HardwareMap) {
         pinpoint.setOffsets(driveY, strafeX, INCH)
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD)
         pinpoint.setYawScalar(1.0)
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD)
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD)
         pinpoint.recalibrateIMU()
         pinpoint.update()
     }
@@ -50,7 +50,7 @@ class Localizer(hwMap: HardwareMap) {
         get() = pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS)
 
     fun fieldPoseToRelative(fieldPose: Pose): Pose {
-        val translation = fieldVecToRelative(Vector.fromPose(fieldPose))
+        val translation = fieldVecToRelative(fieldPose.vector())
         return Pose(
             translation.x,
             translation.y,

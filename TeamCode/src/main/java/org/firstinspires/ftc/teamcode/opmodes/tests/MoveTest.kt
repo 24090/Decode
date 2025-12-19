@@ -19,10 +19,9 @@ import kotlin.math.PI
 class MoveTest2: LinearOpMode() {
     override fun runOpMode() {
         val dash = FtcDashboard.getInstance()
-        var time = System.currentTimeMillis()
         var telemetryPacket = TelemetryPacket()
+        var time: Long = 0
         val recordTime = { name:String ->
-
             val newTime = System.currentTimeMillis()
             telemetry.addData("$name (ms)", newTime - time)
             telemetryPacket.put("$name (ms)", newTime - time)
@@ -31,22 +30,28 @@ class MoveTest2: LinearOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
-        drive.targetPose = Pose(0.0, 0.0, 0.0)
+        drive.targetPose = Pose(0.0, 0.0, PI/2)
         reads.update()
+        telemetryPacket.put("errorH", drive.error.heading)
+        telemetryPacket.put("dErrorH", drive.dError.heading)
+        dash.sendTelemetryPacket(telemetryPacket)
+        telemetryPacket = TelemetryPacket()
         waitForStart()
+        time = System.currentTimeMillis()
         while (opModeIsActive()) {
             reads.update()
             drive.update()
-        }
-        while (opModeIsActive()) {
-            reads.update()
-            drive.update()
+            telemetryPacket.put("errorH", drive.error.heading)
+            telemetryPacket.put("dErrorH", drive.dError.heading)
             telemetry.addLine("error ${drive.error}")
             telemetry.addLine("dError ${drive.dError}")
             telemetry.addLine("drive ${drive.drive}")
             telemetry.addLine("strafe ${drive.strafe}")
             telemetry.addLine("turn ${drive.turn}")
+            recordTime("loop")
             telemetry.update()
+            dash.sendTelemetryPacket(telemetryPacket)
+            telemetryPacket = TelemetryPacket()
         }
     }
 }

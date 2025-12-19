@@ -33,26 +33,27 @@ class ShooterTesting(): LinearOpMode(){
         p.put("targetVelocity", 1500.0)
         p.put("powerFeedforward", 0.0)
         dash.sendTelemetryPacket(p)
-        intake.behaviour = Intake.IntakeBehaviour.Velocity(200.0)
+        intake.behaviour = Intake.IntakeBehaviour.Grab
         waitForStart()
         while (opModeIsActive()){
             reads.update()
-            if (gamepad1.xWasPressed()) {
+            if (gamepad1.aWasPressed()) {
                 targetVelocity += 50
             }
-            if (gamepad1.yWasPressed()) {
+            if (gamepad1.bWasPressed()) {
                 targetVelocity -= 50
             }
             intake.update()
             shooter.update()
-            shooter.targetVelocity = targetVelocity
+            shooter.targetVelocityLeft = targetVelocity
+            shooter.targetVelocityRight = targetVelocity
             val p = TelemetryPacket()
             intake.pusherLeft.position = if (gamepad1.x) pusherLeftForward else pusherLeftBack
             intake.pusherRight.position = if (gamepad1.x) pusherRightForward else pusherRightBack
             p.put("voltage", expansionHubVoltage)
             p.put("leftVelocity", shooter.motorLeft.velocity)
             p.put("rightVelocity", shooter.motorRight.velocity)
-            p.put("powerFeedforward", shooter.velocityToPowerLUT.get(shooter.targetVelocity))
+            p.put("powerFeedforwardLeft", shooter.velocityToPowerLUT.get(shooter.targetVelocityLeft))
             dash.sendTelemetryPacket(p)
         }
     }

@@ -83,7 +83,7 @@ open class PartnerAuto(val isRed: Boolean): LinearOpMode() {
                 farShootCycle(),
                 RepeatUntil({
                     Sequence(
-                        Instant{shooter.targetVelocity = 0.0},
+                        shooter.stop(),
                         loadZoneCycle(isRed, intake, drive),
                         Instant{shooter.setTargetVelocityFromDistance(farDistance)},
                         farShootCycle(),
