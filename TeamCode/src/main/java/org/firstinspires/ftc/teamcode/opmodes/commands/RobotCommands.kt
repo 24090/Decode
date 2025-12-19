@@ -28,7 +28,7 @@ fun shootCycle(intake: Intake, shooter: Shooter) = Sequence(
         intake.releaseDual(),
         Sleep(0.3),
         Parallel(
-            intake.moveInThird(),
+            intake.fullAdjustThird(),
             shooter.waitForVelocity(),
         ),
         intake.releaseDual(),
@@ -49,14 +49,14 @@ fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, index
                 // left right+3
                 intake.releaseLeft(),
                 Sleep(pusherWait),
-                Parallel( intake.moveInThird(), shooter.waitForVelocity()),
+                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
                 intake.releaseDual()
             )
             Pair(Pattern.GPP, Pattern.PGP) -> Sequence(
                 // right left 3
                 intake.releaseRight(),
                 Sleep(pusherWait),
-                Parallel( intake.moveInThird(), shooter.waitForVelocity()),
+                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
                 intake.releaseLeft(),
                 Parallel(Sleep(indexWait), shooter.waitForVelocity()),
                 intake.releaseDual()
@@ -65,7 +65,7 @@ fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, index
                 // right 3 left
                 intake.releaseRight(),
                 Sleep(pusherWait),
-                Parallel( intake.moveInThird(), shooter.waitForVelocity()),
+                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
                 intake.releaseRight(),
                 Parallel(Sleep(indexWait), shooter.waitForVelocity()),
                 intake.releaseDual()
@@ -74,14 +74,14 @@ fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, index
                 // right left+3
                 intake.releaseRight(),
                 Sleep(pusherWait),
-                Parallel( intake.moveInThird(), shooter.waitForVelocity()),
+                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
                 intake.releaseDual()
             )
             Pair(Pattern.PGP, Pattern.PGP) -> Sequence(
                 // left right 3
                 intake.releaseLeft(),
                 Sleep(pusherWait),
-                Parallel( intake.moveInThird(), shooter.waitForVelocity()),
+                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
                 intake.releaseRight(),
                 Parallel(Sleep(indexWait), shooter.waitForVelocity()),
                 intake.releaseDual()
@@ -90,7 +90,7 @@ fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, index
                 // left 3 right
                 intake.releaseLeft(),
                 Sleep(pusherWait),
-                Parallel( intake.moveInThird(), shooter.waitForVelocity()),
+                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
                 intake.releaseLeft(),
                 Parallel(Sleep(indexWait), shooter.waitForVelocity()),
                 intake.releaseDual()
@@ -100,7 +100,7 @@ fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, index
                 // left+right 3
                 intake.releaseDual(),
                 Sleep(pusherWait),
-                Parallel( intake.moveInThird(), shooter.waitForVelocity()),
+                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
                 intake.releaseDual(),
             )
 

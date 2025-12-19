@@ -9,15 +9,13 @@ import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.runBlocking
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.runVelocity
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 
 @TeleOp
 @Config
 class IntakeTesting(): LinearOpMode(){
-    companion object {
-        @JvmField var targetVelocity = 0.0
-    }
     override fun runOpMode() {
         val intake = Intake(hardwareMap)
         val shooter = Shooter(hardwareMap)
@@ -27,18 +25,20 @@ class IntakeTesting(): LinearOpMode(){
         val f = {
             reads.update()
             intake.update()
-            intake.behaviour.target = targetVelocity
             val p = TelemetryPacket()
             p.put("velocity", intake.motor.velocity)
-            p.put("targetVelocity", intake.behaviour.target)
-            p.put("powerFeedforward", Intake.kF * intake.behaviour.target)
+            p.put("velocityBack", intake.motorBack.velocity)
+            p.put("targetVelocity", runVelocity)
+            p.put("powerFeedforward", Intake.kF * runVelocity)
             dash.sendTelemetryPacket(p)
         }
         p.put("velocity", 0.0)
+        p.put("velocityBack", 0.0)
         p.put("targetVelocity", 1500.0)
         p.put("powerFeedforward", 0.0)
         dash.sendTelemetryPacket(p)
         waitForStart()
+        intake.behaviour = Intake.IntakeBehaviour.Grab
         shooter.motorLeft.power = 0.12
         shooter.motorRight.power = 0.12
         while (opModeIsActive()){
@@ -61,7 +61,7 @@ class IntakeTesting(): LinearOpMode(){
                     Forever(intake::update),
                     Sequence(
                         intake.fullAdjustThird(),
-                        intake.stop()
+                        intake.spinUp()
                     )
                 ))
             }

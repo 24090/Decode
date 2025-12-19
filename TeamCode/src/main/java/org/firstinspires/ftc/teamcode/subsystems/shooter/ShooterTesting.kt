@@ -33,7 +33,7 @@ class ShooterTesting(): LinearOpMode(){
         p.put("targetVelocity", 1500.0)
         p.put("powerFeedforward", 0.0)
         dash.sendTelemetryPacket(p)
-        intake.behaviour = Intake.IntakeBehaviour.Velocity(200.0)
+        intake.behaviour = Intake.IntakeBehaviour.Grab
         waitForStart()
         while (opModeIsActive()){
             reads.update()
