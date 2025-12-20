@@ -103,7 +103,7 @@ class Drive(hwMap: HardwareMap) {
     }
 
     fun updateHeading(){
-        turn = PDLT(AngleUnit.normalizeRadians(error.heading), AngleUnit.normalizeRadians(dError.heading), kPH, kDH, kLH, kTH)
+        turn = PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, kPH, kDH, kLH, kTH)
     }
     var currentUpdateHeading: () -> Unit = ::updateHeading
     fun updateTranslational(){
