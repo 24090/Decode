@@ -21,8 +21,8 @@ class Drive(hwMap: HardwareMap) {
 
     companion object DriveConstants {
         @JvmField var lateralFactor = 0.7
-        @JvmField var kPH = 2.5
-        @JvmField var kDH = 0.15
+        @JvmField var kPH = 3.0
+        @JvmField var kDH = 0.35
         @JvmField var kLH = 0.15
         @JvmField var kTH = 0.04
         @JvmField var kPT = 0.3
@@ -209,4 +209,8 @@ class Drive(hwMap: HardwareMap) {
         },
         WaitUntil { atTargetSquare(xTolerance, yTolerance, headingTolerance) },
     )
+
+    fun inShootableZone(): Boolean{
+        return true
+    }
 }

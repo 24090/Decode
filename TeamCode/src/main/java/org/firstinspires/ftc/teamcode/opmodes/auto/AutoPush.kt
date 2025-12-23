@@ -19,11 +19,11 @@ import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.PI
 
-@Autonomous(name="AutoLeaveBlue", group="Auto")
-class AutoLeaveBlue: AutoLeave(false)
+@Autonomous(name="AutoPushBlue", group="Auto")
+class AutoPushBlue: AutoPush(false)
 
-@Autonomous(name="AutoLeaveRed", group="Auto")
-class AutoLeaveRed: AutoLeave(true)
+@Autonomous(name="AutoPushRed", group="Auto")
+class AutoPushRed: AutoPush(true)
 open class AutoPush(val isRed: Boolean): LinearOpMode() {
     override fun runOpMode() {
         val drive = Drive(hardwareMap)

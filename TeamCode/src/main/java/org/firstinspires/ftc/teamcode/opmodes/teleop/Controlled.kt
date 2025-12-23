@@ -40,6 +40,7 @@ import kotlin.math.PI
 class Controlled: LinearOpMode() {
     override fun runOpMode() {
         var isRed = false
+        var useStoredPose = false
         val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
         val shooter = Shooter(hardwareMap)
@@ -90,12 +91,18 @@ class Controlled: LinearOpMode() {
         drive.currentUpdateHeading = updateHeadingOverride
         drive.currentUpdateTranslational = updateTranslationalOverride
 
-        waitForStart()
-        if (!opModeIsActive()){
-            return
+        while (opModeInInit()){
+            if (gamepad2.guideWasPressed()) {
+                isRed = !isRed
+            }
+            if (gamepad2.backWasPressed()) {
+                useStoredPose = !useStoredPose
+            }
+            telemetry.addData("isRed? (center button/guide)", isRed)
+            telemetry.addData("useStoredPose? (back)", useStoredPose)
+            telemetry.update()
         }
 
-        drive.localizer.pose = storedPose ?: startPose
         var time = System.currentTimeMillis()
         val recordTime = { name:String ->
             val newTime = System.currentTimeMillis()
@@ -128,7 +135,7 @@ class Controlled: LinearOpMode() {
             telemetry.addData("pattern", indexTracker.pattern)
             telemetry.addLine("--------------------------")
         }
-
+        drive.localizer.pose = if (useStoredPose) storedPose ?: startPose.mirroredIf(isRed) else startPose.mirroredIf(isRed)
         while (opModeIsActive()){
             reads.update()
             updateP2()
@@ -142,6 +149,9 @@ class Controlled: LinearOpMode() {
             }
             if (gamepad1.bWasPressed()) {
                 runBlocking(intake.stop())
+            }
+            if (gamepad2.bWasPressed()){
+                runBlocking(intake.stopFront())
             }
             if (gamepad1.xWasPressed()) {
                 drive.currentUpdateHeading = drive::updateHeading
@@ -278,6 +288,9 @@ class Controlled: LinearOpMode() {
             telemetry.addData("pose", drive.localizer.pose)
             telemetry.addData("distance", (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose)).length)
             telemetry.addData("Target velocity: ", "L: ${shooter.targetVelocityLeft}, R: ${shooter.targetVelocityRight}")
+            telemetry.addData("gamepad1turn", gamepad1.right_stick_x)
+            telemetry.addData("gamepad1strafe", gamepad1.left_stick_x)
+            telemetry.addData("gamepad1drive", gamepad1.left_stick_y)
             telemetry.update()
         }
     }

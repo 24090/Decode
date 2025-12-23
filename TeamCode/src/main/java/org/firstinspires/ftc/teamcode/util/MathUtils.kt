@@ -68,6 +68,10 @@ fun evalPolynomial(value: Double, vararg coefficients: Double): Double{
     val length = coefficients.size
     return coefficients.withIndex().map { (i, coefficient) ->  coefficient * value.pow(length - i - 1)}.sum()
 }
+fun derivPolynomial(vararg coefficients: Double): List<Double>{
+    val degree = coefficients.size - 1
+    return coefficients.withIndex().map {(i,coefficient) -> coefficient*(degree-i)}
+}
 
 fun findLineIntersection(lineA: Pair<Vector, Vector>, lineB: Pair<Vector, Vector>): Vector? {
 
@@ -99,4 +103,5 @@ fun findLineIntersection(lineA: Pair<Vector, Vector>, lineB: Pair<Vector, Vector
         )
     }
     return null
+
 }

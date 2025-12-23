@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 class Localizer(hwMap: HardwareMap) {
     var pinpoint: GoBildaPinpointDriver = hwMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
     companion object {
-        @JvmStatic var driveY: Double = -6.1
+        @JvmStatic var driveY: Double = -2.99
         @JvmStatic var strafeX: Double = -3.54
     }
     init {

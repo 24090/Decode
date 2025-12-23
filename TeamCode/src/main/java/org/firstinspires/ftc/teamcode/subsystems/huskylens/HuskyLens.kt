@@ -33,9 +33,9 @@ class HuskyLens(hwMap: HardwareMap) {
                 break
             }
             val color = when (block.id){
-                1 -> Optional.empty()
+                3 -> Optional.empty()
                 2 -> Optional.of(BallColor.PURPLE)
-                3 -> Optional.of(BallColor.GREEN)
+                1 -> Optional.of(BallColor.GREEN)
                 else -> throw UnsupportedOperationException("id > 2 is invalid")
             }
 

@@ -23,8 +23,6 @@ import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Pattern
 import org.firstinspires.ftc.teamcode.util.calculatePredictiveMoveShoot
-import org.firstinspires.ftc.teamcode.util.calculatePredictivePosition
-import org.firstinspires.ftc.teamcode.util.getTime
 import org.firstinspires.ftc.teamcode.util.moveShootKinematics
 import kotlin.math.sqrt
 
@@ -57,7 +55,7 @@ class MoveShootTest: LinearOpMode(){
         runBlocking(
             Forever {
                 reads.update()
-                outputs = calculatePredictiveMoveShoot(drive.localizer.pose, drive.localizer.poseVel)
+                outputs = calculatePredictiveMoveShoot(0.0,drive.localizer.pose, drive.localizer.poseVel)
                 recordTime("reads")
                 drive.update()
                 val relativePose = (scorePosition - Vector.fromPose(drive.localizer.pose))
@@ -65,15 +63,10 @@ class MoveShootTest: LinearOpMode(){
                 telemetry.addData("target heading", outputs?.second)
                 telemetry.addData("pose", relativePose)
                 telemetry.addData("pose", drive.localizer.poseVel)
-                telemetry.addData("targetVelocity", shooter.targetVelocity)
                 telemetry.addData("motorLeftVelocity", shooter.motorLeft.velocity)
                 telemetry.addData("motorRightVelocity", shooter.motorRight.velocity)
-                telemetry.addData("distanceVelocity", shooter.getDistanceToVelocity(relativePose.length))
-                telemetry.addData("predictedPoint", calculatePredictivePosition(drive.localizer.pose, drive.localizer.poseVel))
-                telemetry.addData("predictedTime", getTime(drive.localizer.pose, drive.localizer.poseVel))
                 intake.pusherLeft.position = if (gamepad1.x) pusherLeftForward else pusherLeftBack
                 intake.pusherRight.position = if (gamepad1.x) pusherRightForward else pusherRightBack
-                shooter.targetVelocity = shooter.exitVelocityToVelocityLUT.get(outputs?.first ?: 1400.0)
                 shooter.update(); recordTime("shooter")
                 intake.update(); recordTime("intake")
                 telemetry.update()

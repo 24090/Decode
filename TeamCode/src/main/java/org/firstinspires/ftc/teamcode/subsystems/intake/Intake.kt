@@ -46,13 +46,14 @@ class Intake(hwMap: HardwareMap) {
         Grab,
         Hold,
         Stop,
+        Stopfront,
     }
     companion object Params {
         @JvmField var runVelocity = 1000.0
         @JvmField var kF = 0.5/1000
         @JvmField var kP = 0.001
         @JvmField var powerMax = 0.6
-        @JvmField var pusherLeftForward = 0.0
+        @JvmField var pusherLeftForward = 0.15
         @JvmField var pusherLeftBack = 0.53
 
         @JvmField var pusherRightForward = 0.6
@@ -80,6 +81,10 @@ class Intake(hwMap: HardwareMap) {
                 motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)
                 motorBack.power = clamp((0 -motor.velocity) * kP, -1.0, powerMax)
             }
+            IntakeBehaviour.Stopfront -> {
+                motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)
+                motorBack.power = clamp(runVelocity * kF + (runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
+            }
         }
     }
 
@@ -90,6 +95,10 @@ class Intake(hwMap: HardwareMap) {
     fun setAdjustThird(): Command = Instant({
         behaviour = IntakeBehaviour.Hold
     }, "SetAdjustThird")
+
+    fun stopFront(): Command = Instant({
+        behaviour = IntakeBehaviour.Stopfront
+    }, "StopFront")
 
     fun fullAdjustThird(): Command = Sequence(
         setAdjustThird(),
@@ -108,7 +117,6 @@ class Intake(hwMap: HardwareMap) {
         releaseRight(),
         name = "ReleaseDual"
     )
-
     fun waitForStall(): Command =
         WaitUntil({
             if (behaviour == IntakeBehaviour.Grab){
