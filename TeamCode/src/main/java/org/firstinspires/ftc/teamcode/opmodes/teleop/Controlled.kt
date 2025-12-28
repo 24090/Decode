@@ -21,6 +21,8 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelBackward
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelForward
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftBack
@@ -35,6 +37,7 @@ import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.PI
+import kotlin.math.pow
 
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
@@ -53,10 +56,10 @@ class Controlled: LinearOpMode() {
         var lastLockHeading = false
         var lastLockTranslational = false
         val isLockHeading = {
-            gamepad1.right_stick_x.toDouble() == 0.0 && (drive.localizer.headingVel < 0.02 || lastLockHeading)
+            gamepad1.right_stick_x.toDouble() == 0.0 //&& (drive.localizer.headingVel < 0.02 || lastLockHeading)
         }
         val isLockTranslational = {
-            gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0 && ((drive.localizer.xVel < 0.2 && drive.localizer.yVel < 0.2) || lastLockTranslational)
+            gamepad1.left_stick_x.toDouble() == 0.0 && gamepad1.left_stick_y.toDouble() == 0.0// && ((drive.localizer.xVel < 0.2 && drive.localizer.yVel < 0.2) || lastLockTranslational)
         }
         val updateHeadingOverride = {
             val lockHeading = isLockHeading()
@@ -74,17 +77,19 @@ class Controlled: LinearOpMode() {
             val lockTranslational = isLockTranslational()
             if (lockTranslational) {
                 if (!lastLockTranslational) {
-                    drive.targetPose.x = drive.localizer.x
-                    drive.targetPose.y = drive.localizer.y
+                    val maxAccel = if (drive.dError.x < 0) tipAccelForward else tipAccelBackward
+                    val t = (-drive.dError.x)/maxAccel
+                    val targetPosition = drive.localizer.pose.vector() + Vector.fromPolar(drive.localizer.heading, maxAccel * t.pow(2)/2 + (-drive.dError.x) * t)
+                    drive.targetPose.x = targetPosition.x
+                    drive.targetPose.y = targetPosition.y
                 }
                 drive.updateTranslational()
             } else {
-//                var v = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), gamepad1.left_stick_y.toDouble())
-//                if (isRed) v = v.rotated(PI)
-//                drive.strafe = v.rotated(-drive.localizer.heading).y
-//                drive.drive =  v.rotated(-drive.localizer.heading).x
-                drive.drive = -gamepad1.left_stick_y.toDouble()
-                drive.strafe = -gamepad1.left_stick_x.toDouble()
+                var v = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), gamepad1.left_stick_y.toDouble())
+                v = v * v.length * 1.67
+                if (isRed) v = v.rotated(PI)
+                drive.strafe = v.rotated(-drive.localizer.heading).y
+                drive.drive =  v.rotated(-drive.localizer.heading).x
             }
             lastLockTranslational = isLockTranslational()
         }
@@ -286,6 +291,7 @@ class Controlled: LinearOpMode() {
             shooter.update()
             intake.update()
             telemetry.addData("pose", drive.localizer.pose)
+            telemetry.addData("dError.x", drive.dError.x)
             telemetry.addData("distance", (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose)).length)
             telemetry.addData("Target velocity: ", "L: ${shooter.targetVelocityLeft}, R: ${shooter.targetVelocityRight}")
             telemetry.addData("gamepad1turn", gamepad1.right_stick_x)

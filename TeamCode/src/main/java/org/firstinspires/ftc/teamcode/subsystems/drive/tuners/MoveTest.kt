@@ -1,19 +1,12 @@
-package org.firstinspires.ftc.teamcode.opmodes.tests
+package org.firstinspires.ftc.teamcode.subsystems.drive.tuners
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.commands.*
-import org.firstinspires.ftc.teamcode.commands.ForeverCommand
-import org.firstinspires.ftc.teamcode.commands.Race
-import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
-import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
-import kotlin.math.PI
 
 @TeleOp
 class MoveTest2: LinearOpMode() {

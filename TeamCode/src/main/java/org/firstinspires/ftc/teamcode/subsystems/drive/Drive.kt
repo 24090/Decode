@@ -13,6 +13,9 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.lateralFactor
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sign
 
 @Config
 class Drive(hwMap: HardwareMap) {
@@ -20,14 +23,19 @@ class Drive(hwMap: HardwareMap) {
 
     companion object DriveConstants {
         @JvmField var lateralFactor = 0.7
+
+        @JvmField var kS = 0.145
+        @JvmField var kV = 0.0151
+
+        @JvmField var kA = 0.005
         @JvmField var hP = 2.0
         @JvmField var hD = 0.15
-        @JvmField var hL = 0.19
         @JvmField var hT = 0.02
         @JvmField var xyP = 0.13
         @JvmField var xyD = 0.04
-        @JvmField var xyL = 0.19
         @JvmField var xyT = 0.5
+        @JvmField var tipAccelForward = 230.0
+        @JvmField var tipAccelBackward = -150.0
     }
     
     var targetPose = Pose(0.0, 0.0, 0.0)
@@ -81,8 +89,17 @@ class Drive(hwMap: HardwareMap) {
 
     // Drive math, etc
 
-    private fun setMotorPowers() {
-        val driveVectors = getHeadingVectors().addWithoutPriority(getTranslationalVectors(), controlHubVoltage/14.0)
+    fun setMotorPowers() {
+        val driveVectors = getHeadingVectors()
+            .addWithoutPriority(getTranslationalVectors(), controlHubVoltage/14.0)
+            .tipCorrected(
+                tipAccelBackward,
+                tipAccelForward,
+                kS,
+                kV,
+                kA,
+                -dError.x
+            )
         val leftPowers = driveVectors.getLeftPowers()
         val rightPowers = driveVectors.getRightPowers()
 
@@ -93,12 +110,12 @@ class Drive(hwMap: HardwareMap) {
     }
 
     fun updateHeading(){
-        turn = PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, hP, hD, hL, hT)
+        turn = PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, hP, hD, kS, hT)
     }
     var currentUpdateHeading: () -> Unit = ::updateHeading
     fun updateTranslational(){
         val translational =
-            PDLT(Vector.fromPose(error), Vector.fromPose(dError), xyP, xyD, xyL, xyT)
+            PDLT(Vector.fromPose(error), Vector.fromPose(dError), xyP, xyD, kS, xyT)
         drive = if (translational.x.isNaN()) 0.0 else translational.x
         strafe = if (translational.y.isNaN()) 0.0 else translational.y
     }
@@ -157,6 +174,23 @@ data class DriveVectors(val left: Vector, val right: Vector) {
         val rightPowers = getRightPowers()
         val scaleFactor = maxPower/maxOf(leftPowers.first, leftPowers.second, rightPowers.first, rightPowers.second, maxPower)
         return DriveVectors(left * scaleFactor, right * scaleFactor)
+    }
+
+    fun tipCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV: Double, kA: Double, velocity: Double): DriveVectors {
+        val minPower: Double = minAccel * kA + velocity * kV + kS * sign(velocity)
+        val maxPower: Double = maxAccel * kA + velocity * kV + kS * sign(velocity)
+        val power = (left.x + right.x)/2.0
+
+        println("minPower: $minPower, maxPower: $maxPower, power: $power")
+
+        return if (power > maxPower) {
+            DriveVectors(left * (maxPower/power), right * (maxPower/power))
+        } else if (power < minPower) {
+            DriveVectors(left * (minPower/power), right * (minPower/power))
+        } else {
+            this
+        }
+
     }
 
     fun addWithoutPriority(other: DriveVectors, maxPower: Double = 1.0) = (this + other).trimmed(maxPower)

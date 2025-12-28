@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.subsystems.drive
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.RADIANS
@@ -10,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
+import org.firstinspires.ftc.teamcode.GoBildaPinpointDriver
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
@@ -26,6 +26,14 @@ class Localizer(hwMap: HardwareMap) {
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD)
         pinpoint.setYawScalar(1.0)
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD)
+        pinpoint.setBulkReadScope(
+            GoBildaPinpointDriver.Register.X_VELOCITY,
+            GoBildaPinpointDriver.Register.Y_VELOCITY,
+            GoBildaPinpointDriver.Register.H_VELOCITY,
+            GoBildaPinpointDriver.Register.X_POSITION,
+            GoBildaPinpointDriver.Register.Y_POSITION,
+            GoBildaPinpointDriver.Register.H_ORIENTATION,
+        )
         pinpoint.recalibrateIMU()
         pinpoint.update()
     }
