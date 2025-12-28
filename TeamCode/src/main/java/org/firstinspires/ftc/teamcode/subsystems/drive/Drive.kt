@@ -11,9 +11,8 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
-import org.firstinspires.ftc.teamcode.util.clamp
-import kotlin.math.max
-import kotlin.math.min
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.lateralFactor
+import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 
 @Config
 class Drive(hwMap: HardwareMap) {
@@ -21,14 +20,14 @@ class Drive(hwMap: HardwareMap) {
 
     companion object DriveConstants {
         @JvmField var lateralFactor = 0.7
-        @JvmField var kPH = 3.0
-        @JvmField var kDH = 0.35
-        @JvmField var kLH = 0.15
-        @JvmField var kTH = 0.04
-        @JvmField var kPT = 0.3
-        @JvmField var kDT = 0.04
-        @JvmField var kLT = 0.15
-        @JvmField var kTT = 0.7
+        @JvmField var hP = 2.0
+        @JvmField var hD = 0.15
+        @JvmField var hL = 0.19
+        @JvmField var hT = 0.02
+        @JvmField var xyP = 0.13
+        @JvmField var xyD = 0.04
+        @JvmField var xyL = 0.19
+        @JvmField var xyT = 0.5
     }
     
     var targetPose = Pose(0.0, 0.0, 0.0)
@@ -83,18 +82,9 @@ class Drive(hwMap: HardwareMap) {
     // Drive math, etc
 
     private fun setMotorPowers() {
-        val driveVectors = getHeadingVectors().addWithoutPriority(getTranslationalVectors())
-        val leftPowers = getSidePowers(
-            driveVectors.left,
-            getWheelVector(front = true, left = true),
-
-            getWheelVector(front = false, left = true)
-        )
-        val rightPowers = getSidePowers(
-            driveVectors.right,
-            getWheelVector(front = true, left = false),
-            getWheelVector(front = false, left = false)
-        )
+        val driveVectors = getHeadingVectors().addWithoutPriority(getTranslationalVectors(), controlHubVoltage/14.0)
+        val leftPowers = driveVectors.getLeftPowers()
+        val rightPowers = driveVectors.getRightPowers()
 
         flMotor.power = leftPowers.first
         frMotor.power = rightPowers.first
@@ -103,12 +93,12 @@ class Drive(hwMap: HardwareMap) {
     }
 
     fun updateHeading(){
-        turn = PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, kPH, kDH, kLH, kTH)
+        turn = PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, hP, hD, hL, hT)
     }
     var currentUpdateHeading: () -> Unit = ::updateHeading
     fun updateTranslational(){
         val translational =
-            PDLT(Vector.fromPose(error), Vector.fromPose(dError), kPT, kDT, kLT, kTT)
+            PDLT(Vector.fromPose(error), Vector.fromPose(dError), xyP, xyD, xyL, xyT)
         drive = if (translational.x.isNaN()) 0.0 else translational.x
         strafe = if (translational.y.isNaN()) 0.0 else translational.y
     }
@@ -124,73 +114,19 @@ class Drive(hwMap: HardwareMap) {
 
     // drive vector calculations
 
-    private data class DriveVectors(val left: Vector, val right: Vector) {
-        fun addWithoutPriority(addedVectors: DriveVectors): DriveVectors {
-            val idealLeft = (this.left + addedVectors.left)
-            val idealRight = (this.right + addedVectors.right)
-            val scaleFactor = 1/max(max(idealLeft.length, idealRight.length), 1.0)
-            return DriveVectors(
-                idealLeft * scaleFactor,
-                idealRight * scaleFactor
-            )
-        }
-        fun addWithPriority(addedVectors: DriveVectors): DriveVectors {
-            // extra space available for left vector
-            val extraLeft = 1 - this.left.length
-            // extra space available for right vector
-            val extraRight = 1 - this.right.length
-            // the scaling that the left vector needs to have length <= extraLeft
-            val scaleLeft =
-                if (addedVectors.left.length != 0.0)
-                    clamp(addedVectors.left.length, 0.0, extraLeft) / addedVectors.left.length
-                else
-                    1.0
-            // the scaling that the right vector needs to have length <= extraRight
-            val scaleRight =
-                if (addedVectors.right.length != 0.0)
-                    clamp(addedVectors.right.length, 0.0, extraRight) / addedVectors.right.length
-                else
-                    1.0
-            val scale = min(scaleLeft, scaleRight)
-            return DriveVectors(
-                this.left + addedVectors.left * scale,
-                this.right + addedVectors.right * scale
-            )
-        }
-
-        override fun toString(): String {
-            return "[L $left, R $right]"
-        }
-    }
-
     private fun getTranslationalVectors() = DriveVectors(
-        left = Vector.fromCartesian(drive, strafe).normalized(),
-        right = Vector.fromCartesian(drive, strafe).normalized()
+        left = Vector.fromCartesian(drive, strafe),
+        right = Vector.fromCartesian(drive, strafe)
     )
 
     private fun getHeadingVectors() = DriveVectors(
-        left = Vector.fromCartesian(-turn, 0.0).normalized(),
-        right = Vector.fromCartesian(turn, 0.0).normalized()
+        left = Vector.fromCartesian(-turn, 0.0),
+        right = Vector.fromCartesian(turn, 0.0)
     )
-
-    private fun getWheelVector(front: Boolean, left: Boolean) = Vector.fromCartesian(
-        1.0,
-        if ((front && left) || (!front && !left)) lateralFactor else -lateralFactor
-    ).norm()
-
-    private fun getSidePowers(targetVector: Vector, wheelVectorA: Vector, wheelVectorB: Vector) =
-        Pair(
-            // Math derived from the following
-            // Ax = b
-            // x = (A^-1)b
-            // A is the matrix describing the wheel vectors, b is the target vector , x is the output powers
-            (wheelVectorA.x * targetVector.y - targetVector.x * wheelVectorA.y) / (wheelVectorA.x * wheelVectorB.y - wheelVectorB.x * wheelVectorA.y),
-            (wheelVectorB.x * targetVector.y - targetVector.x * wheelVectorB.y) / (wheelVectorB.x * wheelVectorA.y - wheelVectorA.x * wheelVectorB.y)
-        )
 
     fun goToCircle(
         pose: Pose,
-        distanceTolerance: Double = kTT,
+        distanceTolerance: Double = xyT,
         headingTolerance: Double = 0.04,
     ) = Sequence(
         Instant {
@@ -200,8 +136,8 @@ class Drive(hwMap: HardwareMap) {
     )
     fun goToSquare(
         pose: Pose,
-        xTolerance: Double = kTT,
-        yTolerance: Double = kTT,
+        xTolerance: Double = xyT,
+        yTolerance: Double = xyT,
         headingTolerance: Double = 0.04,
     ) = Sequence(
         Instant {
@@ -213,4 +149,44 @@ class Drive(hwMap: HardwareMap) {
     fun inShootableZone(): Boolean{
         return true
     }
+}
+
+data class DriveVectors(val left: Vector, val right: Vector) {
+    fun trimmed(maxPower: Double): DriveVectors {
+        val leftPowers = getLeftPowers()
+        val rightPowers = getRightPowers()
+        val scaleFactor = maxPower/maxOf(leftPowers.first, leftPowers.second, rightPowers.first, rightPowers.second, maxPower)
+        return DriveVectors(left * scaleFactor, right * scaleFactor)
+    }
+
+    fun addWithoutPriority(other: DriveVectors, maxPower: Double = 1.0) = (this + other).trimmed(maxPower)
+
+    fun addWithPriority(addedVectors: DriveVectors): DriveVectors {
+        TODO()
+    }
+
+    operator fun plus(other: DriveVectors) = DriveVectors(this.left + other.left, this.right + other.right)
+
+    fun getLeftPowers() = getSidePowers(left, getWheelVector(true, true), getWheelVector(false, true))
+    fun getRightPowers() = getSidePowers(right, getWheelVector(true, false), getWheelVector(false, false))
+    private fun getSidePowers(targetVector: Vector, front: Vector, back: Vector) = Pair(
+            // Math derived from the following
+            // Ax = b
+            // x = (A^-1)b
+            // A is the matrix describing the wheel vectors, b is the target vector , x is the output powers
+            (front.x * targetVector.y - targetVector.x * front.y) / (front.x * back.y - back.x * front.y),
+            (back.x * targetVector.y - targetVector.x * back.y) / (back.x * front.y - front.x * back.y)
+        )
+
+    companion object {
+        fun fromTranslation(v: Vector) = DriveVectors(v, v)
+        fun fromRotation(v: Double) = DriveVectors(Vector.fromCartesian(-v, 0.0), Vector.fromCartesian(v, 0.0))
+
+        fun getWheelVector(front: Boolean, left: Boolean) = Vector.fromCartesian(
+            1.0,
+            if ((front && left) || (!front && !left)) lateralFactor else -lateralFactor
+        ).norm()
+    }
+
+    override fun toString() = "[L $left, R $right]"
 }
