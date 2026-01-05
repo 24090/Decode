@@ -16,21 +16,21 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getWheelVector
 import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
+import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import kotlin.math.sqrt
 
 fun main(){
-    val driveVectors = DriveVectors.fromRotation(0.0)
-        .addWithoutPriority(
-            DriveVectors.fromTranslation(Vector.fromCartesian(-1.0, 0.0))
-        ).trimmed(1.0)
-        .tipCorrected(
-            -150.0,
-            150.0,
-            kS,
-            kV,
-            kA,
-            40.0
-        )
+    val driveVectors = DriveVectors.fromTranslation(Vector.fromCartesian(-100.0, 0.0)).trimmed(0.8)
+//        .apply { if (false) {
+//            tipCorrected(
+//                tipAccelBackward,
+//                tipAccelForward,
+//                kS,
+//                kV,
+//                kA,
+//                0.0
+//            )
+//        }}
     val leftPowers = driveVectors.getLeftPowers()
     val rightPowers = driveVectors.getRightPowers()
 

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.intake
 
 import com.acmerobotics.dashboard.config.Config
+import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -42,17 +43,20 @@ class Intake(hwMap: HardwareMap) {
         pusherLeft.position = pusherLeftBack
         pusherRight.position = pusherRightBack
     }
-    enum class IntakeBehaviour() {
-        Grab,
-        Hold,
-        Stop,
-        Stopfront,
+    sealed class IntakeBehaviour() {
+        object Grab: IntakeBehaviour()
+        object Hold: IntakeBehaviour()
+        object Stop: IntakeBehaviour()
+        object Stopfront: IntakeBehaviour()
+        class Wheelie(val fl: DcMotor, val fr: DcMotor): IntakeBehaviour()
     }
     companion object Params {
-        @JvmField var runVelocity = 1000.0
-        @JvmField var kF = 0.5/1000
-        @JvmField var kP = 0.001
-        @JvmField var powerMax = 0.6
+        @JvmField var runVelocity = 800.0
+
+        @JvmField var backF = 0.00045
+        @JvmField var frontF = 0.00051
+        @JvmField var kP = 0.0003
+        @JvmField var powerMax = 0.5
         @JvmField var pusherLeftForward = 0.15
         @JvmField var pusherLeftBack = 0.53
 
@@ -67,15 +71,21 @@ class Intake(hwMap: HardwareMap) {
     }
 
     fun update() {
+        val behaviour = behaviour
         when (behaviour) {
             IntakeBehaviour.Hold -> {
                 motor.power =
-                    clamp(runVelocity * kF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
-                motorBack.power = clamp(-runVelocity * kF + (-runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
+                    clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
+                motorBack.power = clamp(-runVelocity * backF + (-runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
             }
             IntakeBehaviour.Grab -> {
-                motor.power = clamp(runVelocity * kF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
-                motorBack.power = clamp(runVelocity * kF + (runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
+                motorBack.power = clamp(runVelocity * backF + (runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
+                if (motorBack.velocity > 600) {
+                    motor.power = clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
+                } else {
+                    motor.power = clamp(-400 * frontF + (-400 - motor.velocity) * kP, -powerMax, 1.0)
+                }
+
             }
             IntakeBehaviour.Stop -> {
                 motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)
@@ -83,7 +93,10 @@ class Intake(hwMap: HardwareMap) {
             }
             IntakeBehaviour.Stopfront -> {
                 motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)
-                motorBack.power = clamp(runVelocity * kF + (runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
+                motorBack.power = clamp(runVelocity * backF + (runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
+            }
+            is IntakeBehaviour.Wheelie -> {
+                motor.power = -(behaviour.fl.power + behaviour.fr.power)/10.0
             }
         }
     }

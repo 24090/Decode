@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.canvas.Canvas
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
@@ -15,6 +16,7 @@ class DirectionDebugger: LinearOpMode() {
 
     override fun runOpMode() {
         val drive = Drive(hardwareMap)
+        drive.localizer.setWheelieBulkreadScope()
         val reads = Reads(hardwareMap)
         val dash = FtcDashboard.getInstance()
         waitForStart()
@@ -50,6 +52,7 @@ class DirectionDebugger: LinearOpMode() {
             telemetry.addData("Strafe", drive.localizer.y)
             telemetry.addData("Drive", drive.localizer.x)
             telemetry.addData("Heading", drive.localizer.heading)
+            telemetry.addData("Pitch", drive.localizer.pinpoint.getPitch(AngleUnit.RADIANS))
             telemetry.update()
         }
     }

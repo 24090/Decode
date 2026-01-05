@@ -26,14 +26,7 @@ class Localizer(hwMap: HardwareMap) {
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD)
         pinpoint.setYawScalar(1.0)
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD)
-        pinpoint.setBulkReadScope(
-            GoBildaPinpointDriver.Register.X_VELOCITY,
-            GoBildaPinpointDriver.Register.Y_VELOCITY,
-            GoBildaPinpointDriver.Register.H_VELOCITY,
-            GoBildaPinpointDriver.Register.X_POSITION,
-            GoBildaPinpointDriver.Register.Y_POSITION,
-            GoBildaPinpointDriver.Register.H_ORIENTATION,
-        )
+        setDefaultBulkreadScope()
         pinpoint.recalibrateIMU()
         pinpoint.update()
     }
@@ -56,6 +49,29 @@ class Localizer(hwMap: HardwareMap) {
         get() =  pinpoint.getVelY(INCH)
     val headingVel
         get() = pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS)
+
+    fun setDefaultBulkreadScope() {
+        pinpoint.setBulkReadScope(
+            GoBildaPinpointDriver.Register.X_VELOCITY,
+            GoBildaPinpointDriver.Register.Y_VELOCITY,
+            GoBildaPinpointDriver.Register.H_VELOCITY,
+            GoBildaPinpointDriver.Register.X_POSITION,
+            GoBildaPinpointDriver.Register.Y_POSITION,
+            GoBildaPinpointDriver.Register.H_ORIENTATION,
+        )
+    }
+
+    fun setWheelieBulkreadScope() {
+        pinpoint.setBulkReadScope(
+            GoBildaPinpointDriver.Register.X_VELOCITY,
+            GoBildaPinpointDriver.Register.Y_VELOCITY,
+            GoBildaPinpointDriver.Register.H_VELOCITY,
+            GoBildaPinpointDriver.Register.X_POSITION,
+            GoBildaPinpointDriver.Register.Y_POSITION,
+            GoBildaPinpointDriver.Register.H_ORIENTATION,
+            GoBildaPinpointDriver.Register.PITCH
+        )
+    }
 
     fun fieldPoseToRelative(fieldPose: Pose): Pose {
         val translation = fieldVecToRelative(fieldPose.vector())

@@ -29,13 +29,16 @@ class IntakeTesting(): LinearOpMode(){
             p.put("velocity", intake.motor.velocity)
             p.put("velocityBack", intake.motorBack.velocity)
             p.put("targetVelocity", runVelocity)
-            p.put("powerFeedforward", Intake.kF * runVelocity)
+            p.put("back feedforward", Intake.backF * runVelocity)
+            p.put("front feedforward", Intake.frontF * runVelocity)
             dash.sendTelemetryPacket(p)
         }
+
         p.put("velocity", 0.0)
         p.put("velocityBack", 0.0)
-        p.put("targetVelocity", 1500.0)
-        p.put("powerFeedforward", 0.0)
+        p.put("targetVelocity", 0.0)
+        p.put("back feedforward", 0.0)
+        p.put("front feedforward", 0.0)
         dash.sendTelemetryPacket(p)
         waitForStart()
         intake.behaviour = Intake.IntakeBehaviour.Grab
@@ -43,6 +46,9 @@ class IntakeTesting(): LinearOpMode(){
         shooter.motorRight.power = 0.12
         while (opModeIsActive()){
             reads.update()
+
+            shooter.motorLeft.power = 0.12
+            shooter.motorRight.power = 0.12
 
             if (gamepad1.leftBumperWasPressed()){
                 runBlocking(Race(

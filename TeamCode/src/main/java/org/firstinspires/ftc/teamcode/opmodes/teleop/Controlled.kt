@@ -87,7 +87,7 @@ class Controlled: LinearOpMode() {
             } else {
                 var v = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), gamepad1.left_stick_y.toDouble())
                 v = v * v.length * 1.67
-                if (isRed) v = v.rotated(PI)
+                if (!isRed) v = v.rotated(PI)
                 drive.strafe = v.rotated(-drive.localizer.heading).y
                 drive.drive =  v.rotated(-drive.localizer.heading).x
             }
@@ -263,25 +263,29 @@ class Controlled: LinearOpMode() {
             if (gamepad1.rightBumperWasPressed()){
                 drive.currentUpdateHeading = drive::updateHeading
                 drive.currentUpdateTranslational = drive::updateTranslational
+                shooter.targetVelocityLeft = 0.0
+                shooter.targetVelocityRight = 0.0
                 runBlocking(Race(
                     WaitUntil { !gamepad1.right_bumper},
                     Forever {
                         reads.update()
                         updateP2()
-                        val relativePose = (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose))
-                        shooter.setTargetVelocityFromDistance(relativePose.length)
-                        drive.targetPose = parkPose
                     },
-                    WaitUntil{drive.error.inSquare(1.0,1.0,0.04)},
+                    Sequence(
+                        drive.goToCircle(parkPose.mirroredIf(!isRed) + Pose(-24.0, 0.0, 0.0)),
+                        drive.doWheelie(intake)
+                    ),
                     Forever {
                         intake.update()
                         drive.update()
                         shooter.update()
+                        telemetry.addData("dError.x", drive.dError.x)
                         telemetry.addData("Shooter velocity", (shooter.motorLeft.velocity + shooter.motorRight.velocity)/2)
                         telemetry.addData("Target velocity: ", "L: ${shooter.targetVelocityLeft}, R: ${shooter.targetVelocityRight}")
                         telemetry.update()
                     }
                 ))
+                drive.doTipCorrection = true
                 drive.currentUpdateHeading = updateHeadingOverride
                 drive.currentUpdateTranslational = updateTranslationalOverride
             }
