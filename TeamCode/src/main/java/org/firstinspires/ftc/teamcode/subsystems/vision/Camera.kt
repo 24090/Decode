@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.drive.Localizer
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
-import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 
 import org.firstinspires.ftc.teamcode.util.Observation
 import org.firstinspires.ftc.teamcode.util.Pattern

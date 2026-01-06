@@ -10,8 +10,8 @@ import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
-import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
@@ -146,7 +146,7 @@ fun loadZoneCycle(isRed: Boolean, intake: Intake, drive: Drive) = Race(
     ),
     Sequence(
         Sleep(0.3),
-        WaitUntil { Vector.fromPose(drive.dError).length < 0.1}
+        WaitUntil { drive.localizer.poseVel.vector().length < 0.1}
     ),
     Sequence(
         drive.goToCircle(

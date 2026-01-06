@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystems.drive
+package org.firstinspires.ftc.teamcode.subsystems.drive.pathing
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
@@ -64,8 +64,6 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
 
 class Vector {
     val angle: Double
-
-    // MUST BE POSITIVE!
     val length: Double
 
     private constructor(angle: Double, length: Double) {
@@ -116,3 +114,18 @@ class Vector {
 
     fun mirroredIf(v: Boolean) = if (v) this.mirrored() else this
 }
+
+fun getRelativePosition(zeroPose: Pose, fieldPosition: Vector) =
+    (fieldPosition - zeroPose.vector()).rotated(-zeroPose.heading)
+
+
+fun getRelativePose(zeroPose: Pose, fieldPose: Pose) =
+    getRelativePosition(zeroPose, fieldPose.vector())
+        .let {
+            Pose(it.x, it.y, AngleUnit.normalizeRadians(fieldPose.heading - zeroPose.heading))
+        }
+
+fun getRelativeVelocity(zeroPose: Pose, fieldVelocity: Pose) =
+    Vector.fromPose(fieldVelocity).rotated(-zeroPose.heading).let {
+        Pose(it.x, it.y, fieldVelocity.heading)
+    }

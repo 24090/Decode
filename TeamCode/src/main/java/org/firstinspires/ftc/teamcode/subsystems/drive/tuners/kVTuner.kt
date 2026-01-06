@@ -8,7 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.Averager
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getTranslationalVectors
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import kotlin.math.max
 
@@ -16,7 +17,7 @@ import kotlin.math.max
 @Config
 class kVTuner: LinearOpMode() {
     companion object {
-        @JvmField var power = 0.1
+        @JvmField var velPower = 0.1
     }
     override fun runOpMode() {
         val dash = FtcDashboard.getInstance()
@@ -40,10 +41,12 @@ class kVTuner: LinearOpMode() {
         var maxVel = 0.0
         waitForStart()
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
-        drive.drive = kS + power
-        drive.strafe = 0.0
-        drive.turn = 0.0
-        drive.setMotorPowers()
+
+        var power = kS + velPower
+        drive.follow = {
+            getTranslationalVectors(power, 0.0)
+        }
+        drive.update()
         time = System.currentTimeMillis()
         while (opModeIsActive()) {
             reads.update()
@@ -55,13 +58,11 @@ class kVTuner: LinearOpMode() {
             telemetryPacket.put("velAvg", velAverager.get())
             telemetryPacket.put("vel", drive.localizer.xVel)
             telemetryPacket.put("maxVel", maxVel)
-            telemetryPacket.put("Estimated kV", power / maxVel)
+            telemetryPacket.put("Estimated kV", velPower / maxVel)
             telemetry.update()
             dash.sendTelemetryPacket(telemetryPacket)
         }
-        drive.drive = 0.0
-        drive.strafe = 0.0
-        drive.turn = 0.0
-        drive.setMotorPowers()
+        power = 0.0
+        drive.update()
     }
 }

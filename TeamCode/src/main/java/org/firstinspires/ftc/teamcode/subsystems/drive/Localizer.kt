@@ -1,18 +1,14 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive
 
-import com.acmerobotics.dashboard.FtcDashboard
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.RADIANS
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 import org.firstinspires.ftc.teamcode.GoBildaPinpointDriver
-import org.firstinspires.ftc.teamcode.commands.Sleep
-import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
-import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 
 class Localizer(hwMap: HardwareMap) {
     var pinpoint: GoBildaPinpointDriver = hwMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
@@ -72,26 +68,4 @@ class Localizer(hwMap: HardwareMap) {
             GoBildaPinpointDriver.Register.PITCH
         )
     }
-
-    fun fieldPoseToRelative(fieldPose: Pose): Pose {
-        val translation = fieldVecToRelative(fieldPose.vector())
-        return Pose(
-            translation.x,
-            translation.y,
-            AngleUnit.normalizeRadians(fieldPose.heading - heading)
-        )
-    }
-
-    fun fieldVecToRelative(fieldVec: Vector): Vector =
-        (Vector.fromCartesian(fieldVec.x, fieldVec.y) - Vector.fromCartesian(x, y)).rotated(-heading)
-
-    fun relativePoseToField(relativePose: Pose): Pose {
-        val translation = Vector.fromCartesian(relativePose.x, relativePose.y).rotated(heading) + Vector.fromCartesian(x, y)
-        return Pose(
-            translation.x,
-            translation.y,
-            AngleUnit.normalizeRadians(heading + relativePose.heading)
-        )
-    }
-
 }

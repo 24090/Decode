@@ -9,15 +9,16 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.Averager
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kV
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getTranslationalVectors
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.processTurnDriveStrafe
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
-import kotlin.math.max
 
 @TeleOp(group = "Drive")
 @Config
 class kATuner: LinearOpMode() {
     companion object {
-        @JvmField var power = 0.0
+        @JvmField var accelpower = 0.0
     }
     override fun runOpMode() {
         val dash = FtcDashboard.getInstance()
@@ -32,36 +33,35 @@ class kATuner: LinearOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         val velAverager = Averager(100)
+        var power = kS
         reads.update()
         telemetryPacket.put("avgAccel", 0.0)
         telemetryPacket.put("Estimated kA", 0.0)
         dash.sendTelemetryPacket(telemetryPacket)
         waitForStart()
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
-        drive.drive = kS
-        drive.strafe = 0.0
-        drive.turn = 0.0
-        drive.setMotorPowers()
+        drive.follow = {
+            getTranslationalVectors(power, 0.0)
+        }
+        drive.update()
         time = System.currentTimeMillis()
         val startTime = System.currentTimeMillis()
         while (opModeIsActive()) {
             println("test")
             reads.update()
-            if (System.currentTimeMillis() > startTime + 100) drive.drive = kS + drive.localizer.xVel * kV + power
-            drive.setMotorPowers()
+            if (System.currentTimeMillis() > startTime + 100) power = kS + drive.localizer.xVel * kV + accelpower
+            drive.update()
             val avgAccel = if (System.currentTimeMillis() > startTime + 100) drive.localizer.xVel/(System.currentTimeMillis() - startTime - 100)*1000 else 0.001
             recordTime("loop")
             telemetryPacket = TelemetryPacket()
             telemetryPacket.put("avgAccel", velAverager.get())
             telemetry.addData("avgAccel", velAverager.get())
-            telemetryPacket.put("Estimated kA", power/avgAccel)
-            telemetry.addData("Estimated kA", power/avgAccel)
+            telemetryPacket.put("Estimated kA", accelpower/avgAccel)
+            telemetry.addData("Estimated kA", accelpower/avgAccel)
             telemetry.update()
             dash.sendTelemetryPacket(telemetryPacket)
         }
-        drive.drive = 0.0
-        drive.strafe = 0.0
-        drive.turn = 0.0
-        drive.setMotorPowers()
+        power = 0.0
+        drive.update()
     }
 }

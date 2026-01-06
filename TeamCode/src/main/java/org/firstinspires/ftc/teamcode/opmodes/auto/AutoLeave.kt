@@ -8,10 +8,8 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
-import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
-import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
@@ -42,8 +40,8 @@ open class AutoLeave(val isRed: Boolean): LinearOpMode() {
             return
         }
 
-        drive.localizer.pose = Pose(robotLength/2.0,robotWidth/2.0,0.0).mirroredIf(isRed)
-        drive.targetPose = farPose.mirroredIf(isRed)
+        drive.localizer.pose = farPose.mirroredIf(isRed)
+        drive.startP2PWithTargetPose(farPose.mirroredIf(isRed))
         runBlocking(Race(
             Forever {
                 reads.update()

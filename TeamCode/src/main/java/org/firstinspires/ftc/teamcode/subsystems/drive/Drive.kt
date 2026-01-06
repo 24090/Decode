@@ -10,17 +10,13 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.lateralFactor
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
-import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import kotlin.math.absoluteValue
-import kotlin.math.max
-import kotlin.math.sqrt
-import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.sign
 
 @Config
 class Drive(hwMap: HardwareMap) {
@@ -42,15 +38,6 @@ class Drive(hwMap: HardwareMap) {
         @JvmField var tipAccelForward = 230.0
         @JvmField var tipAccelBackward = -150.0
     }
-    var doTipCorrection = false
-    var targetPose = Pose(0.0, 0.0, 0.0)
-    val error
-        get() = localizer.fieldPoseToRelative(targetPose)
-    val dError: Pose
-        get() {
-            val translation = Vector.fromPose(localizer.poseVel).rotated(-localizer.heading)
-            return -Pose(translation.x, translation.y, localizer.headingVel)
-        }
     private val flMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fl"), true, 0.01)
     fun setFlPower(power: Double) { flMotor.power = power }
 
@@ -70,10 +57,6 @@ class Drive(hwMap: HardwareMap) {
         brMotor.zeroPowerBehavior = zeroPowerBehavior
     }
 
-    var drive = 0.0
-    var strafe = 0.0
-    var turn = 0.0
-
     init {
         flMotor.direction = Direction.REVERSE
         frMotor.direction = Direction.FORWARD
@@ -81,29 +64,16 @@ class Drive(hwMap: HardwareMap) {
         brMotor.direction = Direction.FORWARD
         setZeroPowerBehaviours(ZeroPowerBehavior.FLOAT)
     }
-
-    // Util
-
-    fun atTargetCircle(distanceTolerance: Double, headingTolerance: Double): Boolean {
-        return localizer.pose.inCircle(targetPose, distanceTolerance, headingTolerance)
-    }
-
-    fun atTargetSquare(xTolerance: Double, yTolerance: Double, headingTolerance: Double): Boolean {
-        return localizer.pose.inSquare(targetPose, xTolerance, yTolerance, headingTolerance)
-    }
-
     // Drive math, etc
 
-    fun setMotorPowers() {
-        val driveVectors = getHeadingVectors()
-            .addWithoutPriority(getTranslationalVectors(), controlHubVoltage/14.0)
-            .apply {if (doTipCorrection) {
-                tipCorrected(
-                    tipAccelBackward, tipAccelForward,
-                    kS, kV, kA,
-                    -dError.x
-                )
-            }}
+    var follow: () -> DriveVectors = getPointToPoint(Pose(0.0, 0.0, 0.0), localizer)
+
+    fun startP2PWithTargetPose(targetPose: Pose) {
+        follow = getPointToPoint(targetPose, localizer)
+    }
+
+    fun update() {
+        val driveVectors = follow()
         val leftPowers = driveVectors.getLeftPowers()
         val rightPowers = driveVectors.getRightPowers()
 
@@ -113,92 +83,46 @@ class Drive(hwMap: HardwareMap) {
         brMotor.power = rightPowers.second
     }
 
-    fun updateHeading(){
-        turn = PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, hP, hD, kS, hT)
-    }
-    var currentUpdateHeading: () -> Unit = ::updateHeading
-    fun updateTranslational(){
-        val translational =
-            PDLT(Vector.fromPose(error), Vector.fromPose(dError), xyP, xyD, kS, xyT)
-        drive = if (translational.x.isNaN()) 0.0 else translational.x
-        strafe = if (translational.y.isNaN()) 0.0 else translational.y
-    }
-    var currentUpdateTranslational: () -> Unit = ::updateTranslational
-
-    fun update() {
-        currentUpdateHeading()
-        currentUpdateTranslational()
-        setMotorPowers()
-    }
-
-
-    // drive vector calculations
-
-    private fun getTranslationalVectors() = DriveVectors(
-        left = Vector.fromCartesian(drive, strafe),
-        right = Vector.fromCartesian(drive, strafe)
-    )
-
-    private fun getHeadingVectors() = DriveVectors(
-        left = Vector.fromCartesian(-turn, 0.0),
-        right = Vector.fromCartesian(turn, 0.0)
-    )
-
     fun goToCircle(
         pose: Pose,
         distanceTolerance: Double = xyT,
         headingTolerance: Double = hT,
     ) = Sequence(
-        Instant {
-            targetPose = pose
+        Instant {startP2PWithTargetPose(pose)},
+        WaitUntil {
+            (localizer.pose - pose).inCircle(distanceTolerance, headingTolerance) &&
+            localizer.poseVel.inCircle(0.5, 0.04)
         },
-        WaitUntil { atTargetCircle(distanceTolerance, headingTolerance) && localizer.poseVel.inCircle(0.5, 0.04)},
     )
     fun doWheelie(intake: Intake) = Sequence(
         Instant {
-            doTipCorrection = false
             localizer.setWheelieBulkreadScope()
-            currentUpdateHeading = { turn = 0.0 }
-            currentUpdateTranslational = {
-                strafe = 0.0
-                drive = 5.0
-            }
+            follow = { DriveVectors.fromTranslation(Vector.fromCartesian(5.0, 0.0)) }
         },
         WaitUntil {
-            dError.x < -60.0
+            getRelativeVelocity(localizer.pose, localizer.poseVel).x >= 60.0
         },
         Instant {
             intake.behaviour = Intake.IntakeBehaviour.Wheelie(flMotor, frMotor)
-            currentUpdateTranslational = {
-                strafe = 0.0
-                drive = -2.0
-            }
+            follow = { DriveVectors.fromTranslation(Vector.fromCartesian(-2.0, 0.0)) }
         },
         WaitUntil {
             localizer.pinpoint.getPitch(AngleUnit.RADIANS) > 0.7
         },
         Instant {
             val startTime = System.currentTimeMillis()
-            currentUpdateTranslational = {
+            follow = {
                 val t: Double = (System.currentTimeMillis() - startTime)/800.0
-                strafe = 0.0
-                drive = -1.0 * (1 - t)
+                DriveVectors.fromTranslation(Vector.fromCartesian(-1.0 * (1 - t), 0.0))
             }
         },
         Sleep(0.8),
         Instant {
-            currentUpdateTranslational = {
-                strafe = 0.0
-                drive = 0.0
-            }
+            follow = { DriveVectors.fromTranslation(Vector.fromCartesian(0.0, 0.0))}
         },
         Sleep(0.5),
         Instant {
-            doTipCorrection = true
             localizer.setDefaultBulkreadScope()
-            targetPose = localizer.pose
-            currentUpdateHeading = ::updateHeading
-            currentUpdateTranslational = ::updateTranslational
         }
     )
     fun goToSquare(
@@ -207,10 +131,8 @@ class Drive(hwMap: HardwareMap) {
         yTolerance: Double = xyT,
         headingTolerance: Double = hT,
     ) = Sequence(
-        Instant {
-            targetPose = pose
-        },
-        WaitUntil { atTargetSquare(xTolerance, yTolerance, headingTolerance) },
+        Instant {startP2PWithTargetPose(pose)},
+        WaitUntil {(localizer.pose - pose).inSquare(xTolerance, yTolerance, headingTolerance) && localizer.poseVel.inCircle(0.5, 0.04) },
     )
 
     fun inShootableZone(): Boolean{
@@ -222,25 +144,14 @@ data class DriveVectors(val left: Vector, val right: Vector) {
     fun trimmed(maxPower: Double): DriveVectors {
         val leftPowers = getLeftPowers()
         val rightPowers = getRightPowers()
-        val scaleFactor = maxPower/maxOf(leftPowers.first.absoluteValue, leftPowers.second.absoluteValue, rightPowers.first.absoluteValue, rightPowers.second.absoluteValue, maxPower)
+        val scaleFactor = maxPower / maxOf(
+            leftPowers.first.absoluteValue,
+            leftPowers.second.absoluteValue,
+            rightPowers.first.absoluteValue,
+            rightPowers.second.absoluteValue,
+            maxPower
+        )
         return DriveVectors(left * scaleFactor, right * scaleFactor)
-    }
-
-    fun tipCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV: Double, kA: Double, velocity: Double): DriveVectors {
-        val minPower: Double = minAccel * kA + velocity * kV + kS * sign(velocity)
-        val maxPower: Double = maxAccel * kA + velocity * kV + kS * sign(velocity)
-        val power = (left.x + right.x)/2.0
-
-        println("minPower: $minPower, maxPower: $maxPower, power: $power")
-
-        return if (power > maxPower) {
-            DriveVectors(left * (maxPower/power), right * (maxPower/power))
-        } else if (power < minPower) {
-            DriveVectors(left * (minPower/power), right * (minPower/power))
-        } else {
-            this
-        }
-
     }
 
     fun addWithoutPriority(other: DriveVectors, maxPower: Double = 1.0) = (this + other).trimmed(maxPower)
@@ -270,6 +181,16 @@ data class DriveVectors(val left: Vector, val right: Vector) {
             1.0,
             if ((front && left) || (!front && !left)) lateralFactor else -lateralFactor
         ).norm()
+
+        fun getTranslationalVectors(drive: Double, strafe: Double) = DriveVectors(
+            left = Vector.fromCartesian(drive, strafe),
+            right = Vector.fromCartesian(drive, strafe)
+        )
+
+        fun getHeadingVectors(turn: Double) = DriveVectors(
+            left = Vector.fromCartesian(-turn, 0.0),
+            right = Vector.fromCartesian(turn, 0.0)
+        )
     }
 
     override fun toString() = "[L $left, R $right]"

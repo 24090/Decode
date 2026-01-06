@@ -4,16 +4,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Instant
-import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
-import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.grabBallCycle
 import org.firstinspires.ftc.teamcode.opmodes.commands.loadZoneCycle
 import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
@@ -22,7 +20,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
-import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
@@ -32,7 +30,6 @@ import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.PI
-import kotlin.math.abs
 
 @Autonomous(name="AutoRed", group="Auto")
 class FullAutoRed: FullAuto(true)
@@ -95,7 +92,7 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
         }
 
         drive.localizer.pose = Pose(robotLength/2.0, robotWidth/2.0, 0.0).mirroredIf(isRed)
-        drive.targetPose = closePose.mirroredIf(isRed)
+        drive.startP2PWithTargetPose(closePose.mirroredIf(isRed))
         var time = System.currentTimeMillis()
         val recordTime = { name:String ->
             val newTime = System.currentTimeMillis()
@@ -106,9 +103,8 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
         runBlocking(Race(
             Forever({
                 recordTime("other")
-                reads.update();
+                reads.update()
                 recordTime("reads")
-                telemetry.addData("targetPose", drive.targetPose)
                 telemetry.addData("currentPose", drive.localizer.pose)
             }, "Reads" ),
             Sequence(

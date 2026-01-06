@@ -2,29 +2,35 @@ package org.firstinspires.ftc.teamcode.opmodes.tests
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.commands.Forever
-import org.firstinspires.ftc.teamcode.commands.Race
-import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
-import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
-import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hD
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hP
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hT
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kA
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kV
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelBackward
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelForward
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
+import org.firstinspires.ftc.teamcode.subsystems.drive.processTurnTranslational
+import org.firstinspires.ftc.teamcode.subsystems.drive.tipCorrected
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftBack
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftForward
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightBack
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightForward
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
+import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
-import org.firstinspires.ftc.teamcode.util.IndexTracker
-import org.firstinspires.ftc.teamcode.util.Pattern
 import org.firstinspires.ftc.teamcode.util.calculatePredictiveMoveShoot
-import org.firstinspires.ftc.teamcode.util.moveShootKinematics
-import kotlin.math.sqrt
 
 @TeleOp
 class MoveShootTest: LinearOpMode(){
@@ -43,14 +49,17 @@ class MoveShootTest: LinearOpMode(){
         waitForStart()
         drive.localizer.pose = startPose
         var outputs: Pair<Double, Double>? = null
-        drive.currentUpdateTranslational = {
-            val v = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), gamepad1.left_stick_y.toDouble())
-            drive.strafe = v.rotated(-drive.localizer.heading).y
-            drive.drive =  v.rotated(-drive.localizer.heading).x
-        }
-        drive.currentUpdateHeading = {
-            drive.targetPose.heading = outputs?.second ?: drive.targetPose.heading
-            drive.updateHeading()
+        drive.follow = {
+            val outputs = outputs
+            val translational = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), gamepad1.left_stick_y.toDouble()).rotated(-drive.localizer.heading)
+
+            val turn = if (outputs?.second == null){
+                0.0
+            } else {
+                PDLT(AngleUnit.normalizeRadians(outputs.second - drive.localizer.heading), -drive.localizer.headingVel, hP, hD, kS, hT)
+            }
+
+            processTurnTranslational(turn, translational, drive.localizer.pose, drive.localizer.poseVel)
         }
         runBlocking(
             Forever {

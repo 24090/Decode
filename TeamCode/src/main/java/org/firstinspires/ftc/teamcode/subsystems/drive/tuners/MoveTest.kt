@@ -4,7 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 
@@ -23,14 +23,10 @@ class MoveTest2: LinearOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
-        drive.targetPose = Pose(72.0, 0.0, 0.0)
+        drive.startP2PWithTargetPose(Pose(72.0, 0.0, 0.0))
         reads.update()
-        telemetry.addLine("drive ${drive.drive}")
-        telemetry.addLine("strafe ${drive.strafe}")
-        telemetryPacket.put("errorH", drive.error.heading)
-        telemetryPacket.put("dErrorH", drive.dError.heading)
-        telemetryPacket.put("errorY", drive.error.y)
-        telemetryPacket.put("errorX", drive.error.x)
+        telemetry.addLine("x ${drive.localizer.x}")
+        telemetry.addLine("y ${drive.localizer.y}")
         dash.sendTelemetryPacket(telemetryPacket)
         telemetryPacket = TelemetryPacket()
         waitForStart()
@@ -38,13 +34,8 @@ class MoveTest2: LinearOpMode() {
         while (opModeIsActive()) {
             reads.update()
             drive.update()
-            telemetryPacket.put("errorH", drive.error.heading)
-            telemetryPacket.put("dErrorH", drive.dError.heading)
-            telemetryPacket.put("errorY", drive.error.y)
-            telemetryPacket.put("errorX", drive.error.x)
-            telemetry.addLine("drive ${drive.drive}")
-            telemetry.addLine("strafe ${drive.strafe}")
-            telemetry.addLine("turn ${drive.turn}")
+            telemetry.addLine("x ${drive.localizer.x}")
+            telemetry.addLine("y ${drive.localizer.y}")
             recordTime("loop")
             telemetry.update()
             dash.sendTelemetryPacket(telemetryPacket)

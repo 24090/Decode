@@ -1,9 +1,8 @@
 package org.firstinspires.ftc.teamcode.util
 
-import android.util.Log
 import org.firstinspires.ftc.teamcode.opmodes.poses.inLaunchZone
-import org.firstinspires.ftc.teamcode.subsystems.drive.Pose
-import org.firstinspires.ftc.teamcode.subsystems.drive.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import kotlin.math.acos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -20,14 +19,15 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
     val gravity = 386.088
     val hoodAngle = 0.678
 
-    val t: Double = solvePolynomialIA(
+    val t: Double = Polynomial(
+        sx.pow(2)+sy.pow(2)-(heightDiff.pow(2))*(tan(hoodAngle).pow(2))
+        -2*sx*vrx-2*sy*vry,
+        vrx.pow(2)+vry.pow(2)-(heightDiff*gravity)*(tan(hoodAngle).pow(2)),
+        0.0,
+        -(0.25*gravity.pow(2))*(tan(hoodAngle).pow(2)),
+    ).solveIA(
         interval = Interval(0.0, 10.0),
         iterations = 50,
-        -(0.25*gravity.pow(2))*(tan(hoodAngle).pow(2)),
-        0.0,
-        vrx.pow(2)+vry.pow(2)-(heightDiff*gravity)*(tan(hoodAngle).pow(2)),
-        -2*sx*vrx-2*sy*vry,
-        sx.pow(2)+sy.pow(2)-(heightDiff.pow(2))*(tan(hoodAngle).pow(2))
     ).last()
     println(t)
 //    Log.d("t", "$t")
