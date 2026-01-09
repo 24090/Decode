@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.subsystems.drive
 
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.robotcore.external.navigation.Velocity
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
@@ -17,7 +16,6 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipA
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.xyD
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.xyP
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.xyT
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getHeadingVectors
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getTranslationalVectors
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.BezierCurve
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
@@ -26,6 +24,8 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import kotlin.math.PI
+import kotlin.math.absoluteValue
+import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sign
@@ -86,23 +86,25 @@ fun getTeleopFollower(gamepad: Gamepad, localizer: Localizer, isRed: () -> Boole
     }
 }
 
+fun getFollowCurve(curve: BezierCurve, localizer: Localizer) = { followCurve(curve, localizer.pose, localizer.poseVel) }
 fun followCurve(curve: BezierCurve, pose: Pose, velocity: Pose): DriveVectors{
     // 1. corrective position/heading
     // 2. static friction feedforward
     // 3. accelvelstuff
 
     val t = curve.closestT(pose.vector())
+    println(t)
     val curvePose = curve.getPose(t)
-    val curveVelocity = curve.getVelocity(t)
-    val curveAccel = curve.getAcceleration(t)
+    val curveVelocity = curve.getVelocity(t).vector()
+    val curveAccel = curve.getAcceleration(t).vector()
     val corrective = pointToPoint(pose, velocity, curvePose, false)
-    val static = curveVelocity.vector().normalized() * kS
-    val goodVelocityLength = max((velocity.vector() dot curveVelocity.vector().norm()), 0.0)
+    val static = curveVelocity.normalized() * (kS + 0.4)
+    val goodVelocityLength = max((velocity.vector() dot curveVelocity.norm()), 0.0)
     val accelvel = (Vector.fromPolar(
-        angle = curveAccel.vector().angle,
-        length = goodVelocityLength * (curveAccel.vector().length / curveVelocity.vector().length)
+        angle = curveAccel.angle,
+        length = goodVelocityLength * (curveAccel.length / curveVelocity.length.let { if (it == 0.0) 0.001 else it} )
     ) + Vector.fromPolar(
-        angle = curveVelocity.vector().angle,
+        angle = curveVelocity.angle,
         goodVelocityLength,
     )) * 2.0
 
@@ -116,13 +118,72 @@ fun followCurve(curve: BezierCurve, pose: Pose, velocity: Pose): DriveVectors{
 
 }
 
-fun getPointToPoint(targetPose: Pose, localizer: Localizer) = {
-        pointToPoint(localizer.pose, localizer.poseVel, targetPose)
+fun getPointToPoint(targetPose: Pose, localizer: Localizer) = { pointToPoint(localizer.pose, localizer.poseVel, targetPose) }
+fun minStopDistance(heading: Double, errorAngle: Double, velocity: Pose, minAccelX: Double, maxAccelX: Double): Double{
+    val errorNorm = Vector.fromPolar(errorAngle, 1.0)
+    val v = errorNorm.scalarProjection(velocity.vector())
+    val vX = Vector.fromPose(velocity).rotated(-heading).x
+    val uncorrectedPower = DriveVectors
+        .fromTranslation(errorNorm * -100)
+        .trimmed(controlHubVoltage / 14.0)
+        .left.length
+
+
+    val minAccel = errorNorm.scalarInverseProjection(Vector.fromPolar(0.0, minAccelX))
+    val minPower = minAccel * kA + vX * kV + kS * sign(v)
+
+    val maxAccel = errorNorm.scalarInverseProjection(Vector.fromPolar(0.0, maxAccelX))
+    val maxPower = maxAccel * kA + vX * kV + kS * sign(v)
+
+
+    val constantAccel = if (minPower > uncorrectedPower) minAccel else if (maxPower < uncorrectedPower) maxAccel else uncorrectedPower
+    println("minAccel: $minAccelX")
+    println("maxAccel: $minAccelX")
+    println("constantAccel: $constantAccel")
+    val t = max(
+        (uncorrectedPower - (constantAccel * kA + v * kV + kS * sign(v)))/(constantAccel * kV),
+        0.0
+    )
+    val s = 0 + t * v + t.pow(2)/2 * constantAccel
+    val newVelocity = v + constantAccel * t
+    return s + minStopDistanceWithoutTipCorrection(errorAngle, newVelocity)
+}
+
+fun minStopDistanceWithoutTipCorrection(errorAngle: Double, velocity: Double): Double{
+    val maxStopPower = DriveVectors
+        .fromTranslation(Vector.fromPolar(errorAngle, -100.0))
+        .trimmed(controlHubVoltage / 14.0).left.length
+    val initialAcceleration = (maxStopPower - kS * velocity.absoluteValue - kV * velocity)/kA
+    val k1 = (kA/kV) * initialAcceleration
+    return  kA/kV * ((velocity - k1)*ln((k1 - velocity)/k1) - velocity)
+}
+
+fun getScaryPathing(targetPose: Pose, localizer: Localizer) = { scaryPathing(localizer.pose, localizer.poseVel, targetPose) }
+fun scaryPathing(pose: Pose, velocity: Pose, targetPose: Pose): DriveVectors{
+    // if requiredDeaccel < maxDeaccel: go at max accel
+    // when requiredDeaccel = maxDeaccel: go at max deaccel
+    val error = (targetPose - pose)
+
+    if (error.vector().length < 5.0){
+        return pointToPoint(pose, velocity, targetPose, true)
     }
 
-fun pointToPoint(currentPose: Pose, currentVelocity: Pose, targetPose: Pose, full: Boolean = true): DriveVectors {
-    val error = getRelativePose(currentPose, targetPose)
-    val dError = -getRelativeVelocity(currentPose, currentVelocity)
+    val minStopDistance = minStopDistance(pose.heading, error.vector().angle, velocity, tipAccelBackward, tipAccelForward)
+    val tooScary = (minStopDistance) > error.vector().length
+
+    return if (tooScary){
+        android.util.Log.w("#scarypathing", "too scary!!! $error")
+        println("tooScary!!! $error")
+        processTurnTranslational(0.0, error.vector().norm() * -100, pose, velocity)
+    } else {
+        android.util.Log.w("#scarypathing", "not scary :) $error, $minStopDistance")
+        processTurnTranslational(0.0, error.vector().norm() * 100, pose, velocity)
+    }
+}
+
+fun pointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, full: Boolean = true): DriveVectors {
+    val error = getRelativePose(pose, targetPose)
+    val dError = -getRelativeVelocity(pose, velocity)
     val turn = PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, hP, hD, kS, hT)
     val translational =
         PDLT(Vector.fromPose(error), Vector.fromPose(dError), xyP, xyD, kS, xyT)
@@ -130,9 +191,9 @@ fun pointToPoint(currentPose: Pose, currentVelocity: Pose, targetPose: Pose, ful
     val strafe = if (translational.y.isNaN()) 0.0 else translational.y
 
     return if (!full) {
-        getHeadingVectors(turn) + getTranslationalVectors(drive, strafe)
+        DriveVectors.fromRotation(turn) + DriveVectors.fromTranslation(drive, strafe)
     } else {
-        processTurnDriveStrafe(turn, drive, strafe, currentPose, currentVelocity)
+        processTurnDriveStrafe(turn, drive, strafe, pose, velocity)
     }
 }
 
@@ -140,8 +201,8 @@ fun processTurnTranslational(turn: Double, translational: Vector, pose: Pose, ve
     processTurnDriveStrafe(turn, translational.x, translational.y, pose, velocity)
 
 fun processTurnDriveStrafe(turn: Double, drive: Double, strafe: Double, pose: Pose, velocity: Pose) =
-    getHeadingVectors(turn)
-        .addWithoutPriority(getTranslationalVectors(drive, strafe), controlHubVoltage / 14.0)
+    DriveVectors.fromRotation(turn)
+        .addWithoutPriority(DriveVectors.fromTranslation(drive, strafe), controlHubVoltage / 14.0)
         .tipCorrected(
             tipAccelBackward, tipAccelForward,
             kS, kV, kA,
@@ -153,8 +214,6 @@ fun DriveVectors.tipCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV
     val maxPower: Double = maxAccel * kA + velocity * kV + kS * sign(velocity)
     val power = (left.x + right.x)/2.0
 
-    println("minPower: $minPower, maxPower: $maxPower, power: $power")
-
     return if (power > maxPower) {
         DriveVectors(left * (maxPower/power), right * (maxPower/power))
     } else if (power < minPower) {
@@ -162,4 +221,17 @@ fun DriveVectors.tipCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV
     } else {
         this
     }
+}
+
+fun getMoveShootTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: Localizer) = {
+    val angle = getAngle()
+    val translational = Vector.fromCartesian(-gamepad.left_stick_x.toDouble(), gamepad.left_stick_y.toDouble()).rotated(-localizer.heading)
+
+    val turn = if (angle == null){
+        0.0
+    } else {
+        PDLT(AngleUnit.normalizeRadians(angle - localizer.heading), -localizer.headingVel, hP, hD, kS, hT)
+    }
+
+    processTurnTranslational(turn, translational, localizer.pose, localizer.poseVel)
 }

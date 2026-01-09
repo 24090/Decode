@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.util
 
+import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.pow
 
@@ -9,41 +10,65 @@ class Polynomial(vararg val coefficients: Double) {
     fun evaluate(value: Double): Double{
         return coefficients.withIndex().sumOf { (i, coefficient) -> coefficient * value.pow(i) }
     }
-    fun derivative(): Polynomial{
-        return Polynomial(*coefficients.withIndex().map {(i,coefficient) -> coefficient*(degree-i)}.toDoubleArray())
+    fun derivative() = Polynomial(
+        *coefficients
+            .withIndex()
+            .map {(i,coefficient) -> coefficient*i}
+            .subList(1, length)
+            .toDoubleArray()
+        )
+
+    fun integral(C: Double = 0.0) = Polynomial(
+        *coefficients
+            .withIndex()
+            .map {(i,coefficient) -> coefficient/(i+1)}
+            .let { listOf(C).plus(it) }
+            .toDoubleArray()
+        )
+
+    fun evaluateInterval(interval: Interval) =
+        coefficients
+            .withIndex()
+            .map { (i, coefficient) -> interval.pow(i) * coefficient}
+            .reduce(Interval::plus)
+
+    fun minimize(interval: Interval): List<Double> {
+        val possible = derivative()
+            .solve(interval)
+            .map { Pair(it, evaluate(it)) }
+            .plus(Pair(interval.lower, evaluate(interval.lower)))
+            .plus(Pair(interval.upper, evaluate(interval.upper)))
+            .sortedBy { (_, b) -> b.absoluteValue }
+
+        return possible.takeWhile { (_, b) -> (b - possible.first().second) <= 1e-5}.map { (a, _) -> a }
     }
-    fun solveIA(interval: Interval, iterations: Int = 50, first: Boolean = true): List<Double>{
-        val out = coefficients.withIndex().map { (i, coefficient) ->  interval.pow(i) * coefficient}.reduce(Interval::plus)
+
+    fun solve(interval: Interval, iterations: Int = 16): List<Double>{
+        val out = evaluateInterval(interval)
         if (!out.contains(0.0)) {
-            if (first) {
-                val closest = if (out.upper < 0.0) out.upper else out.lower
-                val newConstant = coefficients.last() - closest
-                println("Closest to zero: $closest")
-                val newPolynomial = Polynomial(*coefficients.dropLast(1).plus(newConstant).toDoubleArray())
-                return newPolynomial.solveIA(interval, iterations)
-            }
             return listOf()
+        }
+        if (out.lower == out.upper) {
+            return listOf(interval.lower)
         }
         val pivot = (interval.lower + interval.upper)/2
         if (iterations == 1) {
             return listOf(pivot)
         }
-        return solveIA(
+        return solve(
             Interval(interval.lower, pivot),
             iterations - 1,
-            first = false
-        ) + solveIA(
+        ) + solve(
             Interval(pivot, interval.upper),
             iterations - 1,
-            first = false
         )
     }
 
     operator fun plus(other: Double): Polynomial {
         return Polynomial(
             *DoubleArray(max(this.length, 1)){ i ->
-                if (i < this.length) coefficients[i] else 0.0 +
-                if (i < 1) other else 0.0
+                (if (i < this.length) coefficients[i] else 0.0) +
+                (if (i < 1) other else 0.0)
             }
         )
     }
@@ -51,8 +76,8 @@ class Polynomial(vararg val coefficients: Double) {
     operator fun plus(other: Polynomial): Polynomial {
         return Polynomial(
             *DoubleArray(max(this.length, other.length)){ i ->
-                if (i < this.length) coefficients[i] else 0.0 +
-                if (i < other.length) other.coefficients[i] else 0.0
+                (if (i < this.length) coefficients[i] else 0.0) +
+                (if (i < other.length) other.coefficients[i] else 0.0)
             }
         )
     }
@@ -62,10 +87,10 @@ class Polynomial(vararg val coefficients: Double) {
     )
 
     operator fun times(other: Polynomial): Polynomial {
-        val newCoefficients = DoubleArray(this.length * other.length)
+        val newCoefficients = DoubleArray(this.degree + other.degree + 1)
         for (i in 0..<this.length) {
             for (j in 0..<other.length) {
-                newCoefficients[(i+1) * (j+1) - 1] += this.coefficients[i] * other.coefficients[j]
+                newCoefficients[i + j] += this.coefficients[i] * other.coefficients[j]
             }
         }
         return Polynomial(*newCoefficients)
@@ -74,7 +99,7 @@ class Polynomial(vararg val coefficients: Double) {
     fun pow(n: Int): Polynomial {
         var v = Polynomial(1.0)
         for (i in 1..n) {
-            v = v*this
+            v = v * this
         }
         return v
     }

@@ -5,23 +5,13 @@ package org.firstinspires.ftc.teamcode.util
     for running random tests and stuff
  */
 
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
+import org.firstinspires.ftc.teamcode.subsystems.drive.followCurve
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.CubicHermiteSpline
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import kotlin.math.PI
 
 fun main(){
-    val driveVectors = DriveVectors.fromTranslation(Vector.fromCartesian(-100.0, 0.0)).trimmed(0.8)
-//        .apply { if (false) {
-//            tipCorrected(
-//                tipAccelBackward,
-//                tipAccelForward,
-//                kS,
-//                kV,
-//                kA,
-//                0.0
-//            )
-//        }}
-    val leftPowers = driveVectors.getLeftPowers()
-    val rightPowers = driveVectors.getRightPowers()
-
-    println("fl ${leftPowers.first}, fr ${leftPowers.second}, bl ${rightPowers.first}, br ${rightPowers.second}")
+    Vector.fromPolar(0.0, 1.0).scalarInverseProjection(Vector.fromPolar(0.0, 100.0))
+        .also { println(it) }
 }

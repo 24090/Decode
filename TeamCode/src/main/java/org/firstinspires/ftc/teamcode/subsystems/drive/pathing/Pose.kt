@@ -51,7 +51,7 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
     }
 
     override fun toString(): String {
-        return "(x:" + "%.1f".format(x) +  "y:" + "%.1f".format(y) + "θ:" + "%.2f".format(heading) + ")"
+        return "(x:" + "%.1f".format(x) +  " y:" + "%.1f".format(y) + " θ:" + "%.2f".format(heading) + ")"
     }
 
     fun mirrored() = Pose(this.x, -this.y, -this.heading)
@@ -60,72 +60,3 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
 
     fun vector() = Vector.fromPose(this)
 }
-
-
-class Vector {
-    val angle: Double
-    val length: Double
-
-    private constructor(angle: Double, length: Double) {
-        if (length < 0) {
-            this.angle = AngleUnit.normalizeRadians(angle + PI)
-            this.length = length.absoluteValue
-        } else {
-            this.angle = AngleUnit.normalizeRadians(angle)
-            this.length = length.absoluteValue
-        }
-    }
-
-    val x get() = length * cos(angle)
-    val y get() = length * sin(angle)
-
-    companion object {
-        fun fromCartesian(x: Double, y: Double) = Vector(atan2(y, x), sqrt(x*x + y*y))
-        fun fromPolar(angle: Double,  length: Double) = Vector(angle, length)
-        fun fromPose(pose: Pose) = fromCartesian(pose.x, pose.y)
-    }
-
-    fun norm(): Vector = Vector(angle, 1.0)
-    fun normalized(): Vector = Vector(angle, clamp(length, 0.0, 1.0))
-    fun clampedLength(max: Double) = Vector(angle, clamp(length, 0.0, max))
-    // dot product
-    infix fun dot(v: Vector): Double {
-        return v.x * this.x + v.y * this.y
-    }
-
-    operator fun times(x: Number): Vector {
-        return Vector(angle, length * x.toDouble())
-    }
-    operator fun plus(v: Vector): Vector {
-        return fromCartesian(x+v.x, y+v.y)
-    }
-    operator fun minus(v: Vector): Vector {
-        return fromCartesian(x-v.x, y-v.y)
-    }
-    fun rotated(x: Number): Vector {
-        return Vector(angle + x.toDouble(), length)
-    }
-
-    override fun toString(): String {
-        return "[$x, $y]"
-    }
-
-    fun mirrored() = fromCartesian(this.x, -this.y)
-
-    fun mirroredIf(v: Boolean) = if (v) this.mirrored() else this
-}
-
-fun getRelativePosition(zeroPose: Pose, fieldPosition: Vector) =
-    (fieldPosition - zeroPose.vector()).rotated(-zeroPose.heading)
-
-
-fun getRelativePose(zeroPose: Pose, fieldPose: Pose) =
-    getRelativePosition(zeroPose, fieldPose.vector())
-        .let {
-            Pose(it.x, it.y, AngleUnit.normalizeRadians(fieldPose.heading - zeroPose.heading))
-        }
-
-fun getRelativeVelocity(zeroPose: Pose, fieldVelocity: Pose) =
-    Vector.fromPose(fieldVelocity).rotated(-zeroPose.heading).let {
-        Pose(it.x, it.y, fieldVelocity.heading)
-    }

@@ -25,10 +25,7 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
         vrx.pow(2)+vry.pow(2)-(heightDiff*gravity)*(tan(hoodAngle).pow(2)),
         0.0,
         -(0.25*gravity.pow(2))*(tan(hoodAngle).pow(2)),
-    ).solveIA(
-        interval = Interval(0.0, 10.0),
-        iterations = 50,
-    ).last()
+    ).solve(Interval(0.0, 5.0)).last()
     println(t)
 //    Log.d("t", "$t")
 //    println("COEFFICIENTS\n" +

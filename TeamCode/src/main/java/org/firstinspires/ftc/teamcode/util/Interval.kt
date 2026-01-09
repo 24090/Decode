@@ -13,12 +13,17 @@ class Interval(vararg values: Double) {
     operator fun times(interval: Interval) = Interval(lower * interval.lower, upper * interval.lower, lower * interval.upper, upper * interval.upper)
     operator fun times(value: Double) = Interval(lower * value, upper * value)
 
-    fun pow(n: Int) = if (contains(0.0) && n%2 == 0)
-        Interval(0.0, lower.pow(n), upper.pow(n))
-    else
-        Interval(lower.pow(n), upper.pow(n))
+    fun pow(n: Int) =
+        if (n == 0)
+            Interval(1.0)
+        else if (contains(0.0) && n%2 == 0)
+            Interval(0.0, lower.pow(n), upper.pow(n))
+        else
+            Interval(lower.pow(n), upper.pow(n))
 
     fun contains(value: Double) : Boolean {
         return lower <= value && upper >= value
     }
+
+    override fun toString() = "[$lower, $upper]"
 }

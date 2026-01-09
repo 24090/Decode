@@ -6,10 +6,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
+import org.firstinspires.ftc.teamcode.subsystems.drive.getScaryPathing
+import org.firstinspires.ftc.teamcode.subsystems.drive.scaryPathing
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 
 @TeleOp
-class MoveTest2: LinearOpMode() {
+class MoveTest: LinearOpMode() {
     override fun runOpMode() {
         val dash = FtcDashboard.getInstance()
         var telemetryPacket = TelemetryPacket()
@@ -23,7 +25,8 @@ class MoveTest2: LinearOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
-        drive.startP2PWithTargetPose(Pose(72.0, 0.0, 0.0))
+        drive.startP2PWithTargetPose(Pose(10.0, 0.0, 0.0))
+        drive.follow = getScaryPathing(Pose(-40.0, 0.0, 0.0), drive.localizer)
         reads.update()
         telemetry.addLine("x ${drive.localizer.x}")
         telemetry.addLine("y ${drive.localizer.y}")

@@ -38,16 +38,16 @@ class Drive(hwMap: HardwareMap) {
         @JvmField var tipAccelForward = 230.0
         @JvmField var tipAccelBackward = -150.0
     }
-    private val flMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fl"), true, 0.01)
+     val flMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fl"), true, 0.01)
     fun setFlPower(power: Double) { flMotor.power = power }
 
-    private val frMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fr"), true, 0.01)
+     val frMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fr"), true, 0.01)
     fun setFrPower(power: Double) { frMotor.power = power }
 
-    private val blMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "bl"), true, 0.01)
+     val blMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "bl"), true, 0.01)
     fun setBlPower(power: Double) { blMotor.power = power }
 
-    private val brMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "br"), true, 0.01)
+     val brMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "br"), true, 0.01)
     fun setBrPower(power: Double) { brMotor.power = power }
 
     private fun setZeroPowerBehaviours(zeroPowerBehavior: ZeroPowerBehavior) {
@@ -175,6 +175,8 @@ data class DriveVectors(val left: Vector, val right: Vector) {
 
     companion object {
         fun fromTranslation(v: Vector) = DriveVectors(v, v)
+        fun fromTranslation(drive: Double, strafe: Double) = fromTranslation(Vector.fromCartesian(drive, strafe))
+
         fun fromRotation(v: Double) = DriveVectors(Vector.fromCartesian(-v, 0.0), Vector.fromCartesian(v, 0.0))
 
         fun getWheelVector(front: Boolean, left: Boolean) = Vector.fromCartesian(
@@ -185,11 +187,6 @@ data class DriveVectors(val left: Vector, val right: Vector) {
         fun getTranslationalVectors(drive: Double, strafe: Double) = DriveVectors(
             left = Vector.fromCartesian(drive, strafe),
             right = Vector.fromCartesian(drive, strafe)
-        )
-
-        fun getHeadingVectors(turn: Double) = DriveVectors(
-            left = Vector.fromCartesian(-turn, 0.0),
-            right = Vector.fromCartesian(turn, 0.0)
         )
     }
 

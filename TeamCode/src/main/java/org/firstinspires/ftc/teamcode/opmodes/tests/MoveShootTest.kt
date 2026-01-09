@@ -12,23 +12,15 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hD
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hP
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hT
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kA
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kV
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelBackward
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelForward
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.drive.processTurnTranslational
-import org.firstinspires.ftc.teamcode.subsystems.drive.tipCorrected
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftBack
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftForward
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightBack
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightForward
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
-import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.calculatePredictiveMoveShoot
 
@@ -48,9 +40,10 @@ class MoveShootTest: LinearOpMode(){
         }
         waitForStart()
         drive.localizer.pose = startPose
-        var outputs: Pair<Double, Double>? = null
+        var moveShootOutputs: Pair<Double, Double>? = null
+
         drive.follow = {
-            val outputs = outputs
+            val outputs = moveShootOutputs
             val translational = Vector.fromCartesian(-gamepad1.left_stick_x.toDouble(), gamepad1.left_stick_y.toDouble()).rotated(-drive.localizer.heading)
 
             val turn = if (outputs?.second == null){
@@ -61,15 +54,16 @@ class MoveShootTest: LinearOpMode(){
 
             processTurnTranslational(turn, translational, drive.localizer.pose, drive.localizer.poseVel)
         }
+
         runBlocking(
             Forever {
                 reads.update()
-                outputs = calculatePredictiveMoveShoot(0.0,drive.localizer.pose, drive.localizer.poseVel)
+                moveShootOutputs = calculatePredictiveMoveShoot(0.0,drive.localizer.pose, drive.localizer.poseVel)
                 recordTime("reads")
                 drive.update()
                 val relativePose = (scorePosition - Vector.fromPose(drive.localizer.pose))
-                telemetry.addData("target exit velocity", outputs?.first)
-                telemetry.addData("target heading", outputs?.second)
+                telemetry.addData("target exit velocity", moveShootOutputs?.first)
+                telemetry.addData("target heading", moveShootOutputs?.second)
                 telemetry.addData("pose", relativePose)
                 telemetry.addData("pose", drive.localizer.poseVel)
                 telemetry.addData("motorLeftVelocity", shooter.motorLeft.velocity)
