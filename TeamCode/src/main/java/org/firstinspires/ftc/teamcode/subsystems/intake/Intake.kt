@@ -36,6 +36,9 @@ class Intake(hwMap: HardwareMap) {
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
+
+    private var nextShootTime: Long? = null
+
     init {
         motor.mode = RunMode.RUN_WITHOUT_ENCODER
         motor.direction = DcMotorSimple.Direction.REVERSE
@@ -125,7 +128,17 @@ class Intake(hwMap: HardwareMap) {
         behaviour = IntakeBehaviour.Stop
     }, "StopIntake")
 
+    fun getMinShootTime(): Double {
+        val nextShootTime = nextShootTime
+        return if (nextShootTime == null){
+            0.3
+        } else {
+            (nextShootTime - System.currentTimeMillis())/1000.0
+        }
+    }
+
     fun releaseDual(): Command = Parallel(
+        Instant { nextShootTime = System.currentTimeMillis() + 300},
         releaseLeft(),
         releaseRight(),
         name = "ReleaseDual"
@@ -146,14 +159,21 @@ class Intake(hwMap: HardwareMap) {
     fun releaseLeft(): Command = Sequence(
         Instant { pusherLeft.position = pusherLeftForward },
         Sleep(pusherWait),
-        Instant { pusherLeft.position = pusherLeftBack },
+        Instant {
+            pusherLeft.position = pusherLeftBack
+            nextShootTime = null
+        },
+
         name = "ReleaseLeft"
     )
 
     fun releaseRight(): Command = Sequence(
         Instant { pusherRight.position = pusherRightForward },
         Sleep(pusherWait),
-        Instant { pusherRight.position = pusherRightBack },
+        Instant {
+            pusherRight.position = pusherRightBack
+            nextShootTime = null
+        },
         name = "ReleaseRight"
     )
 }

@@ -15,18 +15,24 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
     val sy: Double = relativePosition.y
     val vrx: Double = fieldVelocity.x
     val vry: Double = fieldVelocity.y
-    val heightDiff = 26.74534
+    val heightDiff = 27.17
     val gravity = 386.088
-    val hoodAngle = 0.678
+    val hoodAngle = 0.52
 
-    val t: Double = Polynomial(
+    val polynomial = Polynomial(
         sx.pow(2)+sy.pow(2)-(heightDiff.pow(2))*(tan(hoodAngle).pow(2))
-        -2*sx*vrx-2*sy*vry,
+                -2*sx*vrx-2*sy*vry,
         vrx.pow(2)+vry.pow(2)-(heightDiff*gravity)*(tan(hoodAngle).pow(2)),
         0.0,
         -(0.25*gravity.pow(2))*(tan(hoodAngle).pow(2)),
-    ).solve(Interval(0.0, 5.0)).last()
-    println(t)
+    )
+
+    val t: Double =
+        try { polynomial.solve(Interval(0.0, 5.0)).last() }
+        catch (_: NoSuchElementException) {
+            polynomial.minimize(Interval(0.0, 5.0)).first()
+        }
+
 //    Log.d("t", "$t")
 //    println("COEFFICIENTS\n" +
 //            "${-(0.25*gravity.pow(2))*(tan(hoodAngle).pow(2))}, " +

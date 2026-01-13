@@ -22,12 +22,14 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelBackward
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelForward
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopFollower
+import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopTranslational
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
+import org.firstinspires.ftc.teamcode.util.Reference
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.PI
@@ -36,7 +38,11 @@ import kotlin.math.pow
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
     override fun runOpMode() {
-        var isRed = false
+        val isRed = Reference(false)
+        val targetPose = Reference(Pose(0.0, 0.0, 0.0))
+        val lastLockTranslational = Reference(false)
+        val lastLockHeading = Reference(false)
+
         var useStoredPose = false
         val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
@@ -45,14 +51,17 @@ class Controlled: LinearOpMode() {
         val camera = Camera(hardwareMap)
         val huskyLens = HuskyLens(hardwareMap)
         val indexTracker = IndexTracker()
+
         indexTracker.pattern = storedPattern ?: indexTracker.pattern
         camera.initLocalize()
-        val followOverride = getTeleopFollower(gamepad1, drive.localizer, { isRed })
+
+        val translationalFunction = getTeleopTranslational(gamepad1, drive.localizer, lastLockTranslational, targetPose, isRed)
+        val followOverride = getTeleopFollower(gamepad1, drive.localizer, isRed, lastLockHeading, targetPose, translationalFunction)
         drive.follow = followOverride
 
         while (opModeInInit()){
             if (gamepad2.guideWasPressed()) {
-                isRed = !isRed
+                isRed.set(!isRed.get())
             }
             if (gamepad2.backWasPressed()) {
                 useStoredPose = !useStoredPose
@@ -80,7 +89,7 @@ class Controlled: LinearOpMode() {
 
         val updateP2 = {
             if (gamepad2.guideWasPressed()) {
-                isRed = !isRed
+                isRed.set(!isRed.get())
             }
             if (gamepad2.xWasPressed()){
                 indexTracker.rampCount = ((indexTracker.rampCount + 1)%9 + 9)%9
@@ -94,7 +103,7 @@ class Controlled: LinearOpMode() {
             telemetry.addData("pattern", indexTracker.pattern)
             telemetry.addLine("--------------------------")
         }
-        drive.localizer.pose = if (useStoredPose) storedPose ?: startPose.mirroredIf(isRed) else startPose.mirroredIf(isRed)
+        drive.localizer.pose = if (useStoredPose) storedPose ?: startPose.mirroredIf(isRed.get()) else startPose.mirroredIf(isRed.get())
         while (opModeIsActive()){
             reads.update()
             updateP2()
@@ -109,14 +118,14 @@ class Controlled: LinearOpMode() {
                 runBlocking(intake.stopFront())
             }
             if (gamepad1.xWasPressed()) {
-                val relativePose = scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose)
+                val relativePose = scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose)
                 runBlocking(
                     Race(
                     WaitUntil { !gamepad1.x },
                     Forever {
                         reads.update()
                         updateP2()
-                        val relativePose = (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose))
+                        val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
                         shooter.setTargetVelocityFromDistance(relativePose.length)
                     },
                     Sequence(
@@ -145,13 +154,13 @@ class Controlled: LinearOpMode() {
             }
             if (gamepad1.aWasPressed()) {
                 val relativePose =
-                    (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose))
+                    (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
                 runBlocking(Race(
                     WaitUntil { !gamepad1.a },
                     Forever {
                         reads.update()
                         updateP2()
-                        val relativePose = (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose))
+                        val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
                         shooter.setTargetVelocityFromDistance(relativePose.length)
                     },
                     Sequence(
@@ -184,7 +193,7 @@ class Controlled: LinearOpMode() {
                     Forever {
                         reads.update()
                         updateP2()
-                        val relativePose = (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose))
+                        val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
                         shooter.setTargetVelocityFromDistance(relativePose.length)
                     },
                     shootCycle(intake, shooter),
@@ -211,7 +220,7 @@ class Controlled: LinearOpMode() {
                         updateP2()
                     },
                     Sequence(
-                        drive.goToCircle(parkPose.mirroredIf(!isRed) + Pose(-24.0, 0.0, 0.0)),
+                        drive.goToCircle(parkPose.mirroredIf(!isRed.get()) + Pose(-24.0, 0.0, 0.0)),
                         drive.doWheelie(intake)
                     ),
                     Forever {
@@ -231,7 +240,7 @@ class Controlled: LinearOpMode() {
             shooter.update()
             intake.update()
             telemetry.addData("pose", drive.localizer.pose)
-            telemetry.addData("distance", (scorePosition.mirroredIf(isRed) - Vector.fromPose(drive.localizer.pose)).length)
+            telemetry.addData("distance", (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose)).length)
             telemetry.addData("Target velocity: ", "L: ${shooter.targetVelocityLeft}, R: ${shooter.targetVelocityRight}")
             telemetry.addData("gamepad1turn", gamepad1.right_stick_x)
             telemetry.addData("gamepad1strafe", gamepad1.left_stick_x)

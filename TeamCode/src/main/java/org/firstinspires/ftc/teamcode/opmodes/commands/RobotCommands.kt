@@ -28,8 +28,9 @@ fun shootCycle(intake: Intake, shooter: Shooter) = Sequence(
         intake.releaseDual(),
         Sleep(0.3),
         Parallel(
-            intake.fullAdjustThird(),
+            intake.spinUp(),
             shooter.waitForVelocity(),
+            Sleep(0.3),
         ),
         intake.releaseDual(),
         name = "ShootCycle"

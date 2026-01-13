@@ -21,8 +21,10 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.BezierCurve
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePosition
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
+import org.firstinspires.ftc.teamcode.util.Reference
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.ln
@@ -30,59 +32,69 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sign
 
-fun getTeleopFollower(gamepad: Gamepad, localizer: Localizer, isRed: () -> Boolean): () -> DriveVectors {
-    var lastLockTranslational = false
-    var lastLockHeading = false
-    var targetPose = Pose(0.0, 0.0, 0.0)
-    val isLockHeading = {
-        gamepad.right_stick_x.toDouble() == 0.0 //&& (drive.localizer.headingVel < 0.02 || lastLockHeading)
-    }
+
+fun getTeleopTranslational(
+    gamepad: Gamepad,
+    localizer: Localizer,
+    lastLockTranslational: Reference<Boolean>,
+    targetPose: Reference<Pose>,
+    isRed: Reference<Boolean>
+): (dError: Vector) -> Vector {
     val isLockTranslational = {
         gamepad.left_stick_x.toDouble() == 0.0 && gamepad.left_stick_y.toDouble() == 0.0// && ((drive.localizer.xVel < 0.2 && drive.localizer.yVel < 0.2) || lastLockTranslational)
     }
-    val heading = { error: Pose, dError: Pose ->
-        val lockHeading = isLockHeading()
-        if (lockHeading){
-            if (!lastLockHeading){
-                targetPose.heading = localizer.heading
-            }
-            lastLockHeading = true
-            PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, hP, hD, kS, hT)
-        } else {
-            lastLockHeading = false
-            -gamepad.right_stick_x.toDouble()
-        }
-    }
 
-    val translational = { error: Pose, dError: Pose ->
+
+    return { dError: Vector ->
+        val error = getRelativePose(localizer.pose, targetPose.get())
         val lockTranslational = isLockTranslational()
         if (lockTranslational) {
-            if (!lastLockTranslational) {
+            if (!lastLockTranslational.get()) {
                 val maxAccel = if (dError.x < 0) tipAccelForward else tipAccelBackward
                 val t = (-dError.x)/maxAccel
-                val targetPosition = localizer.pose.vector() + Vector.fromPolar(localizer.heading, maxAccel * t.pow(2)/2 + (-dError.x) * t)
-                targetPose.x = targetPosition.x
-                targetPose.y = targetPosition.y
+                val newTargetPosition = localizer.pose.vector() + Vector.fromPolar(localizer.heading, maxAccel * t.pow(2)/2 + (-dError.x) * t)
+                targetPose.set(Pose(newTargetPosition.x, newTargetPosition.y, targetPose.get().heading))
             }
-            lastLockTranslational = true
-            PDLT(Vector.fromPose(error), Vector.fromPose(dError), xyP, xyD, kS, xyT)
+            lastLockTranslational.set(true)
+            PDLT(error.vector(), dError, xyP, xyD, kS, xyT)
         } else {
             var v = Vector.fromCartesian(-gamepad.left_stick_x.toDouble(), gamepad.left_stick_y.toDouble())
             v = v * v.length * 1.67
-            if (!isRed()) v = v.rotated(PI)
-            lastLockTranslational = false
+            if (!isRed.get()) v = v.rotated(PI)
+            lastLockTranslational.set(false)
             v.rotated(-localizer.heading)
+        }
+    }
+}
+
+fun getTeleopFollower(
+    gamepad: Gamepad,
+    localizer: Localizer,
+    isRed: Reference<Boolean>,
+    lastLockHeading: Reference<Boolean>,
+    targetPose: Reference<Pose>,
+    teleopTranslational: (dError: Vector) -> Vector
+): () -> DriveVectors {
+    val heading = { dError: Pose ->
+        if (gamepad.right_stick_x.toDouble() == 0.0){
+            if (!lastLockHeading.get()){
+                targetPose.set(Pose(targetPose.get().x, targetPose.get().y, localizer.heading))
+            }
+            lastLockHeading.set(true)
+            PDLT(AngleUnit.normalizeRadians(targetPose.get().heading - localizer.heading), dError.heading, hP, hD, kS, hT)
+        } else {
+            lastLockHeading.set(false)
+            -gamepad.right_stick_x.toDouble()
         }
     }
 
     return {
         if (gamepad.backWasPressed()) {
-            localizer.pose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed())
-            targetPose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed())
+            localizer.pose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get())
+            targetPose.set(Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get()))
         }
-        val error = getRelativePose(localizer.pose, targetPose)
         val dError = -getRelativeVelocity(localizer.pose, localizer.poseVel)
-        processTurnTranslational(heading(error, dError), translational(error, dError), localizer.pose, localizer.poseVel)
+        processTurnTranslational(heading(dError), teleopTranslational(dError.vector()), localizer.pose, localizer.poseVel)
     }
 }
 
@@ -223,10 +235,9 @@ fun DriveVectors.tipCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV
     }
 }
 
-fun getMoveShootTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: Localizer) = {
+fun getMoveShootTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: Localizer, teleopTranslational: (dError: Vector) -> Vector) = {
     val angle = getAngle()
-    val translational = Vector.fromCartesian(-gamepad.left_stick_x.toDouble(), gamepad.left_stick_y.toDouble()).rotated(-localizer.heading)
-
+    val translational = teleopTranslational(getRelativeVelocity(localizer.pose, localizer.poseVel).vector() * -1)
     val turn = if (angle == null){
         0.0
     } else {
