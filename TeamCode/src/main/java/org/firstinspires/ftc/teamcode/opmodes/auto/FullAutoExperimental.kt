@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.grabBallCycle
 import org.firstinspires.ftc.teamcode.opmodes.commands.loadZoneCycle
-import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
+import org.firstinspires.ftc.teamcode.opmodes.commands.shootPattern
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
@@ -51,24 +51,24 @@ open class FullAutoExperimental(val isRed: Boolean): LinearOpMode() {
         indexTracker.rampCount = 0
         val farShootCyclePattern = {Sequence(
             drive.goToCircle(farPose.mirroredIf(isRed), 2.0),
-            releasePattern(intake,shooter,huskyLens,indexTracker),
+            shootPattern(intake,shooter,huskyLens,indexTracker),
             name = "FarShootCycle"
         )}
         val closeShootCyclePattern = {Sequence(
             drive.goToCircle(closePose.mirroredIf(isRed), 2.0),
-            releasePattern(intake,shooter,huskyLens,indexTracker),
+            shootPattern(intake,shooter,huskyLens,indexTracker),
             name = "CloseShootCycle"
         )}
         val leaveShootCyclePattern = {Sequence(
             drive.goToCircle(getScorePose(Vector.fromCartesian(106.0, 12.0)).mirroredIf(isRed), 2.0),
-            releasePattern(intake,shooter,huskyLens,indexTracker),
+            shootPattern(intake,shooter,huskyLens,indexTracker),
             name = "CloseShootCycle"
         )}
         val closeShootMovingCyclePattern = {Race(
             drive.goToCircle(getScorePose(Vector.fromCartesian(106.0, 12.0)).mirroredIf(isRed), 2.0),
             Sequence(
                 WaitUntil{drive.inShootableZone()},
-                releasePattern(intake,shooter,huskyLens,indexTracker))
+                shootPattern(intake,shooter,huskyLens,indexTracker))
         )}
 
 

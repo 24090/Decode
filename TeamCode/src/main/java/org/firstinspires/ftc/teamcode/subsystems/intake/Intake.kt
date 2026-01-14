@@ -131,22 +131,23 @@ class Intake(hwMap: HardwareMap) {
     fun getMinShootTime(): Double {
         val nextShootTime = nextShootTime
         return if (nextShootTime == null){
-            0.3
+            pusherWait
         } else {
             (nextShootTime - System.currentTimeMillis())/1000.0
         }
     }
 
     fun releaseDual(): Command = Parallel(
-        Instant { nextShootTime = System.currentTimeMillis() + 300},
+        Instant { nextShootTime = System.currentTimeMillis() + (pusherWait * 1000).toLong()},
         releaseLeft(),
         releaseRight(),
+        Instant { nextShootTime = null},
         name = "ReleaseDual"
     )
     fun waitForStall(): Command =
         WaitUntil({
             if (behaviour == IntakeBehaviour.Grab){
-                abs(motorBack.velocity) < 100
+                abs(motorBack.velocity) < 600
             } else {
                 true
             }
@@ -161,7 +162,6 @@ class Intake(hwMap: HardwareMap) {
         Sleep(pusherWait),
         Instant {
             pusherLeft.position = pusherLeftBack
-            nextShootTime = null
         },
 
         name = "ReleaseLeft"
@@ -172,7 +172,6 @@ class Intake(hwMap: HardwareMap) {
         Sleep(pusherWait),
         Instant {
             pusherRight.position = pusherRightBack
-            nextShootTime = null
         },
         name = "ReleaseRight"
     )

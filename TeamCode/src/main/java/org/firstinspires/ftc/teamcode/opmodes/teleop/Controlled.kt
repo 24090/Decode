@@ -9,18 +9,14 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
-import org.firstinspires.ftc.teamcode.opmodes.commands.shootCycle
+import org.firstinspires.ftc.teamcode.opmodes.commands.shootPattern
+import org.firstinspires.ftc.teamcode.opmodes.commands.shootAll
 import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
-import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
-import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelBackward
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelForward
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopFollower
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopTranslational
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
@@ -32,8 +28,6 @@ import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Reference
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
-import kotlin.math.PI
-import kotlin.math.pow
 
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
@@ -134,7 +128,7 @@ class Controlled: LinearOpMode() {
                             relativePose.angle
                         )),
                         Instant { updateLocalizer() },
-                        shootCycle(intake, shooter)
+                        shootAll(intake, shooter)
                     ),
                     Forever {
                         intake.update()
@@ -172,7 +166,7 @@ class Controlled: LinearOpMode() {
                             shooter.waitForVelocity()
                         ),
                         Instant {updateLocalizer()},
-                        releasePattern(intake, shooter, huskyLens , indexTracker)
+                        shootPattern(intake, shooter, huskyLens , indexTracker)
                     ),
                     Forever {
                         intake.update()
@@ -196,7 +190,7 @@ class Controlled: LinearOpMode() {
                         val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
                         shooter.setTargetVelocityFromDistance(relativePose.length)
                     },
-                    shootCycle(intake, shooter),
+                    shootAll(intake, shooter),
                     Forever {
                         intake.update()
                         drive.update()

@@ -7,10 +7,12 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
+import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.grabBallCycle
 import org.firstinspires.ftc.teamcode.opmodes.commands.loadZoneCycle
-import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
+import org.firstinspires.ftc.teamcode.opmodes.commands.shootPattern
+import org.firstinspires.ftc.teamcode.opmodes.commands.shootAll
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
@@ -48,17 +50,17 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
         indexTracker.rampCount = 0
         val farShootCycle = {Sequence(
             drive.goToCircle(farPose.mirroredIf(isRed), 2.0),
-            releasePattern(intake,shooter,huskyLens,indexTracker),
+            shootPattern(intake,shooter,huskyLens,indexTracker),
             name = "FarShootCycle"
         )}
         val closeShootCycle = {Sequence(
             drive.goToCircle(closePose.mirroredIf(isRed), 2.0),
-            releasePattern(intake,shooter,huskyLens,indexTracker),
+            shootAll(intake,shooter),
             name = "CloseShootCycle"
         )}
         val leaveShootCycle = {Sequence(
             drive.goToCircle(getScorePose(Vector.fromCartesian(106.0, 12.0)).mirroredIf(isRed), 2.0),
-            releasePattern(intake,shooter,huskyLens,indexTracker),
+            shootPattern(intake,shooter,huskyLens,indexTracker),
             name = "CloseShootCycle"
         )}
 
@@ -109,8 +111,11 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
             }, "Reads" ),
             Sequence(
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+                Race(
+                    drive.goToCircle(Pose(closePose.mirroredIf(isRed).x, closePose.mirroredIf(isRed).y, 0.0)),
+                    WaitUntil {drive.localizer.x > 40.0}
+                ),
                 closeShootCycle(),
-
                 shooter.stop(),
                 grabBallCycle(2, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},

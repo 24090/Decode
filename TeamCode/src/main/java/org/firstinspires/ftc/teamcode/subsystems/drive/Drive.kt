@@ -83,17 +83,6 @@ class Drive(hwMap: HardwareMap) {
         brMotor.power = rightPowers.second
     }
 
-    fun goToCircle(
-        pose: Pose,
-        distanceTolerance: Double = xyT,
-        headingTolerance: Double = hT,
-    ) = Sequence(
-        Instant {startP2PWithTargetPose(pose)},
-        WaitUntil {
-            (localizer.pose - pose).inCircle(distanceTolerance, headingTolerance) &&
-            localizer.poseVel.inCircle(0.5, 0.04)
-        },
-    )
     fun doWheelie(intake: Intake) = Sequence(
         Instant {
             localizer.setWheelieBulkreadScope()
@@ -125,6 +114,18 @@ class Drive(hwMap: HardwareMap) {
             localizer.setDefaultBulkreadScope()
         }
     )
+
+    fun goToCircle(
+        pose: Pose,
+        distanceTolerance: Double = xyT,
+        headingTolerance: Double = hT,
+    ) = Sequence(
+        Instant {startP2PWithTargetPose(pose)},
+        WaitUntil {
+            (localizer.pose - pose).inCircle(distanceTolerance, headingTolerance)
+            //&& localizer.poseVel.inCircle(5.0 * distanceTolerance, headingTolerance * 0.25)
+        },
+    )
     fun goToSquare(
         pose: Pose,
         xTolerance: Double = xyT,
@@ -132,7 +133,10 @@ class Drive(hwMap: HardwareMap) {
         headingTolerance: Double = hT,
     ) = Sequence(
         Instant {startP2PWithTargetPose(pose)},
-        WaitUntil {(localizer.pose - pose).inSquare(xTolerance, yTolerance, headingTolerance) && localizer.poseVel.inCircle(0.5, 0.04) },
+        WaitUntil {
+            (localizer.pose - pose).inSquare(xTolerance, yTolerance, headingTolerance)
+            //&& localizer.poseVel.inSquare(5.0 * xTolerance, 5.0 * yTolerance, headingTolerance * 0.25)
+        },
     )
 
     fun inShootableZone(): Boolean{

@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
@@ -20,7 +19,7 @@ import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Pattern
 import kotlin.math.PI
 import kotlin.math.abs
-fun shootCycle(intake: Intake, shooter: Shooter) = Sequence(
+fun shootAll(intake: Intake, shooter: Shooter) = Sequence(
         Parallel(
             intake.fullAdjustThird(),
             shooter.waitForVelocity(),
@@ -35,7 +34,7 @@ fun shootCycle(intake: Intake, shooter: Shooter) = Sequence(
         intake.releaseDual(),
         name = "ShootCycle"
     )
-fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, indexTracker: IndexTracker): Command = Future {
+fun shootPattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, indexTracker: IndexTracker): Command = Future {
     huskyLens.read()
     val held = huskyLens.getHeldPattern()
     val pattern = indexTracker.getRecommendations()
@@ -111,13 +110,13 @@ fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, index
 }
 fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
     intake.spinUp(),
-    drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed)),
+    drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed), yTolerance = 5.0, xTolerance = 2.0),
     Race(
         drive.goToCircle(Pose(
             36.0 + 24.0 * n,
             if (n == 2) 75.0 else 80.0,
             PI/2
-        ).mirroredIf(isRed)),
+        ).mirroredIf(isRed),),
         Sequence(
             intake.waitForStall(),
             Sleep(0.2),
@@ -130,7 +129,7 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
         ),
     ),
     if (n == 1) {
-        drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed))
+        drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed), yTolerance = 3.0, xTolerance = 3.0)
     } else {
         Instant {}
     },

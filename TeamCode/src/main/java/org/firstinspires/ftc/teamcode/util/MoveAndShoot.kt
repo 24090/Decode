@@ -20,8 +20,8 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
     val hoodAngle = 0.52
 
     val polynomial = Polynomial(
-        sx.pow(2)+sy.pow(2)-(heightDiff.pow(2))*(tan(hoodAngle).pow(2))
-                -2*sx*vrx-2*sy*vry,
+        sx.pow(2)+sy.pow(2)-(heightDiff.pow(2))*(tan(hoodAngle).pow(2)),
+        -2*sx*vrx-2*sy*vry,
         vrx.pow(2)+vry.pow(2)-(heightDiff*gravity)*(tan(hoodAngle).pow(2)),
         0.0,
         -(0.25*gravity.pow(2))*(tan(hoodAngle).pow(2)),
@@ -32,6 +32,8 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
         catch (_: NoSuchElementException) {
             polynomial.minimize(Interval(0.0, 5.0)).first()
         }
+
+    println(t)
 
 //    Log.d("t", "$t")
 //    println("COEFFICIENTS\n" +
@@ -48,12 +50,12 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
     return Pair(vs, phi)
 }
 
-fun calculatePredictiveMoveShoot(minimumTime: Double, currentPose: Pose, fieldVelocity: Pose): Pair<Double, Double>?{
-    val effectivePose = (currentPose + fieldVelocity * minimumTime)
+fun calculatePredictiveMoveShoot(minimumTime: Double, currentPose: Pose, fieldVelocity: Pose, estimatedAcceleration: Pose): Pair<Double, Double>?{
+    val effectivePose = (currentPose + fieldVelocity * minimumTime + estimatedAcceleration * minimumTime.pow(2)/2)
     // Start turning/spinning up 5 seconds ahead
     val movementLine = Pair(
         effectivePose.vector(),
-        (currentPose + fieldVelocity * 5).vector()
+        (currentPose + fieldVelocity * 5 + estimatedAcceleration * 25/2).vector()
     )
     var closestIntersection: Vector? = null
     for (line in arrayOf(

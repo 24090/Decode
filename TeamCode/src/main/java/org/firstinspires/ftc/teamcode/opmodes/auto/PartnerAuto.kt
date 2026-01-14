@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.teamcode.commands.*
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.opmodes.commands.loadZoneCycle
-import org.firstinspires.ftc.teamcode.opmodes.commands.releasePattern
+import org.firstinspires.ftc.teamcode.opmodes.commands.shootPattern
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
@@ -42,7 +42,7 @@ open class PartnerAuto(val isRed: Boolean): LinearOpMode() {
         val farShootCycle = {
             Sequence(
                 drive.goToCircle(farPose.mirroredIf(isRed), 2.0),
-                releasePattern(intake, shooter, huskyLens, indexTracker),
+                shootPattern(intake, shooter, huskyLens, indexTracker),
                 name = "FarShootCycle"
             )
         }

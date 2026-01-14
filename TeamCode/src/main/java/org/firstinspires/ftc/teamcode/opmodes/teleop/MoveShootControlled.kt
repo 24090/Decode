@@ -4,11 +4,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Instant
+import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.opmodes.commands.shootCycle
 import org.firstinspires.ftc.teamcode.opmodes.poses.inLaunchZone
 import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
@@ -21,6 +22,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopFollower
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopTranslational
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
@@ -173,7 +175,20 @@ class MoveShootControlled: LinearOpMode() {
                     },
                     Sequence(
                         Instant {shootingMode = true},
-                        shootCycle(intake, shooter),
+                        Parallel(
+                            intake.fullAdjustThird(),
+                            shooter.waitForVelocity(),
+                            WaitUntil {(drive.localizer.heading - (moveShootOutputs?.first ?: 10.0)) < 0.03}
+                        ),
+                        intake.releaseDual(),
+                        Sleep(pusherWait),
+                        Parallel(
+                            intake.spinUp(),
+                            shooter.waitForVelocity(),
+                            WaitUntil {(drive.localizer.heading - (moveShootOutputs?.first ?: 10.0)) < 0.03},
+                            Sleep(0.3),
+                        ),
+                        intake.releaseDual(),
                         Instant {
                             gamepad1.rumble(100)
                         }

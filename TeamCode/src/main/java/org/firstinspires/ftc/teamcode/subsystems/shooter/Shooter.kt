@@ -55,24 +55,24 @@ class Shooter(hwMap: HardwareMap) {
 
     val exitVelocityToLeftVelocityLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0), // 0 in
-        Pair(243.9599102199636, 1355.0), // 36 sqrt 2 in
-        Pair(235.83112617075375, 1300.0), // 48 sqrt 2 in
-        Pair(238.34865043852272, 1390.0),  // 60 sqrt 2 in
-        Pair(243.982070262676, 1520.0),  // 72 sqrt 2 in
-        Pair(250.75338455432768, 1620.0),  // 84 sqrt 2 in
-        Pair(257.81667857095, 1754.0),  // 96 sqrt 2 in
-        Pair(264.87396734486225, 1850.0),  // 108 sqrt 2 in
+        Pair(181.1681243438419, 1355.0), // 36 sqrt 2 in
+        Pair(198.54371227569945, 1300.0), // 48 sqrt 2 in
+        Pair(215.6597144491923, 1390.0),  // 60 sqrt 2 in
+        Pair(231.97155294255114, 1520.0),  // 72 sqrt 2 in
+        Pair(247.3880987428304, 1620.0),  // 84 sqrt 2 in
+        Pair(262.0039126511864, 1730.0),  // 96 sqrt 2 in
+        Pair(275.90206925170855, 1930.0),  // 108 sqrt 2 in
     ))
 
     val exitVelocityToRightVelocityLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0), // 0 in
-        Pair(243.9599102199636, 1355.0), // 36 sqrt 2 in
-        Pair(235.83112617075375, 1300.0), // 48 sqrt 2 in
-        Pair(238.34865043852272, 1390.0),  // 60 sqrt 2 in
-        Pair(243.982070262676, 1520.0),  // 72 sqrt 2 in
-        Pair(250.75338455432768, 1620.0),  // 84 sqrt 2 in
-        Pair(257.81667857095, 1754.0),  // 96 sqrt 2 in
-        Pair(264.87396734486225, 1850.0),  // 108 sqrt 2 in
+        Pair(181.1681243438419, 1355.0), // 36 sqrt 2 in
+        Pair(198.54371227569945, 1300.0), // 48 sqrt 2 in
+        Pair(215.6597144491923, 1390.0),  // 60 sqrt 2 in
+        Pair(231.97155294255114, 1520.0),  // 72 sqrt 2 in
+        Pair(247.3880987428304, 1620.0),  // 84 sqrt 2 in
+        Pair(262.0039126511864, 1730.0),  // 96 sqrt 2 in
+        Pair(275.90206925170855, 1960.0),  // 108 sqrt 2 in
     ))
 
     init {
