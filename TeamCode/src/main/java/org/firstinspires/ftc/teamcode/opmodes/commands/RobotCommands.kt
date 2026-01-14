@@ -112,7 +112,6 @@ fun releasePattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, index
 fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
     intake.spinUp(),
     drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed)),
-    Instant {Drive.DriveConstants.xyP /= 6},
     Race(
         drive.goToCircle(Pose(
             36.0 + 24.0 * n,
@@ -130,7 +129,6 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
             WaitUntil{ abs(drive.localizer.yVel) < 0.3 }
         ),
     ),
-    Instant {Drive.DriveConstants.xyP *= 6},
     if (n == 1) {
         drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed))
     } else {

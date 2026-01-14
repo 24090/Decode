@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.poses
 
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import kotlin.math.PI
 
 const val robotWidth = 18.0
 const val robotLength = 13.38
@@ -26,6 +27,31 @@ val farDistance = getScoreDistance(Vector.fromPose(farPose))
 val startPose = Pose(robotLength/2.0, robotWidth/2.0, 0.0)
 val parkPose = Pose(24.0+(robotLength/2.0), -24.0-(robotWidth/2.0), 0.0)
 
+fun inLaunchZone(pose: Pose, threshold: Double = 1.5) =
+    inLaunchZone(
+        pose.vector() +
+        Vector.fromPolar(pose.heading + PI/2, robotWidth/2.0) +
+        Vector.fromPolar(pose.heading, robotLength/2.0),
+        threshold
+    ) ||
+    inLaunchZone(
+        pose.vector() +
+        Vector.fromPolar(pose.heading + PI/2, robotWidth/2.0) -
+        Vector.fromPolar(pose.heading, robotLength/2.0),
+        threshold
+    ) ||
+    inLaunchZone(
+        pose.vector() -
+        Vector.fromPolar(pose.heading + PI/2, robotWidth/2.0) +
+        Vector.fromPolar(pose.heading, robotLength/2.0),
+        threshold
+    ) ||
+    inLaunchZone(
+        pose.vector() -
+        Vector.fromPolar(pose.heading + PI/2, robotWidth/2.0) -
+        Vector.fromPolar(pose.heading, robotLength/2.0),
+        threshold
+    )
 
-fun inLaunchZone(pose: Pose) = (pose.x - 72.0 >= pose.y && pose.x - 72.0 >= -pose.y)
-                            || (pose.x <= pose.y + 24.0 && pose.x <= -pose.y + 24.0)
+private fun inLaunchZone(point: Vector, threshold: Double = 1.5) = (point.x - 72.0 - threshold >= point.y && point.x - 72.0 - threshold >= -point.y)
+                            || (point.x <= point.y + 24.0 - threshold && point.x <= -point.y + 24.0 - threshold)
