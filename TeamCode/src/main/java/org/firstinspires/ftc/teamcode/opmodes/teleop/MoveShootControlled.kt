@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
+import org.firstinspires.ftc.teamcode.opmodes.commands.moveShootAll
 import org.firstinspires.ftc.teamcode.opmodes.poses.inLaunchZone
 import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
@@ -169,26 +170,13 @@ class MoveShootControlled: LinearOpMode() {
                         val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
                         shooter.setTargetVelocityFromDistance(relativePose.length)
 
-                        moveShootOutputs = calculatePredictiveMoveShoot(intake.getMinShootTime(), drive.localizer.pose, drive.localizer.poseVel)
+                        moveShootOutputs = calculatePredictiveMoveShoot(intake.getMinShootTime(), drive.localizer.pose, drive.localizer.poseVel, drive.estimateAcceleration().let { Pose(it.x, it.y, 0.0) })
                         shooter.targetVelocityLeft = shooter.exitVelocityToLeftVelocityLUT.get(moveShootOutputs?.first ?: 1000.0)
                         shooter.targetVelocityRight = shooter.exitVelocityToRightVelocityLUT.get(moveShootOutputs?.first ?: 1000.0)
                     },
                     Sequence(
                         Instant {shootingMode = true},
-                        Parallel(
-                            intake.fullAdjustThird(),
-                            shooter.waitForVelocity(),
-                            WaitUntil {(drive.localizer.heading - (moveShootOutputs?.first ?: 10.0)) < 0.03}
-                        ),
-                        intake.releaseDual(),
-                        Sleep(pusherWait),
-                        Parallel(
-                            intake.spinUp(),
-                            shooter.waitForVelocity(),
-                            WaitUntil {(drive.localizer.heading - (moveShootOutputs?.first ?: 10.0)) < 0.03},
-                            Sleep(0.3),
-                        ),
-                        intake.releaseDual(),
+                        moveShootAll(intake, shooter, { drive.localizer.heading }, { moveShootOutputs } ),
                         Instant {
                             gamepad1.rumble(100)
                         }
@@ -225,7 +213,7 @@ class MoveShootControlled: LinearOpMode() {
             }
             shooter.update()
             intake.update()
-            moveShootOutputs = calculatePredictiveMoveShoot(0.0, drive.localizer.pose, drive.localizer.poseVel)
+            moveShootOutputs = calculatePredictiveMoveShoot(0.0, drive.localizer.pose, drive.localizer.poseVel, drive.estimateAcceleration().let { Pose(it.x, it.y, 0.0) })
             telemetry.addData("targetPose", targetPose.get())
             telemetry.addData("pose", drive.localizer.pose)
             telemetry.addData("distance", (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose)).length)

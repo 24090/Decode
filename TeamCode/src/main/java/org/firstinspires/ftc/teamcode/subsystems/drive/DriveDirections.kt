@@ -6,13 +6,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
+import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.util.toDouble
 
-@TeleOp(group = "Drive")
-class DirectionDebugger: LinearOpMode() {
+@TeleOp(name = "Drive Debugger", group = "Drive")
+class DriveDebugger: LinearOpMode() {
 
     override fun runOpMode() {
         val drive = Drive(hardwareMap)
@@ -20,7 +21,7 @@ class DirectionDebugger: LinearOpMode() {
         val reads = Reads(hardwareMap)
         val dash = FtcDashboard.getInstance()
         waitForStart()
-        drive.localizer.pose = Pose(0.0, 0.0, 0.0) //Pose(robotLength/2.0, robotWidth/2.0, 0.0)
+        drive.localizer.pose = startPose
         while (opModeIsActive()){
             reads.update()
 

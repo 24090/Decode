@@ -129,8 +129,6 @@ fun followCurve(curve: BezierCurve, pose: Pose, velocity: Pose): DriveVectors{
         )
 
 }
-
-fun getPointToPoint(targetPose: Pose, localizer: Localizer) = { pointToPoint(localizer.pose, localizer.poseVel, targetPose) }
 fun minStopDistance(heading: Double, errorAngle: Double, velocity: Pose, minAccelX: Double, maxAccelX: Double): Double{
     val errorNorm = Vector.fromPolar(errorAngle, 1.0)
     val v = errorNorm.scalarProjection(velocity.vector())
@@ -193,6 +191,7 @@ fun scaryPathing(pose: Pose, velocity: Pose, targetPose: Pose): DriveVectors{
     }
 }
 
+fun getPointToPoint(targetPose: Pose, localizer: Localizer) = { pointToPoint(localizer.pose, localizer.poseVel, targetPose) }
 fun pointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, full: Boolean = true): DriveVectors {
     val error = getRelativePose(pose, targetPose)
     val dError = -getRelativeVelocity(pose, velocity)
@@ -208,6 +207,23 @@ fun pointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, full: Boolean = t
         processTurnDriveStrafe(turn, drive, strafe, pose, velocity)
     }
 }
+
+
+fun getMoveShootPointToPoint(targetPose: Pose, localizer: Localizer, getAngle: () -> Double?) = { moveShootPointToPoint(localizer.pose, localizer.poseVel, targetPose, getAngle) }
+
+fun moveShootPointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, getAngle: () -> Double?): DriveVectors {
+    val targetPose = Pose(targetPose.x, targetPose.y, getAngle() ?: targetPose.heading)
+    val error = getRelativePose(pose, targetPose)
+    val dError = -getRelativeVelocity(pose, velocity)
+    val turn = PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, hP, hD, kS, hT)
+    val translational =
+        PDLT(Vector.fromPose(error), Vector.fromPose(dError), xyP, xyD, kS, xyT)
+    val drive = if (translational.x.isNaN()) 0.0 else translational.x
+    val strafe = if (translational.y.isNaN()) 0.0 else translational.y
+
+    return processTurnDriveStrafe(turn, drive, strafe, pose, velocity)
+}
+
 
 fun processTurnTranslational(turn: Double, translational: Vector, pose: Pose, velocity: Pose) =
     processTurnDriveStrafe(turn, translational.x, translational.y, pose, velocity)

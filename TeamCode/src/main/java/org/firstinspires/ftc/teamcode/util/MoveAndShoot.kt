@@ -9,7 +9,9 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tan
 
-
+/**
+@return vs, phi
+ */
 fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<Double, Double>{
     val sx: Double = relativePosition.x
     val sy: Double = relativePosition.y
@@ -50,6 +52,9 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
     return Pair(vs, phi)
 }
 
+/**
+@return vs, phi
+ */
 fun calculatePredictiveMoveShoot(minimumTime: Double, currentPose: Pose, fieldVelocity: Pose, estimatedAcceleration: Pose): Pair<Double, Double>?{
     val effectivePose = (currentPose + fieldVelocity * minimumTime + estimatedAcceleration * minimumTime.pow(2)/2)
     // Start turning/spinning up 5 seconds ahead

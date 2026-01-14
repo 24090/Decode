@@ -8,9 +8,11 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
@@ -19,6 +21,23 @@ import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Pattern
 import kotlin.math.PI
 import kotlin.math.abs
+
+fun moveShootAll(intake: Intake, shooter: Shooter, getHeading: () -> Double, getMoveShootOutputs: () -> Pair<Double, Double>?) = Sequence(
+    Parallel(
+        intake.fullAdjustThird(),
+        shooter.waitForVelocity(),
+        WaitUntil {(getHeading() - (getMoveShootOutputs()?.first ?: 10.0)) < 0.03}
+    ),
+    intake.releaseDual(),
+    Sleep(pusherWait),
+    Parallel(
+        intake.spinUp(),
+        shooter.waitForVelocity(),
+        WaitUntil {(getHeading() - (getMoveShootOutputs()?.first ?: 10.0)) < 0.03},
+        Sleep(0.3),
+    ),
+    intake.releaseDual(),
+)
 fun shootAll(intake: Intake, shooter: Shooter) = Sequence(
         Parallel(
             intake.fullAdjustThird(),
@@ -136,6 +155,30 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
     name = "GrabBallCycle $n"
 )
 
+fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Race(
+    Sequence(
+        intake.spinUp(),
+        Sleep(0.3),
+        intake.waitForStall(),
+        Sleep(0.3),
+        intake.waitForStall(),
+    ),
+    Sequence(
+        Sleep(0.3),
+        WaitUntil { drive.localizer.poseVel.vector().length < 0.1},
+        Sleep(5.0)
+    ),
+    Sequence(
+        drive.goToCircle(
+            Pose(
+                62.0,
+                62.0,
+                PI / 4.0
+            ).mirroredIf(isRed),
+        )
+    )
+)
+
 fun loadZoneCycle(isRed: Boolean, intake: Intake, drive: Drive) = Race(
     Sequence(
         intake.spinUp(),
@@ -150,9 +193,9 @@ fun loadZoneCycle(isRed: Boolean, intake: Intake, drive: Drive) = Race(
         drive.goToCircle(
             Pose(
                 robotWidth / 2.0,
-                60.0,
+                72.0 - robotLength / 2.0,
                 PI / 2.0
-            ).mirroredIf(isRed), 4.0
+            ).mirroredIf(isRed),
         )
     )
 )

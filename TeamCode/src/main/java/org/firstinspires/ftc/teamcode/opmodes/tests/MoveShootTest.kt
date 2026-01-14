@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hD
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hP
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hT
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.processTurnTranslational
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
@@ -58,7 +59,7 @@ class MoveShootTest: LinearOpMode(){
         runBlocking(
             Forever {
                 reads.update()
-                moveShootOutputs = calculatePredictiveMoveShoot(0.0, drive.localizer.pose, drive.localizer.poseVel)
+                moveShootOutputs = calculatePredictiveMoveShoot(0.0, drive.localizer.pose, drive.localizer.poseVel, drive.estimateAcceleration().let { Pose(it.x, it.y, 0.0) })
                 recordTime("reads")
                 drive.update()
                 val relativePose = (scorePosition - Vector.fromPose(drive.localizer.pose))

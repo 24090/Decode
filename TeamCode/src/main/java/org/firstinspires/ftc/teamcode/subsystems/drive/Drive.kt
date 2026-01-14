@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.lateralFactor
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getWheelVector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
@@ -67,13 +68,13 @@ class Drive(hwMap: HardwareMap) {
     // Drive math, etc
 
     var follow: () -> DriveVectors = getPointToPoint(Pose(0.0, 0.0, 0.0), localizer)
-
+    var driveVectors = DriveVectors.fromRotation(0.0)
     fun startP2PWithTargetPose(targetPose: Pose) {
         follow = getPointToPoint(targetPose, localizer)
     }
 
     fun update() {
-        val driveVectors = follow()
+        driveVectors = follow()
         val leftPowers = driveVectors.getLeftPowers()
         val rightPowers = driveVectors.getRightPowers()
 
@@ -138,6 +139,13 @@ class Drive(hwMap: HardwareMap) {
             //&& localizer.poseVel.inSquare(5.0 * xTolerance, 5.0 * yTolerance, headingTolerance * 0.25)
         },
     )
+    fun estimateAcceleration(): Vector{
+        return (
+            (driveVectors.left + driveVectors.right)*(1.0/2.0)
+            - localizer.poseVel.vector().let { if (it.length < 0.5) Vector.fromCartesian(0.0, 0.0) else it.norm() } * kS
+            - localizer.poseVel.vector() * kV
+        )* (1/kA)
+    }
 
     fun inShootableZone(): Boolean{
         return true
