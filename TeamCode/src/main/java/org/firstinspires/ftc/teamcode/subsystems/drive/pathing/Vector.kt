@@ -53,6 +53,14 @@ class Vector {
     // component of v perpendicular to this
     fun rejection(v: Vector) =  v - projection(v)
 
+    override fun equals(other: Any?) =
+        when (other) {
+            null -> false
+            is Vector -> (other.length == this.length && other.angle == this.angle) || ((other.length == this.length) && this.length == 0.0)
+            else -> false
+        }
+
+    operator fun unaryMinus() = this * -1
     operator fun times(x: Number): Vector {
         return Vector(angle, length * x.toDouble())
     }

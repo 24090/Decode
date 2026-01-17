@@ -6,13 +6,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Instant
-import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
-import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.moveShootAll
+import org.firstinspires.ftc.teamcode.opmodes.commands.shootAll
 import org.firstinspires.ftc.teamcode.opmodes.poses.inLaunchZone
 import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
@@ -21,31 +20,33 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.getMoveShootTeleop
+import org.firstinspires.ftc.teamcode.subsystems.drive.getPointToPoint
+import org.firstinspires.ftc.teamcode.subsystems.drive.getStopPosition
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopFollower
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopTranslational
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
-import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Reference
 import org.firstinspires.ftc.teamcode.util.calculatePredictiveMoveShoot
+import org.firstinspires.ftc.teamcode.util.predictedShootPosition
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.abs
 
-@TeleOp(name="MoveShootControlled")
-class MoveShootControlled: LinearOpMode() {
+@TeleOp(name="NewControlled")
+class NewControlled: LinearOpMode() {
     override fun runOpMode() {
-        val dashbard = FtcDashboard.getInstance()
+        val dashboard = FtcDashboard.getInstance()
         val isRed = Reference(false)
         var useStoredPose = false
         val lastLockHeading = Reference(false)
         val lastLockTranslational = Reference(false)
         val targetPose = Reference(Pose(0.0, 0.0, 0.0))
-        var moveShootOutputs: Pair<Double, Double>? = null
         var shootingMode = false
 
         val drive = Drive(hardwareMap)
@@ -84,8 +85,16 @@ class MoveShootControlled: LinearOpMode() {
 
         val translationalFunction = getTeleopTranslational(gamepad1, drive.localizer, lastLockTranslational, targetPose, isRed)
         val normalFollow = getTeleopFollower(gamepad1, drive.localizer, isRed, lastLockHeading, targetPose, translationalFunction)
-        val moveShootFollow = getMoveShootTeleop({ moveShootOutputs?.second }, gamepad1, drive.localizer, translationalFunction)
+        val moveShootFollow = getMoveShootTeleop({ (scorePosition.mirroredIf(isRed.get()) - drive.localizer.pose.vector()).angle }, gamepad1, drive.localizer, translationalFunction)
 
+        val getPredictedPosition = {predictedShootPosition(
+            intake.getMinShootTime(),
+            drive.localizer.pose,
+            drive.localizer.poseVel,
+            drive.estimateAcceleration()
+        )}
+        val getPredictedAngle = { (scorePosition.mirroredIf(isRed.get()) - getPredictedPosition()).angle }
+        val getPredictedDistance = {}
         val changeShootingMode = {
             shootingMode = !shootingMode
             drive.follow = if (shootingMode) moveShootFollow else normalFollow
@@ -174,16 +183,22 @@ class MoveShootControlled: LinearOpMode() {
                         updateP2()
                         val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
                         shooter.setTargetVelocityFromDistance(relativePose.length)
-                        telemetry.addData("h error", abs(drive.localizer.heading - (moveShootOutputs?.second ?: 10.0)))
-                        moveShootOutputs = calculatePredictiveMoveShoot(intake.getMinShootTime(), drive.localizer.pose, drive.localizer.poseVel, drive.estimateAcceleration().let { Pose(it.x, it.y, 0.0) })
-                        shooter.targetVelocityLeft = shooter.exitVelocityToLeftVelocityLUT.get(moveShootOutputs?.first ?: 1000.0)
-                        shooter.targetVelocityRight = shooter.exitVelocityToRightVelocityLUT.get(moveShootOutputs?.first ?: 1000.0)
+                        (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose)).length.let {
+                            shooter.targetVelocityLeft = shooter.distanceToVelocityLeftLUT.get(it)
+                            shooter.targetVelocityRight = shooter.distanceToVelocityRightLUT.get(it)
+                        }
                         packet.put("left vel error", shooter.targetVelocityLeft - shooter.motorLeft.velocity)
                         packet.put("right vel error", shooter.targetVelocityRight - shooter.motorRight.velocity)
-                        packet.put("heading error", abs(drive.localizer.heading - (moveShootOutputs?.second ?: 10.0)))
                     },
                     Sequence(
-                        moveShootAll(intake, shooter, { drive.localizer.heading }, { moveShootOutputs } ),
+                        Instant {
+                            targetPose.set(getStopPosition(drive.localizer.pose, getRelativeVelocity(drive.localizer.pose, drive.localizer.poseVel).vector()).let {
+                                Pose(it.x, it.y, targetPose.get().heading)
+                            })
+                            drive.follow = getPointToPoint(targetPose, drive.localizer)
+                        },
+                        WaitUntil {drive.localizer.pose.inCircle(targetPose.get())},
+                        shootAll(intake, shooter),
                         Instant {
                             gamepad1.rumble(100)
                         }
@@ -220,7 +235,6 @@ class MoveShootControlled: LinearOpMode() {
             }
             shooter.update()
             intake.update()
-            moveShootOutputs = calculatePredictiveMoveShoot(0.0, drive.localizer.pose, drive.localizer.poseVel, drive.estimateAcceleration().let { Pose(it.x, it.y, 0.0) })
             telemetry.addData("targetPose", targetPose.get())
             telemetry.addData("pose", drive.localizer.pose)
             telemetry.addData("distance", (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose)).length)

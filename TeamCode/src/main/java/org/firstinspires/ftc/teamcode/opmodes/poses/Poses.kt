@@ -20,14 +20,14 @@ fun getScorePose(position: Vector, isRed: Boolean = false) =
     Pose(position.x, position.y, (scorePosition.mirroredIf(isRed) - position).angle)
 
 val farPose = getScorePose(Vector.fromCartesian(12.0, 12.0))
-val closePose = getScorePose(Vector.fromCartesian(84.0, 12.0))
+val closePose = getScorePose(Vector.fromCartesian(76.0, 12.0))
 val closeDistance = getScoreDistance(Vector.fromPose(closePose))
 
 val farDistance = getScoreDistance(Vector.fromPose(farPose))
 val startPose = Pose(robotLength/2.0, robotWidth/2.0, 0.0)
 val parkPose = Pose(24.0+(robotLength/2.0), -24.0-(robotWidth/2.0), 0.0)
 
-fun inLaunchZone(pose: Pose, threshold: Double = 1.5) =
+fun inLaunchZone(pose: Pose, threshold: Double = 0.0) =
     inLaunchZone(
         pose.vector() +
         Vector.fromPolar(pose.heading + PI/2, robotWidth/2.0) +

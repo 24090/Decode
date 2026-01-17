@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive
 
+import android.util.Log
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
@@ -32,7 +33,11 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sign
 
-
+fun getStopPosition(pose: Pose, relativeVelocity: Vector): Vector{
+    val maxAccel = if (relativeVelocity.x > 0) tipAccelForward else tipAccelBackward
+    val t = relativeVelocity.x/maxAccel
+    return pose.vector() + Vector.fromPolar(pose.heading, maxAccel * t.pow(2)/2 + relativeVelocity.x * t)
+}
 fun getTeleopTranslational(
     gamepad: Gamepad,
     localizer: Localizer,
@@ -44,16 +49,14 @@ fun getTeleopTranslational(
         gamepad.left_stick_x.toDouble() == 0.0 && gamepad.left_stick_y.toDouble() == 0.0// && ((drive.localizer.xVel < 0.2 && drive.localizer.yVel < 0.2) || lastLockTranslational)
     }
 
-
     return { dError: Vector ->
         val error = getRelativePose(localizer.pose, targetPose.get())
         val lockTranslational = isLockTranslational()
         if (lockTranslational) {
             if (!lastLockTranslational.get()) {
-                val maxAccel = if (dError.x < 0) tipAccelForward else tipAccelBackward
-                val t = (-dError.x)/maxAccel
-                val newTargetPosition = localizer.pose.vector() + Vector.fromPolar(localizer.heading, maxAccel * t.pow(2)/2 + (-dError.x) * t)
-                targetPose.set(Pose(newTargetPosition.x, newTargetPosition.y, targetPose.get().heading))
+                targetPose.set(getStopPosition(localizer.pose, -dError).let{
+                    Pose(it.x, it.y, targetPose.get().heading)
+                })
             }
             lastLockTranslational.set(true)
             PDLT(error.vector(), dError, xyP, xyD, kS, xyT)
@@ -186,12 +189,12 @@ fun scaryPathing(pose: Pose, velocity: Pose, targetPose: Pose): DriveVectors{
         println("tooScary!!! $error")
         processTurnTranslational(0.0, error.vector().norm() * -100, pose, velocity)
     } else {
-        android.util.Log.w("#scarypathing", "not scary :) $error, $minStopDistance")
+        Log.w("#scarypathing", "not scary :) $error, $minStopDistance")
         processTurnTranslational(0.0, error.vector().norm() * 100, pose, velocity)
     }
 }
 
-fun getPointToPoint(targetPose: Pose, localizer: Localizer) = { pointToPoint(localizer.pose, localizer.poseVel, targetPose) }
+fun getPointToPoint(targetPose: Reference<Pose>, localizer: Localizer) = { pointToPoint(localizer.pose, localizer.poseVel, targetPose.get()) }
 fun pointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, full: Boolean = true): DriveVectors {
     val error = getRelativePose(pose, targetPose)
     val dError = -getRelativeVelocity(pose, velocity)
@@ -200,7 +203,7 @@ fun pointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, full: Boolean = t
         PDLT(Vector.fromPose(error), Vector.fromPose(dError), xyP, xyD, kS, xyT)
     val drive = if (translational.x.isNaN()) 0.0 else translational.x
     val strafe = if (translational.y.isNaN()) 0.0 else translational.y
-
+    Log.i("errorh", "${error.heading}")
     return if (!full) {
         DriveVectors.fromRotation(turn) + DriveVectors.fromTranslation(drive, strafe)
     } else {
@@ -212,6 +215,7 @@ fun pointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, full: Boolean = t
 fun getMoveShootPointToPoint(targetPose: Pose, localizer: Localizer, getAngle: () -> Double?) = { moveShootPointToPoint(localizer.pose, localizer.poseVel, targetPose, getAngle) }
 
 fun moveShootPointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, getAngle: () -> Double?): DriveVectors {
+
     val targetPose = Pose(targetPose.x, targetPose.y, getAngle() ?: targetPose.heading)
     val error = getRelativePose(pose, targetPose)
     val dError = -getRelativeVelocity(pose, velocity)
@@ -237,6 +241,20 @@ fun processTurnDriveStrafe(turn: Double, drive: Double, strafe: Double, pose: Po
             getRelativeVelocity(pose, velocity).x
         )
 
+fun DriveVectors.strafeAccelCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV: Double, kA: Double, velocity: Double): DriveVectors {
+    val minPower: Double = minAccel * kA + velocity * kV + kS * sign(velocity)
+    val maxPower: Double = maxAccel * kA + velocity * kV + kS * sign(velocity)
+    val power = (left.y + right.y)/2.0
+
+    return if (power > maxPower) {
+        DriveVectors(left * (maxPower/power), right * (maxPower/power))
+    } else if (power < minPower) {
+        DriveVectors(left * (minPower/power), right * (minPower/power))
+    } else {
+        this
+    }
+}
+
 fun DriveVectors.tipCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV: Double, kA: Double, velocity: Double): DriveVectors {
     val minPower: Double = minAccel * kA + velocity * kV + kS * sign(velocity)
     val maxPower: Double = maxAccel * kA + velocity * kV + kS * sign(velocity)
@@ -259,6 +277,25 @@ fun getMoveShootTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: Loc
     } else {
         PDLT(AngleUnit.normalizeRadians(angle - localizer.heading), -localizer.headingVel, hP, hD, kS, hT)
     }
+
+    DriveVectors.fromRotation(turn)
+        .addWithPriority(
+            DriveVectors.fromTranslation(translational)
+            .tipCorrected(
+                tipAccelBackward, tipAccelForward,
+                kS, kV, kA,
+                getRelativeVelocity(localizer.pose, localizer.poseVel).x
+            ).apply {
+                if (angle != null){
+                    strafeAccelCorrected(-5.0, 5.0,
+                        kS, kV, kA,
+                        getRelativeVelocity(localizer.pose, localizer.poseVel).y
+                    )
+                }
+            }
+            , controlHubVoltage / 14.0
+        )
+
 
     processTurnTranslational(turn, translational, localizer.pose, localizer.poseVel)
 }

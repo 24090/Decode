@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.util
 
 import org.firstinspires.ftc.teamcode.opmodes.poses.inLaunchZone
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import kotlin.math.PI
 import kotlin.math.acos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -52,37 +54,40 @@ fun moveShootKinematics(relativePosition: Vector, fieldVelocity: Vector): Pair<D
     return Pair(vs, phi)
 }
 
+fun getLaunchZoneIntersections(movementLine: Pair<Vector, Vector>): List<Vector> {
+    return arrayOf(
+        Pair(Vector.fromCartesian(0.0, -24.0), Vector.fromCartesian(24.0, 0.0)),
+        Pair(Vector.fromCartesian(0.0, 24.0), Vector.fromCartesian(24.0, 0.0)),
+        Pair(Vector.fromCartesian(72.0, 0.0), Vector.fromCartesian(144.0, 72.0)),
+        Pair(Vector.fromCartesian(72.0, 0.0), Vector.fromCartesian(144.0, -72.0)),
+    ).mapNotNull { line -> findLineIntersection(movementLine, line) }
+}
+
 /**
 @return vs, phi
  */
 fun calculatePredictiveMoveShoot(minimumTime: Double, currentPose: Pose, fieldVelocity: Pose, estimatedAcceleration: Pose): Pair<Double, Double>?{
     val effectivePose = (currentPose + fieldVelocity * minimumTime + estimatedAcceleration * minimumTime.pow(2)/2)
     // Start turning/spinning up 5 seconds ahead
-    val movementLine = Pair(
-        effectivePose.vector(),
-        (currentPose + fieldVelocity * 5 + estimatedAcceleration * 25/2).vector()
-    )
-    var closestIntersection: Vector? = null
-    for (line in arrayOf(
-        Pair(Vector.fromCartesian(0.0, -24.0), Vector.fromCartesian(24.0, 0.0)),
-        Pair(Vector.fromCartesian(0.0, 24.0), Vector.fromCartesian(24.0, 0.0)),
-        Pair(Vector.fromCartesian(72.0, 0.0), Vector.fromCartesian(144.0, 72.0)),
-        Pair(Vector.fromCartesian(72.0, 0.0), Vector.fromCartesian(144.0, -72.0)),
-    )) {
-        val intersection = findLineIntersection(movementLine, line)
-        closestIntersection = if (intersection == null){
-            closestIntersection
-        } else if (closestIntersection == null) {
-            intersection
-        } else if ((closestIntersection - currentPose.vector()).length > (intersection - currentPose.vector()).length) {
-            intersection
-        } else {
-            closestIntersection
-        }
-    }
-    if (inLaunchZone(effectivePose)) {
-        closestIntersection = effectivePose.vector()
-    }
+    val movementStart = effectivePose.vector()
+    val movementEnd = (currentPose + fieldVelocity * 5 + estimatedAcceleration * 25/2).vector()
+    val closestIntersection: Vector? = if (inLaunchZone(effectivePose)) {
+        effectivePose.vector()
+    } else { (
+        getLaunchZoneIntersections(
+            (Vector.fromPolar(effectivePose.heading, robotLength/2) + Vector.fromPolar(effectivePose.heading + PI/2, robotLength/2))
+            .let{Pair(movementStart + it, movementEnd + it)}
+        ) + getLaunchZoneIntersections(
+            (Vector.fromPolar(effectivePose.heading, robotLength/2) + Vector.fromPolar(effectivePose.heading + PI/2, -robotLength/2))
+                .let{Pair(movementStart + it, movementEnd + it)}
+        ) + getLaunchZoneIntersections(
+            (Vector.fromPolar(effectivePose.heading, -robotLength/2) + Vector.fromPolar(effectivePose.heading + PI/2, robotLength/2))
+                .let{Pair(movementStart + it, movementEnd + it)}
+        ) + getLaunchZoneIntersections(
+            (Vector.fromPolar(effectivePose.heading, -robotLength/2) + Vector.fromPolar(effectivePose.heading + PI/2, -robotLength/2))
+                .let{Pair(movementStart + it, movementEnd + it)}
+        )
+    ).reduceOrNull { a, b -> if ((a - effectivePose.vector()).length < (b - effectivePose.vector()).length) a else b } }
     if (closestIntersection == null) {
         return null
     }

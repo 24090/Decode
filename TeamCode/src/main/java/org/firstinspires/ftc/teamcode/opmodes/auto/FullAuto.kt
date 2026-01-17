@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
+import org.firstinspires.ftc.teamcode.opmodes.commands.fromRampCycle
 import org.firstinspires.ftc.teamcode.opmodes.commands.grabBallCycle
 import org.firstinspires.ftc.teamcode.opmodes.commands.loadZoneCycle
 import org.firstinspires.ftc.teamcode.opmodes.commands.shootPattern
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.teamcode.opmodes.commands.shootAll
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
+import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
@@ -29,6 +31,7 @@ import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
+import org.firstinspires.ftc.teamcode.util.calculatePredictiveMoveShoot
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.PI
@@ -116,28 +119,30 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                     WaitUntil {drive.localizer.x > 40.0}
                 ),
                 closeShootCycle(),
-                shooter.stop(),
-                grabBallCycle(2, isRed, intake, drive),
-                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-
-                closeShootCycle(),
 
                 shooter.stop(),
                 grabBallCycle(1, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+                closeShootCycle(),
 
+                shooter.stop(),
+                fromRampCycle(isRed, intake, drive),
+                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+                closeShootCycle(),
+
+                shooter.stop(),
+                fromRampCycle(isRed, intake, drive),
+                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 closeShootCycle(),
 
                 shooter.stop(),
                 grabBallCycle(0, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-
                 closeShootCycle(),
 
-                Instant{shooter.setTargetVelocityFromDistance(getScoreDistance(Vector.fromCartesian(96.0, 12.0)))},
-
-                loadZoneCycle(isRed, intake, drive),
-
+                shooter.stop(),
+                grabBallCycle(2, isRed, intake, drive),
+                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 leaveShootCycle(),
                 name = "Auto"
             ),

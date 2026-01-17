@@ -7,7 +7,6 @@ import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
-import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.fromRampCycle
@@ -23,6 +22,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
+import org.firstinspires.ftc.teamcode.opmodes.poses.inLaunchZone
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
@@ -39,10 +39,10 @@ import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.PI
 
-@Autonomous(name="AutoRed", group="Auto")
+@Autonomous(name="MoveShootAutoRed", group="Auto")
 class MoveShootAutoRed: MoveShootAuto(true)
 
-@Autonomous(name="AutoBlue", group="Auto")
+@Autonomous(name="MoveShootAutoBlue", group="Auto")
 class MoveShootAutoBlue: MoveShootAuto(false)
 open class MoveShootAuto(val isRed: Boolean): LinearOpMode() {
     override fun runOpMode() {
@@ -67,6 +67,7 @@ open class MoveShootAuto(val isRed: Boolean): LinearOpMode() {
                 drive.localizer,
                 { moveShootOutputs?.second }
             )},
+            WaitUntil{inLaunchZone(drive.localizer.pose)},
             moveShootAll(intake, shooter, {drive.localizer.heading}, { moveShootOutputs }),
             name = "CloseShootCycle"
         )}
@@ -108,8 +109,8 @@ open class MoveShootAuto(val isRed: Boolean): LinearOpMode() {
                         shooter.targetVelocityLeft = shooter.exitVelocityToLeftVelocityLUT.get(vs)
                         shooter.targetVelocityRight = shooter.exitVelocityToRightVelocityLUT.get(vs)
                     } else {
-                        shooter.targetVelocityLeft = 1500.0
-                        shooter.targetVelocityRight = 1500.0
+                        shooter.targetVelocityLeft = 1400.0
+                        shooter.targetVelocityRight = 1400.0
                     }
 
                 },

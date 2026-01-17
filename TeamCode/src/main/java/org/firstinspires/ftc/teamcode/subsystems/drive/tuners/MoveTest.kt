@@ -5,11 +5,14 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.commands.Forever
+import org.firstinspires.ftc.teamcode.commands.ForeverCommand
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
+import org.firstinspires.ftc.teamcode.subsystems.drive.getPointToPoint
 import org.firstinspires.ftc.teamcode.subsystems.drive.getScaryPathing
 import org.firstinspires.ftc.teamcode.subsystems.drive.scaryPathing
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
@@ -38,6 +41,7 @@ class MoveTest: LinearOpMode() {
         telemetryPacket = TelemetryPacket()
         waitForStart()
         time = System.currentTimeMillis()
+        drive.follow = getPointToPoint(Pose(0.0, 0.0, PI), drive.localizer)
         runBlocking( Race(
             Forever {
                 reads.update()
@@ -49,10 +53,12 @@ class MoveTest: LinearOpMode() {
                 dash.sendTelemetryPacket(telemetryPacket)
                 telemetryPacket = TelemetryPacket()
             },
-            Sequence(
-                drive.goToCircle(Pose(0.0, 0.0, PI/4.0)),
-                drive.goToCircle(Pose(0.0, 0.0, 0.01))
-            )
+            ForeverCommand { Sequence(
+                drive.goToCircle(Pose(0.0, 0.0, PI)),
+                Sleep(2.0),
+                drive.goToCircle(Pose(0.0, 0.0, 0.0)),
+                Sleep(2.0),
+            )}
         ))
 
     }

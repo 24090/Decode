@@ -18,6 +18,8 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import kotlin.math.absoluteValue
+import kotlin.math.max
+import kotlin.math.sign
 
 @Config
 class Drive(hwMap: HardwareMap) {
@@ -31,7 +33,7 @@ class Drive(hwMap: HardwareMap) {
 
         @JvmField var kA = 0.005
         @JvmField var hP = 2.0
-        @JvmField var hD = 0.15
+        @JvmField var hD = 0.18
         @JvmField var hT = 0.02
         @JvmField var xyP = 0.13
         @JvmField var xyD = 0.04
@@ -168,11 +170,35 @@ data class DriveVectors(val left: Vector, val right: Vector) {
 
     fun addWithoutPriority(other: DriveVectors, maxPower: Double = 1.0) = (this + other).trimmed(maxPower)
 
-    fun addWithPriority(addedVectors: DriveVectors): DriveVectors {
-        TODO()
+    fun addWithPriority(addedVectors: DriveVectors, maxPower: Double = 1.0): DriveVectors {
+        if (this != this.trimmed(maxPower)){
+            return this
+        }
+        val out = this + addedVectors
+        val leftPowers = out.getLeftPowers()
+        val rightPowers = out.getRightPowers()
+        println(leftPowers)
+        val effectLeft = addedVectors.getLeftPowers()
+        val effectRight = addedVectors.getRightPowers()
+        val toRemove = maxOf(
+            ((leftPowers.first.absoluteValue - maxPower)*leftPowers.first.sign/effectLeft.first).absoluteValue,
+            ((leftPowers.second.absoluteValue - maxPower)*leftPowers.second.sign/effectLeft.second).absoluteValue,
+            ((rightPowers.first.absoluteValue - maxPower)*rightPowers.first.sign/effectRight.first).absoluteValue,
+            ((rightPowers.second.absoluteValue - maxPower)*rightPowers.second.sign/effectRight.second).absoluteValue
+        )
+        return this + addedVectors * (1 - toRemove)
     }
 
     operator fun plus(other: DriveVectors) = DriveVectors(this.left + other.left, this.right + other.right)
+    operator fun times(scalar: Double) = DriveVectors(this.left * scalar, this.right * scalar)
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null) return false
+        return when (other){
+            is DriveVectors -> (other.left == this.left) && (other.right == this.right)
+            else -> {false}
+        }
+    }
 
     fun getLeftPowers() = getSidePowers(left, getWheelVector(true, true), getWheelVector(false, true))
     fun getRightPowers() = getSidePowers(right, getWheelVector(true, false), getWheelVector(false, false))

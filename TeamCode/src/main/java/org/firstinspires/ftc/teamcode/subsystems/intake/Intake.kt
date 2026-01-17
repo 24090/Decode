@@ -65,7 +65,7 @@ class Intake(hwMap: HardwareMap) {
 
         @JvmField var pusherRightForward = 0.6
         @JvmField var pusherRightBack = 0.00
-        @JvmField var pusherWait = 0.4
+        @JvmField var pusherWait = 0.2
 
         @JvmField var kP_pos = 0.02
         @JvmField var kD_Pos = 0.001

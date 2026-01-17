@@ -23,19 +23,21 @@ import kotlin.math.PI
 import kotlin.math.abs
 
 fun moveShootAll(intake: Intake, shooter: Shooter, getHeading: () -> Double, getMoveShootOutputs: () -> Pair<Double, Double>?) = Sequence(
-    Parallel(
-        intake.fullAdjustThird(),
-        shooter.waitForVelocity(),
-        WaitUntil {(getHeading() - (getMoveShootOutputs()?.first ?: 10.0)) < 0.03}
-    ),
+    intake.fullAdjustThird(),
+    WaitUntil {
+            abs(getHeading() - (getMoveShootOutputs()?.second ?: 10.0)) < 0.06
+            && abs(shooter.targetVelocityRight - shooter.motorRight.velocity) < 50
+            && abs(shooter.targetVelocityLeft - shooter.motorLeft.velocity) < 50
+    },
     intake.releaseDual(),
     Sleep(pusherWait),
-    Parallel(
-        intake.spinUp(),
-        shooter.waitForVelocity(),
-        WaitUntil {(getHeading() - (getMoveShootOutputs()?.first ?: 10.0)) < 0.03},
-        Sleep(0.3),
-    ),
+    intake.spinUp(),
+    Sleep(1.0),
+    WaitUntil {
+        abs(getHeading() - (getMoveShootOutputs()?.second ?: 10.0)) < 0.06
+        && abs(shooter.targetVelocityRight - shooter.motorRight.velocity) < 50
+        && abs(shooter.targetVelocityLeft - shooter.motorLeft.velocity) < 50
+    },
     intake.releaseDual(),
 )
 fun shootAll(intake: Intake, shooter: Shooter) = Sequence(
@@ -44,7 +46,7 @@ fun shootAll(intake: Intake, shooter: Shooter) = Sequence(
             shooter.waitForVelocity(),
         ),
         intake.releaseDual(),
-        Sleep(0.3),
+        Sleep(pusherWait),
         Parallel(
             intake.spinUp(),
             shooter.waitForVelocity(),
@@ -155,26 +157,32 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
     name = "GrabBallCycle $n"
 )
 
-fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Race(
-    Sequence(
-        intake.spinUp(),
-        Sleep(0.3),
-        intake.waitForStall(),
-        Sleep(0.3),
-        intake.waitForStall(),
-    ),
-    Sequence(
-        Sleep(0.3),
-        WaitUntil { drive.localizer.poseVel.vector().length < 0.1},
-        Sleep(5.0)
-    ),
-    Sequence(
+fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
+    Race(
+        Sequence(
+            Sleep(0.3),
+            WaitUntil{drive.localizer.poseVel.vector().length < 0.5}
+        ),
         drive.goToCircle(
             Pose(
                 62.0,
                 62.0,
                 PI / 4.0
             ).mirroredIf(isRed),
+        ),
+    ),
+    Race(
+        Sequence(
+            intake.waitForStall(),
+            Sleep(0.3),
+            intake.waitForStall()
+        ),
+        Sleep(4.0),
+        drive.goToCircle(Pose(
+            54.0,
+            58.0,
+            PI / 4.0
+        ).mirroredIf(isRed)
         )
     )
 )
