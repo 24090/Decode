@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Pattern
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 fun moveShootAll(intake: Intake, shooter: Shooter, getHeading: () -> Double, getMoveShootOutputs: () -> Pair<Double, Double>?) = Sequence(
@@ -135,7 +136,7 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
     Instant {
         drive.follow = {
             val distanceX = (36.0 + 24.0 * n) - drive.localizer.x
-            val targetPose = Pose(36.0 + 24.0 * n, (if (n == 2) 75.0 else 80.0) - distanceX, PI/2).mirroredIf(isRed)
+            val targetPose = Pose(36.0 + 24.0 * n, (if (n == 2) 75.0 else 80.0) - min(distanceX * 2, 60.0), PI/2).mirroredIf(isRed)
             pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
         }
     },
