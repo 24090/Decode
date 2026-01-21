@@ -10,12 +10,14 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.runBlocking
+import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.getPointToPoint
 import org.firstinspires.ftc.teamcode.subsystems.drive.getScaryPathing
 import org.firstinspires.ftc.teamcode.subsystems.drive.scaryPathing
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
+import org.firstinspires.ftc.teamcode.util.Reference
 import kotlin.math.PI
 
 @TeleOp
@@ -41,7 +43,7 @@ class MoveTest: LinearOpMode() {
         telemetryPacket = TelemetryPacket()
         waitForStart()
         time = System.currentTimeMillis()
-        drive.follow = getPointToPoint(Pose(0.0, 0.0, PI), drive.localizer)
+        drive.follow = getPointToPoint(Reference(farStartPose), drive.localizer)
         runBlocking( Race(
             Forever {
                 reads.update()
@@ -54,10 +56,7 @@ class MoveTest: LinearOpMode() {
                 telemetryPacket = TelemetryPacket()
             },
             ForeverCommand { Sequence(
-                drive.goToCircle(Pose(0.0, 0.0, PI)),
-                Sleep(2.0),
-                drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                Sleep(2.0),
+                drive.goToCircle(farStartPose)
             )}
         ))
 

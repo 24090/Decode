@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
@@ -96,7 +97,7 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
             return
         }
 
-        drive.localizer.pose = Pose(robotLength/2.0, robotWidth/2.0, 0.0).mirroredIf(isRed)
+        drive.localizer.pose = farStartPose.mirroredIf(isRed)
         drive.startP2PWithTargetPose(closePose.mirroredIf(isRed))
         var time = System.currentTimeMillis()
         val recordTime = { name:String ->
@@ -113,6 +114,7 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                 telemetry.addData("currentPose", drive.localizer.pose)
             }, "Reads" ),
             Sequence(
+                intake.spinUp(),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 Race(
                     drive.goToCircle(Pose(closePose.mirroredIf(isRed).x, closePose.mirroredIf(isRed).y, 0.0)),

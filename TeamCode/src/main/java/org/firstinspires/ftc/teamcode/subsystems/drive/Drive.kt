@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
+import org.firstinspires.ftc.teamcode.util.Reference
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.sign
@@ -69,10 +70,10 @@ class Drive(hwMap: HardwareMap) {
     }
     // Drive math, etc
 
-    var follow: () -> DriveVectors = getPointToPoint(Pose(0.0, 0.0, 0.0), localizer)
+    var follow: () -> DriveVectors = getPointToPoint(Reference(Pose(0.0, 0.0, 0.0)), localizer)
     var driveVectors = DriveVectors.fromRotation(0.0)
     fun startP2PWithTargetPose(targetPose: Pose) {
-        follow = getPointToPoint(targetPose, localizer)
+        follow = getPointToPoint(Reference(targetPose), localizer)
     }
 
     fun update() {
@@ -125,7 +126,7 @@ class Drive(hwMap: HardwareMap) {
     ) = Sequence(
         Instant {startP2PWithTargetPose(pose)},
         WaitUntil {
-            (localizer.pose - pose).inCircle(distanceTolerance, headingTolerance)
+            localizer.pose.inCircle(pose, distanceTolerance, headingTolerance)
             //&& localizer.poseVel.inCircle(5.0 * distanceTolerance, headingTolerance * 0.25)
         },
     )

@@ -95,7 +95,7 @@ class Camera(hwMap: HardwareMap) {
             Sleep(timeout),
             WaitUntil {
                 val pose = getPose()
-                if (pose!=null) localizer.pose = pose
+                if (pose!=null)  localizer.pose = localizer.pose * 3.0/4.0 + pose * 1.0/4.0
                 return@WaitUntil (pose != null)
             }
         )

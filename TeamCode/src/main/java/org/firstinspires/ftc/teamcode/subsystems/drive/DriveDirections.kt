@@ -6,8 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
-import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.util.toDouble
@@ -21,11 +20,19 @@ class DriveDebugger: LinearOpMode() {
         val reads = Reads(hardwareMap)
         val dash = FtcDashboard.getInstance()
         waitForStart()
-        drive.localizer.pose = startPose
+        drive.localizer.pose = closeStartPose
         while (opModeIsActive()){
             reads.update()
 
+            drive.setFlPower(gamepad1.x.toDouble())
+            drive.setFrPower(gamepad1.y.toDouble())
+            drive.setBlPower(gamepad1.a.toDouble())
+            drive.setBrPower(gamepad1.b.toDouble())
+
             val packet = TelemetryPacket()
+            packet.put("x", drive.localizer.x)
+            packet.put("y", drive.localizer.y)
+            packet.put("h", drive.localizer.heading)
             val canvas = packet.fieldOverlay()
             canvas.setStrokeWidth(1)
             canvas.strokeCircle(drive.localizer.pose.x - 72.0, drive.localizer.pose.y, robotWidth/2.0)
@@ -38,10 +45,7 @@ class DriveDebugger: LinearOpMode() {
 
             dash.sendTelemetryPacket(packet)
 
-            drive.setFlPower(gamepad1.x.toDouble())
-            drive.setFrPower(gamepad1.y.toDouble())
-            drive.setBlPower(gamepad1.a.toDouble())
-            drive.setBrPower(gamepad1.b.toDouble())
+
 
             telemetry.addData("pinpoint lt", drive.localizer.pinpoint.loopTime)
             telemetry.addLine("Switch directions of backwards motors in Drive.kt")

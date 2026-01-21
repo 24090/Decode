@@ -22,7 +22,6 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.BezierCurve
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePose
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePosition
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import org.firstinspires.ftc.teamcode.util.Reference
@@ -212,11 +211,11 @@ fun pointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, full: Boolean = t
 }
 
 
-fun getMoveShootPointToPoint(targetPose: Pose, localizer: Localizer, getAngle: () -> Double?) = { moveShootPointToPoint(localizer.pose, localizer.poseVel, targetPose, getAngle) }
+fun getMoveShootPointToPoint(targetPose: Pose, localizer: Localizer, getAngle: () -> Double?) = { moveShootPointToPoint(localizer.pose, localizer.poseVel, targetPose, getAngle()) }
 
-fun moveShootPointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, getAngle: () -> Double?): DriveVectors {
+fun moveShootPointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, angle: Double?): DriveVectors {
 
-    val targetPose = Pose(targetPose.x, targetPose.y, getAngle() ?: targetPose.heading)
+    val targetPose = Pose(targetPose.x, targetPose.y, angle ?: targetPose.heading)
     val error = getRelativePose(pose, targetPose)
     val dError = -getRelativeVelocity(pose, velocity)
     val turn = PDLT(AngleUnit.normalizeRadians(error.heading), dError.heading, hP, hD, kS, hT)
@@ -269,7 +268,12 @@ fun DriveVectors.tipCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV
     }
 }
 
-fun getMoveShootTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: Localizer, teleopTranslational: (dError: Vector) -> Vector) = {
+fun getHeadingLockTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: Localizer, teleopTranslational: (dError: Vector) -> Vector, isRed: Reference<Boolean>, targetPose: Reference<Pose>) = {
+    if (gamepad.backWasPressed()) {
+        localizer.pose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get())
+        targetPose.set(Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get()))
+    }
+
     val angle = getAngle()
     val translational = teleopTranslational(getRelativeVelocity(localizer.pose, localizer.poseVel).vector() * -1)
     val turn = if (angle == null){
@@ -278,24 +282,16 @@ fun getMoveShootTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: Loc
         PDLT(AngleUnit.normalizeRadians(angle - localizer.heading), -localizer.headingVel, hP, hD, kS, hT)
     }
 
-    DriveVectors.fromRotation(turn)
-        .addWithPriority(
-            DriveVectors.fromTranslation(translational)
-            .tipCorrected(
-                tipAccelBackward, tipAccelForward,
-                kS, kV, kA,
-                getRelativeVelocity(localizer.pose, localizer.poseVel).x
-            ).apply {
-                if (angle != null){
-                    strafeAccelCorrected(-5.0, 5.0,
-                        kS, kV, kA,
-                        getRelativeVelocity(localizer.pose, localizer.poseVel).y
-                    )
-                }
-            }
-            , controlHubVoltage / 14.0
+    DriveVectors
+        .fromRotation(turn)
+        .addWithPriority (
+            DriveVectors
+                .fromTranslation(translational)
+                .tipCorrected(
+                    tipAccelBackward, tipAccelForward,
+                    kS, kV, kA,
+                    getRelativeVelocity(localizer.pose, localizer.poseVel).x
+                ),
+            controlHubVoltage / 14.0
         )
-
-
-    processTurnTranslational(turn, translational, localizer.pose, localizer.poseVel)
 }

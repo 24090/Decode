@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
-import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopFollower
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopTranslational
@@ -37,7 +37,7 @@ class Controlled: LinearOpMode() {
         val lastLockTranslational = Reference(false)
         val lastLockHeading = Reference(false)
 
-        var useStoredPose = false
+        var useStoredPose = true
         val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
         val shooter = Shooter(hardwareMap)
@@ -97,7 +97,11 @@ class Controlled: LinearOpMode() {
             telemetry.addData("pattern", indexTracker.pattern)
             telemetry.addLine("--------------------------")
         }
-        drive.localizer.pose = if (useStoredPose) storedPose ?: startPose.mirroredIf(isRed.get()) else startPose.mirroredIf(isRed.get())
+        drive.localizer.pose =
+            if (useStoredPose)
+                storedPose ?: closeStartPose.mirroredIf(isRed.get())
+            else
+                closeStartPose.mirroredIf(isRed.get())
         while (opModeIsActive()){
             reads.update()
             updateP2()

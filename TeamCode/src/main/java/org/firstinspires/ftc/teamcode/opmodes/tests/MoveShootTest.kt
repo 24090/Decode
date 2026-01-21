@@ -6,7 +6,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
-import org.firstinspires.ftc.teamcode.opmodes.poses.startPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hD
@@ -40,7 +40,7 @@ class MoveShootTest: LinearOpMode(){
             time = newTime
         }
         waitForStart()
-        drive.localizer.pose = startPose
+        drive.localizer.pose = closeStartPose
         var moveShootOutputs: Pair<Double, Double>? = null
 
         drive.follow = {
