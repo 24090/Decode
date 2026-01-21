@@ -60,8 +60,8 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var frontF = 0.00051
         @JvmField var kP = 0.0003
         @JvmField var powerMax = 0.5
-        @JvmField var pusherLeftForward = 0.15
-        @JvmField var pusherLeftBack = 0.56
+        @JvmField var pusherLeftForward = 0.0
+        @JvmField var pusherLeftBack = 1.0
 
         @JvmField var pusherRightForward = 0.6
         @JvmField var pusherRightBack = 0.00

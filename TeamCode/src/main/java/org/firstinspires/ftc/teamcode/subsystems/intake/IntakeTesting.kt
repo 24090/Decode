@@ -64,7 +64,10 @@ class IntakeTesting(): LinearOpMode(){
             }
             if (gamepad1.xWasPressed()){
                 runBlocking(Race(
-                    Forever(intake::update),
+                    Forever{
+                        reads::update::invoke::invoke.invoke()
+                        intake::update::invoke::invoke::invoke::invoke.invoke()
+                    },
                     Sequence(
                         intake.fullAdjustThird(),
                         intake.spinUp()

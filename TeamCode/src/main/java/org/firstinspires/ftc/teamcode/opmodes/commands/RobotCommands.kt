@@ -135,8 +135,8 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
     intake.spinUp(),
     Instant {
         drive.follow = {
-            val distanceX = (36.0 + 24.0 * n) - drive.localizer.x
-            val targetPose = Pose(36.0 + 24.0 * n, (if (n == 2) 75.0 else 80.0) - min(distanceX * 2, 60.0), PI/2).mirroredIf(isRed)
+            val distanceX = abs((36.0 + 24.0 * n) - drive.localizer.x)
+            val targetPose = Pose(36.0 + 24.0 * n, (if (n == 2) 75.0 else 80.0) - min(distanceX * 3, 60.0), PI/2).mirroredIf(isRed)
             pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
         }
     },
@@ -147,6 +147,7 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
             intake.waitForStall()
         ),
         Sequence(
+            Sleep(0.2),
             WaitUntil{ abs(drive.localizer.yVel) < 0.3 },
             Sleep(0.2),
             WaitUntil{ abs(drive.localizer.yVel) < 0.3 }
