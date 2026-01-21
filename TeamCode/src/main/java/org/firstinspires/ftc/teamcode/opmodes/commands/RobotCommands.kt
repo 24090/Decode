@@ -164,13 +164,13 @@ fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
     Race(
         Sequence(
             Sleep(0.3),
-            WaitUntil{drive.localizer.poseVel.vector().length < 0.5}
+            WaitUntil{drive.localizer.poseVel.vector().length < 0.5},
         ),
         drive.goToCircle(
             Pose(
-                62.06,
-                60.8,
-                0.875
+                59.528,
+                54.54,
+                1.24
             ).mirroredIf(isRed),
         ),
     ),
@@ -182,9 +182,9 @@ fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
         ),
         Sleep(4.0),
         drive.goToCircle(Pose(
-            52.8,
-            59.55,
-            0.285
+            56.528,
+            55.04,
+            1.04
         ).mirroredIf(isRed)
         )
     )

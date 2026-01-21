@@ -81,7 +81,7 @@ class MoveShootControlled: LinearOpMode() {
 
         val translationalFunction = getTeleopTranslational(gamepad1, drive.localizer, lastLockTranslational, targetPose, isRed)
         val normalFollow = getTeleopFollower(gamepad1, drive.localizer, isRed, lastLockHeading, targetPose, translationalFunction)
-        val moveShootFollow = getHeadingLockTeleop({ moveShootOutputs?.second }, gamepad1, drive.localizer, translationalFunction)
+        val moveShootFollow = getHeadingLockTeleop({ moveShootOutputs?.second }, gamepad1, drive.localizer, translationalFunction, isRed, targetPose)
 
         val changeShootingMode = {
             shootingMode = !shootingMode

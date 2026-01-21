@@ -13,15 +13,15 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 class Localizer(hwMap: HardwareMap) {
     var pinpoint: GoBildaPinpointDriver = hwMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
     companion object {
-        @JvmStatic var driveY: Double = -2.99
-        @JvmStatic var strafeX: Double = -3.54
+        @JvmStatic var driveY: Double = -3.23
+        @JvmStatic var strafeX: Double = -2.68
     }
     init {
         // X and Y are INTENTIONALLY swapped
         pinpoint.setOffsets(driveY, strafeX, INCH)
-        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD)
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
         pinpoint.setYawScalar(1.0)
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD)
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED)
         setDefaultBulkreadScope()
         pinpoint.recalibrateIMU()
         pinpoint.update()
