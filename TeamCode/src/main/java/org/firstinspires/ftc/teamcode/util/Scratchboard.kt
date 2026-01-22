@@ -5,6 +5,11 @@ package org.firstinspires.ftc.teamcode.util
     for running random tests and stuff
  */
 
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
+import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
+import org.firstinspires.ftc.teamcode.opmodes.poses.inLaunchZone
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hD
@@ -25,6 +30,19 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.strafeAccelCorrected
 import kotlin.math.PI
 
 fun main(){
-    println(DriveVectors.fromTranslation(0.0, 0.0).trimmed(1.0).equals(DriveVectors.fromTranslation(0.0, 0.0)))
-    println(DriveVectors.fromRotation(1.0).addWithPriority(DriveVectors.fromTranslation(-3.0, 0.0)).getRightPowers())
+    println(inLaunchZone(closePose))
+    println(closePose.let{listOf(
+        it.vector() +
+            Vector.fromPolar(it.heading + PI/2, robotWidth/2.0) +
+            Vector.fromPolar(it.heading, robotLength/2.0),
+        it.vector() +
+            Vector.fromPolar(it.heading + PI/2, robotWidth/2.0) -
+            Vector.fromPolar(it.heading, robotLength/2.0),
+        it.vector() -
+            Vector.fromPolar(it.heading + PI/2, robotWidth/2.0) +
+            Vector.fromPolar(it.heading, robotLength/2.0),
+        it.vector() -
+            Vector.fromPolar(it.heading + PI/2, robotWidth/2.0) -
+            Vector.fromPolar(it.heading, robotLength/2.0),
+    )})
 }

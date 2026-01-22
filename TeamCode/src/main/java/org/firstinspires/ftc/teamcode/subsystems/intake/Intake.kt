@@ -36,7 +36,7 @@ class Intake(hwMap: HardwareMap) {
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
-
+    private var stallingSince: Long? = null
     private var nextShootTime: Long? = null
 
     init {
@@ -65,7 +65,7 @@ class Intake(hwMap: HardwareMap) {
 
         @JvmField var pusherRightForward = 0.6
         @JvmField var pusherRightBack = 0.00
-        @JvmField var pusherWait = 0.2
+        @JvmField var pusherWait = 0.05
 
         @JvmField var kP_pos = 0.02
         @JvmField var kD_Pos = 0.001
@@ -75,6 +75,11 @@ class Intake(hwMap: HardwareMap) {
 
     fun update() {
         val behaviour = behaviour
+        stallingSince = if (motorBack.velocity < 600){
+            stallingSince ?: System.currentTimeMillis()
+        } else {
+            null
+        }
         when (behaviour) {
             IntakeBehaviour.Hold -> {
                 motor.power =
@@ -83,7 +88,7 @@ class Intake(hwMap: HardwareMap) {
             }
             IntakeBehaviour.Grab -> {
                 motorBack.power = clamp(runVelocity * backF + (runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
-                if (motorBack.velocity > 500) {
+                if (!isStalling()) {
                     motor.power = clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
                 } else {
                     motor.power = clamp(-400 * frontF + (-400 - motor.velocity) * kP, -powerMax, 1.0)
@@ -91,6 +96,7 @@ class Intake(hwMap: HardwareMap) {
 
             }
             IntakeBehaviour.Stop -> {
+                stallingSince = null
                 motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)
                 motorBack.power = clamp((0 -motor.velocity) * kP, -1.0, powerMax)
             }
@@ -146,11 +152,7 @@ class Intake(hwMap: HardwareMap) {
     )
     fun waitForStall(): Command =
         WaitUntil({
-            if (behaviour == IntakeBehaviour.Grab){
-                abs(motorBack.velocity) < 600
-            } else {
-                true
-            }
+            isStalling()
         }, "waitForIntakeVelocity")
 
     fun resetPushers(){
@@ -175,4 +177,5 @@ class Intake(hwMap: HardwareMap) {
         },
         name = "ReleaseRight"
     )
+    fun isStalling() = ((stallingSince?.minus(System.currentTimeMillis()) ?: 0) > 200)
 }

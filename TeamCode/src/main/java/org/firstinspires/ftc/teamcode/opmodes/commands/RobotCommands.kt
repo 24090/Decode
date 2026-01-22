@@ -136,16 +136,16 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
     Instant {
         drive.follow = {
             val distanceX = abs((36.0 + 24.0 * n) - drive.localizer.x)
-            val targetPose = Pose(36.0 + 24.0 * n, (if (n == 2) 75.0 else 80.0) - min(distanceX * 3, 60.0), PI/2).mirroredIf(isRed)
+            val targetPose = Pose(
+                (if (n == 1) 34.0 else 36.0) + 24.0 * n,
+                (if (n == 2) 75.0 else 80.0) - min(distanceX * 3, 60.0),
+                PI/2
+            ).mirroredIf(isRed)
             pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
         }
     },
     Race(
-        Sequence(
-            intake.waitForStall(),
-            Sleep(0.2),
-            intake.waitForStall()
-        ),
+        intake.waitForStall(),
         Sequence(
             Sleep(0.2),
             WaitUntil{ abs(drive.localizer.yVel) < 0.3 },
@@ -170,17 +170,13 @@ fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
         drive.goToCircle(
             Pose(
                 59.528,
-                54.54,
+                54.54 + 2.0,
                 1.24
             ).mirroredIf(isRed),
         ),
     ),
     Race(
-        Sequence(
-            intake.waitForStall(),
-            Sleep(0.3),
-            intake.waitForStall()
-        ),
+        intake.waitForStall(),
         Sleep(4.0),
         drive.goToCircle(Pose(
             56.528,

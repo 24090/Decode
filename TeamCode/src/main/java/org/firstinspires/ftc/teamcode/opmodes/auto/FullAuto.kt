@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Instant
+import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
@@ -32,10 +33,8 @@ import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
-import org.firstinspires.ftc.teamcode.util.calculatePredictiveMoveShoot
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
-import kotlin.math.PI
 
 @Autonomous(name="AutoRed", group="Auto")
 class FullAutoRed: FullAuto(true)
@@ -68,24 +67,6 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
             name = "CloseShootCycle"
         )}
 
-        val postReleaseCycle = {Race(
-            Sequence(
-                intake.spinUp(),
-                Sleep(0.3),
-                intake.waitForStall()
-            ),
-            Sequence(
-                Race(
-                    drive.goToCircle(Pose(robotWidth/2.0 + 3.0, 48 + robotLength/2.0 - 3.0, PI/2.0).mirroredIf(isRed), 4.0),
-                    Sleep(4.0)
-                ),
-                Sleep(0.3),
-                Race(
-                    drive.goToCircle(Pose(robotLength/2.0 + 3.0, 71.0 - robotWidth/2.0, 0.0).mirroredIf(isRed), 4.0),
-                )
-            )
-        ) }
-
         while (opModeInInit()){
             indexTracker.pattern = camera.getPattern() ?: indexTracker.pattern
             telemetry.addData("pattern", indexTracker.pattern)
@@ -114,13 +95,21 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                 telemetry.addData("currentPose", drive.localizer.pose)
             }, "Reads" ),
             Sequence(
-                intake.spinUp(),
-                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                Race(
-                    drive.goToCircle(Pose(closePose.mirroredIf(isRed).x, closePose.mirroredIf(isRed).y, 0.0)),
-                    WaitUntil {drive.localizer.x > 40.0}
+                Parallel(
+                    intake.spinUp(),
+                    Instant { shooter.setTargetVelocityFromDistance(closeDistance) },
+                    Race(
+                        drive.goToCircle(
+                            Pose(
+                                closePose.mirroredIf(isRed).x,
+                                closePose.mirroredIf(isRed).y,
+                                0.0
+                            )
+                        ),
+                        WaitUntil { drive.localizer.x > 40.0 }
+                    ),
+                    closeShootCycle(),
                 ),
-                closeShootCycle(),
 
                 shooter.stop(),
                 grabBallCycle(1, isRed, intake, drive),
