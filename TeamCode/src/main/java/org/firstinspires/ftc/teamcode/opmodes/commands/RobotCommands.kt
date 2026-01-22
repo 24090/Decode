@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
+import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
@@ -19,6 +20,7 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Pattern
+import org.firstinspires.ftc.teamcode.util.clamp
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.max
@@ -145,7 +147,7 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
         }
     },
     Race(
-        intake.waitForStall(),
+        intake.waitForStall(0.3),
         Sequence(
             Sleep(0.2),
             WaitUntil{ abs(drive.localizer.yVel) < 0.3 },
@@ -154,6 +156,18 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
         ),
     ),
     if (n == 1) {
+        Instant {
+            drive.follow = {
+                val distanceY = abs(closePose.y - drive.localizer.y)
+                val targetPose = Pose(
+                    closePose.x - clamp(distanceY, 0.0, 16.0),
+                    closePose.y,
+                    closePose.heading * clamp(distanceY/20.0, 0.0, 1.0) + PI/2 * (1 - clamp(distanceY/20.0, 0.0, 1.0))
+                ).mirroredIf(isRed)
+                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
+            }
+        }
+        WaitUntil { drive.localizer.pose.inCircle(closePose, 5.0, 0.1) }
         drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed), yTolerance = 3.0, xTolerance = 3.0)
     } else {
         Instant {}
@@ -176,7 +190,7 @@ fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
         ),
     ),
     Race(
-        intake.waitForStall(),
+        intake.waitForStall(0.3),
         Sleep(4.0),
         drive.goToCircle(Pose(
             56.528,
@@ -191,7 +205,7 @@ fun loadZoneCycle(isRed: Boolean, intake: Intake, drive: Drive) = Race(
     Sequence(
         intake.spinUp(),
         Sleep(0.3),
-        intake.waitForStall()
+        intake.waitForStall(0.3)
     ),
     Sequence(
         Sleep(0.3),

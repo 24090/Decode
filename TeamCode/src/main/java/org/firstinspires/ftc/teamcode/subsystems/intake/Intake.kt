@@ -75,7 +75,7 @@ class Intake(hwMap: HardwareMap) {
 
     fun update() {
         val behaviour = behaviour
-        stallingSince = if (motorBack.velocity < 600){
+        stallingSince = if (motorBack.velocity < 700){
             stallingSince ?: System.currentTimeMillis()
         } else {
             null
@@ -150,9 +150,9 @@ class Intake(hwMap: HardwareMap) {
         Instant { nextShootTime = null},
         name = "ReleaseDual"
     )
-    fun waitForStall(): Command =
+    fun waitForStall(stallTime: Double = 0.1): Command =
         WaitUntil({
-            isStalling()
+            isStalling(stallTime)
         }, "waitForIntakeVelocity")
 
     fun resetPushers(){
@@ -177,5 +177,5 @@ class Intake(hwMap: HardwareMap) {
         },
         name = "ReleaseRight"
     )
-    fun isStalling() = ((stallingSince?.minus(System.currentTimeMillis()) ?: 0) > 200)
+    fun isStalling(stallTime: Double = 0.1) = ((stallingSince?.minus(System.currentTimeMillis()) ?: 0) > stallTime * 1000)
 }

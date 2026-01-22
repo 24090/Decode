@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems.drive
 import android.util.Log
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreAngle
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
@@ -274,24 +275,9 @@ fun getHeadingLockTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: L
         targetPose.set(Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get()))
     }
 
-    val angle = getAngle()
+    val angle = getAngle() ?: localizer.poseVel.vector().let {if (it.length > 3.0) it.angle else localizer.heading}
     val translational = teleopTranslational(getRelativeVelocity(localizer.pose, localizer.poseVel).vector() * -1)
-    val turn = if (angle == null){
-        0.0
-    } else {
-        PDLT(AngleUnit.normalizeRadians(angle - localizer.heading), -localizer.headingVel, hP, hD, kS, hT)
-    }
+    val turn = PDLT(AngleUnit.normalizeRadians(angle - localizer.heading), -localizer.headingVel, hP, hD, kS, hT)
 
-    DriveVectors
-        .fromRotation(turn)
-        .addWithPriority (
-            DriveVectors
-                .fromTranslation(translational)
-                .tipCorrected(
-                    tipAccelBackward, tipAccelForward,
-                    kS, kV, kA,
-                    getRelativeVelocity(localizer.pose, localizer.poseVel).x
-                ),
-            controlHubVoltage / 14.0
-        )
+    processTurnTranslational(turn, translational, localizer.pose, localizer.poseVel)
 }
