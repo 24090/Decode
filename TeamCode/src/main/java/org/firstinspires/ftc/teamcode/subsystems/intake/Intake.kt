@@ -56,7 +56,7 @@ class Intake(hwMap: HardwareMap) {
     companion object Params {
         @JvmField var runVelocity = 800.0
 
-        @JvmField var backF = 0.00108
+        @JvmField var backF = 0.00037
         @JvmField var frontF = 0.00051
         @JvmField var kP = 0.0003
         @JvmField var powerMax = 0.5
