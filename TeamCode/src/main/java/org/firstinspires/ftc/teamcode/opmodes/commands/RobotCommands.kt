@@ -191,12 +191,13 @@ fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
     ),
     Race(
         intake.waitForStall(0.3),
-        Sleep(4.0),
-        drive.goToCircle(Pose(
-            56.528,
-            55.04,
-            1.04
-        ).mirroredIf(isRed)
+        Parallel(
+            Sleep(4.0),
+            drive.goToCircle(Pose(
+                56.528,
+                55.04,
+                1.34
+            ).mirroredIf(isRed))
         )
     )
 )
