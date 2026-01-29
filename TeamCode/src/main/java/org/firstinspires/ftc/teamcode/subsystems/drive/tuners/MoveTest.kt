@@ -35,7 +35,7 @@ class MoveTest: LinearOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
-        drive.startP2PWithTargetPose(Pose(60.0, 0.0, 0.0))
+        drive.startP2PWithTargetPose(Pose(-90.0, 0.0, 0.0))
         reads.update()
         telemetry.addLine("x ${drive.localizer.x}")
         telemetry.addLine("y ${drive.localizer.y}")
@@ -43,7 +43,7 @@ class MoveTest: LinearOpMode() {
         telemetryPacket = TelemetryPacket()
         waitForStart()
         time = System.currentTimeMillis()
-        drive.follow = getPointToPoint(Reference(farStartPose), drive.localizer)
+        //drive.follow = getPointToPoint(Reference(farStartPose), drive.localizer)
         runBlocking( Race(
             Forever {
                 reads.update()
@@ -55,9 +55,14 @@ class MoveTest: LinearOpMode() {
                 dash.sendTelemetryPacket(telemetryPacket)
                 telemetryPacket = TelemetryPacket()
             },
-            ForeverCommand { Sequence(
-                drive.goToCircle(farStartPose)
-            )}
+            ForeverCommand{
+                Sequence(
+                    drive.goToCircle(Pose(60.0, 0.0, 0.0)),
+                    Sleep(1.0),
+                    drive.goToCircle(Pose(10.0, 0.0, 0.0)),
+                    Sleep(1.0)
+                )
+            }
         ))
 
     }

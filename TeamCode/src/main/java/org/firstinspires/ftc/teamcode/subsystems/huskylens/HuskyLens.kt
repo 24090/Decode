@@ -4,6 +4,8 @@ import com.qualcomm.hardware.dfrobot.HuskyLens
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.qualcomm.robotcore.hardware.Light
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.BallColor
 import org.firstinspires.ftc.teamcode.util.Pattern
 import java.util.Optional
@@ -11,6 +13,7 @@ import kotlin.jvm.optionals.getOrNull
 
 class HuskyLens(hwMap: HardwareMap) {
     val camera: HuskyLens = hwMap.get(HuskyLens::class.java, "huskyLens")
+
     var left: Optional<BallColor>? = null
         private set
     var right: Optional<BallColor>? = null
@@ -67,6 +70,8 @@ class HuskyLens(hwMap: HardwareMap) {
 class HuskyLensTesting: LinearOpMode() {
     override fun runOpMode() {
         val huskyLens = HuskyLens(hardwareMap)
+        val lights = Lights(hardwareMap)
+        lights.turnOn()
         while (opModeInInit()){
             huskyLens.read()
             telemetry.addData("PATTERN", huskyLens.getHeldPattern())

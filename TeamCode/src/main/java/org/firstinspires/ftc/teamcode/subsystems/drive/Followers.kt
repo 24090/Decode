@@ -93,7 +93,7 @@ fun getTeleopFollower(
 
     return {
         if (gamepad.backWasPressed()) {
-            localizer.pose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get())
+            localizer.pose = Pose(robotWidth/2.0 + 2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get())
             targetPose.set(Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get()))
         }
         val dError = -getRelativeVelocity(localizer.pose, localizer.poseVel)
@@ -203,7 +203,6 @@ fun pointToPoint(pose: Pose, velocity: Pose, targetPose: Pose, full: Boolean = t
         PDLT(Vector.fromPose(error), Vector.fromPose(dError), xyP, xyD, kS, xyT)
     val drive = if (translational.x.isNaN()) 0.0 else translational.x
     val strafe = if (translational.y.isNaN()) 0.0 else translational.y
-    Log.i("errorh", "${error.heading}")
     return if (!full) {
         DriveVectors.fromRotation(turn) + DriveVectors.fromTranslation(drive, strafe)
     } else {

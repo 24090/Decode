@@ -29,11 +29,11 @@ class Drive(hwMap: HardwareMap) {
     companion object DriveConstants {
         @JvmField var lateralFactor = 0.7
 
-        @JvmField var kS = 0.145
+        @JvmField var kS = 0.15
         @JvmField var kV = 0.0151
 
-        @JvmField var kA = 0.005
-        @JvmField var hP = 2.0
+        @JvmField var kA = 0.0067
+        @JvmField var hP = 2.5
         @JvmField var hD = 0.18
         @JvmField var hT = 0.02
         @JvmField var xyP = 0.13

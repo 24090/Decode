@@ -12,21 +12,13 @@ import org.firstinspires.ftc.teamcode.commands.Command
 import org.firstinspires.ftc.teamcode.commands.Future
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
-import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.SpikyTest
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
-import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
-import org.firstinspires.ftc.teamcode.util.BallColor
-import org.firstinspires.ftc.teamcode.util.IndexTracker
-import org.firstinspires.ftc.teamcode.util.Pattern
 import org.firstinspires.ftc.teamcode.util.clamp
-import java.util.Optional
-import kotlin.jvm.optionals.getOrNull
 import kotlin.math.abs
-import kotlin.math.sign
 
 @Config
 class Intake(hwMap: HardwareMap) {
@@ -36,7 +28,9 @@ class Intake(hwMap: HardwareMap) {
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
-    private var stallingSince: Long? = null
+    val velHistory = SpikyTest(50, 150.0)
+
+    fun isStalling() = velHistory.spikeCount() > 7
     private var nextShootTime: Long? = null
 
     init {
@@ -49,17 +43,19 @@ class Intake(hwMap: HardwareMap) {
     sealed class IntakeBehaviour() {
         object Grab: IntakeBehaviour()
         object Hold: IntakeBehaviour()
+        object Eject: IntakeBehaviour()
         object Stop: IntakeBehaviour()
         object Stopfront: IntakeBehaviour()
         class Wheelie(val fl: DcMotor, val fr: DcMotor): IntakeBehaviour()
     }
     companion object Params {
-        @JvmField var runVelocity = 800.0
+        @JvmField var runVelocity = 1100.0
+        @JvmField var runVelocityBack = 1100.0
 
         @JvmField var backF = 0.00037
         @JvmField var frontF = 0.00051
         @JvmField var kP = 0.0003
-        @JvmField var powerMax = 0.5
+        @JvmField var powerMax = 0.67
         @JvmField var pusherLeftForward = 0.0
         @JvmField var pusherLeftBack = 1.0
 
@@ -75,34 +71,36 @@ class Intake(hwMap: HardwareMap) {
 
     fun update() {
         val behaviour = behaviour
-        stallingSince = if (motorBack.velocity < 700){
-            stallingSince ?: System.currentTimeMillis()
-        } else {
-            null
-        }
+        velHistory.update(motorBack.velocity)
         when (behaviour) {
             IntakeBehaviour.Hold -> {
                 motor.power =
                     clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
-                motorBack.power = clamp(-runVelocity * backF + (-runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
+                motorBack.power = clamp(-runVelocityBack * backF + (-runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
             }
             IntakeBehaviour.Grab -> {
-                motorBack.power = clamp(runVelocity * backF + (runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
+                if (abs(motorBack.velocity) < 50.0){
+                    motorBack.power = -1.0
+                }
+                motorBack.power = clamp(runVelocityBack * backF + (runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
                 if (!isStalling()) {
                     motor.power = clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
                 } else {
-                    motor.power = clamp(-400 * frontF + (-400 - motor.velocity) * kP, -powerMax, 1.0)
+                    motor.power = clamp(0 * frontF + (0 - motor.velocity) * kP, -powerMax, 1.0)
                 }
 
             }
             IntakeBehaviour.Stop -> {
-                stallingSince = null
                 motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)
                 motorBack.power = clamp((0 -motor.velocity) * kP, -1.0, powerMax)
             }
             IntakeBehaviour.Stopfront -> {
                 motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)
-                motorBack.power = clamp(runVelocity * backF + (runVelocity - motorBack.velocity) * kP, -1.0, powerMax)
+                motorBack.power = clamp(runVelocityBack * backF + (runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
+            }
+            IntakeBehaviour.Eject -> {
+                motorBack.power = clamp(-runVelocityBack * backF + (-runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
+                motor.power =  clamp(-runVelocity * frontF + (-runVelocity - motor.velocity) * kP, -powerMax, 1.0)
             }
             is IntakeBehaviour.Wheelie -> {
                 motor.power = -(behaviour.fl.power + behaviour.fr.power)/10.0
@@ -150,9 +148,9 @@ class Intake(hwMap: HardwareMap) {
         Instant { nextShootTime = null},
         name = "ReleaseDual"
     )
-    fun waitForStall(stallTime: Double = 0.1): Command =
+    fun waitForStall(): Command =
         WaitUntil({
-            isStalling(stallTime)
+            isStalling()
         }, "waitForIntakeVelocity")
 
     fun resetPushers(){
@@ -162,9 +160,7 @@ class Intake(hwMap: HardwareMap) {
     fun releaseLeft(): Command = Sequence(
         Instant { pusherLeft.position = pusherLeftForward },
         Sleep(pusherWait),
-        Instant {
-            pusherLeft.position = pusherLeftBack
-        },
+        Instant { pusherLeft.position = pusherLeftBack },
 
         name = "ReleaseLeft"
     )
@@ -172,10 +168,7 @@ class Intake(hwMap: HardwareMap) {
     fun releaseRight(): Command = Sequence(
         Instant { pusherRight.position = pusherRightForward },
         Sleep(pusherWait),
-        Instant {
-            pusherRight.position = pusherRightBack
-        },
+        Instant { pusherRight.position = pusherRightBack },
         name = "ReleaseRight"
     )
-    fun isStalling(stallTime: Double = 0.1) = ((stallingSince?.minus(System.currentTimeMillis()) ?: 0) > stallTime * 1000)
 }

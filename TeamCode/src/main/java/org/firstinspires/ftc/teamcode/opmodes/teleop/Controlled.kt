@@ -16,6 +16,9 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreAngle
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopFollower
 import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopTranslational
@@ -26,6 +29,7 @@ import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Reference
+import org.firstinspires.ftc.teamcode.util.clamp
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 
@@ -56,9 +60,6 @@ class Controlled: LinearOpMode() {
         while (opModeInInit()){
             if (gamepad2.guideWasPressed()) {
                 isRed.set(!isRed.get())
-            }
-            if (gamepad2.backWasPressed()) {
-                useStoredPose = !useStoredPose
             }
             telemetry.addData("isRed? (center button/guide)", isRed)
             telemetry.addData("useStoredPose? (back)", useStoredPose)
@@ -97,11 +98,7 @@ class Controlled: LinearOpMode() {
             telemetry.addData("pattern", indexTracker.pattern)
             telemetry.addLine("--------------------------")
         }
-        drive.localizer.pose =
-            if (useStoredPose)
-                storedPose ?: closeStartPose.mirroredIf(isRed.get())
-            else
-                closeStartPose.mirroredIf(isRed.get())
+        drive.localizer.pose = storedPose ?: closeStartPose
         while (opModeIsActive()){
             reads.update()
             updateP2()
@@ -116,7 +113,6 @@ class Controlled: LinearOpMode() {
                 runBlocking(intake.stopFront())
             }
             if (gamepad1.xWasPressed()) {
-                val relativePose = scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose)
                 runBlocking(
                     Race(
                     WaitUntil { !gamepad1.x },
@@ -125,11 +121,12 @@ class Controlled: LinearOpMode() {
                         updateP2()
                         val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
                         shooter.setTargetVelocityFromDistance(relativePose.length)
+                        targetPose.get().heading = getScoreAngle(drive.localizer.pose.vector(), isRed.get())
                     },
                     Sequence(
                         drive.goToCircle(Pose(
                             drive.localizer.x, drive.localizer.y,
-                            relativePose.angle
+                            getScoreAngle(drive.localizer.pose.vector(), isRed.get())
                         )),
                         Instant { updateLocalizer() },
                         shootAll(intake, shooter)
@@ -207,6 +204,12 @@ class Controlled: LinearOpMode() {
                 runBlocking(intake.spinUp())
                 intake.resetPushers()
                 drive.follow = followOverride
+            }
+            if (gamepad1.leftBumperWasPressed()){
+                intake.behaviour = Intake.IntakeBehaviour.Eject
+            }
+            if (gamepad1.leftBumperWasReleased()){
+                intake.behaviour = Intake.IntakeBehaviour.Grab
             }
             if (gamepad1.rightBumperWasPressed()){
                 shooter.targetVelocityLeft = 0.0

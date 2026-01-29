@@ -28,6 +28,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
+import org.firstinspires.ftc.teamcode.subsystems.huskylens.Lights
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
@@ -49,6 +50,7 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
         val intake = Intake(hardwareMap)
         val huskyLens = HuskyLens(hardwareMap)
         val camera = Camera(hardwareMap)
+        val lights = Lights(hardwareMap)
         val indexTracker = IndexTracker()
         indexTracker.rampCount = 0
         val farShootCycle = {Sequence(
@@ -61,9 +63,18 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
             shootAll(intake,shooter),
             name = "CloseShootCycle"
         )}
+        val closeShootCyclePattern = {Sequence(
+            Instant{lights.turnOn()},
+            drive.goToCircle(closePose.mirroredIf(isRed), 2.0),
+            shootPattern(intake,shooter, huskyLens, indexTracker),
+            Instant{lights.turnOff()},
+            name = "CloseShootCycle"
+        )}
         val leaveShootCycle = {Sequence(
+            Instant{lights.turnOn()},
             drive.goToCircle(getScorePose(Vector.fromCartesian(106.0, 12.0)).mirroredIf(isRed), 2.0),
             shootPattern(intake,shooter,huskyLens,indexTracker),
+            Instant{lights.turnOff()},
             name = "CloseShootCycle"
         )}
 
@@ -98,19 +109,8 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                 Parallel(
                     intake.spinUp(),
                     Instant { shooter.setTargetVelocityFromDistance(closeDistance) },
-                    Race(
-                        drive.goToCircle(
-                            Pose(
-                                closePose.mirroredIf(isRed).x,
-                                closePose.mirroredIf(isRed).y,
-                                0.0
-                            )
-                        ),
-                        WaitUntil { drive.localizer.x > 40.0 }
-                    ),
                     closeShootCycle(),
                 ),
-
                 shooter.stop(),
                 grabBallCycle(1, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
@@ -124,17 +124,18 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                 shooter.stop(),
                 fromRampCycle(isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                closeShootCycle(),
+                closeShootCyclePattern(),
 
                 shooter.stop(),
                 grabBallCycle(0, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                closeShootCycle(),
+                closeShootCyclePattern(),
 
                 shooter.stop(),
                 grabBallCycle(2, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 leaveShootCycle(),
+
                 name = "Auto"
             ),
             Forever({

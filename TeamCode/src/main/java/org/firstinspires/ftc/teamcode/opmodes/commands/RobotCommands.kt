@@ -45,15 +45,15 @@ fun moveShootAll(intake: Intake, shooter: Shooter, getHeading: () -> Double, get
     intake.releaseDual(),
 )
 fun shootAll(intake: Intake, shooter: Shooter) = Sequence(
+        shooter.waitForVelocity(),
         Parallel(
-            intake.fullAdjustThird(),
-            shooter.waitForVelocity(),
+            intake.releaseDual(),
+            intake.setAdjustThird()
         ),
-        intake.releaseDual(),
         Sleep(pusherWait),
         Parallel(
-            intake.spinUp(),
             shooter.waitForVelocity(),
+            intake.spinUp(),
             Sleep(0.3),
         ),
         intake.releaseDual(),
@@ -61,71 +61,71 @@ fun shootAll(intake: Intake, shooter: Shooter) = Sequence(
     )
 fun shootPattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, indexTracker: IndexTracker): Command = Future {
     huskyLens.read()
+    val reload = {
+        Parallel(
+            shooter.waitForVelocity(),
+            intake.spinUp(),
+            Sleep(0.3),
+        )
+    }
     val held = huskyLens.getHeldPattern()
     val pattern = indexTracker.getRecommendations()
     val indexWait = 1.0
     return@Future Sequence (
         Parallel(
-            intake.fullAdjustThird(),
+            intake.setAdjustThird(),
             shooter.waitForVelocity(),
         ),
         when (Pair(held, pattern)){
             Pair(Pattern.GPP, Pattern.GPP) -> Sequence(
                 // left right+3
                 intake.releaseLeft(),
-                Sleep(pusherWait),
-                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseDual()
             )
             Pair(Pattern.GPP, Pattern.PGP) -> Sequence(
                 // right left 3
                 intake.releaseRight(),
-                Sleep(pusherWait),
-                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseLeft(),
-                Parallel(Sleep(indexWait), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseDual()
             )
             Pair(Pattern.GPP, Pattern.PPG) -> Sequence(
                 // right 3 left
                 intake.releaseRight(),
-                Sleep(pusherWait),
-                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseRight(),
-                Parallel(Sleep(indexWait), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseDual()
             )
             Pair(Pattern.PGP, Pattern.GPP) -> Sequence(
                 // right left+3
                 intake.releaseRight(),
-                Sleep(pusherWait),
-                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseDual()
             )
             Pair(Pattern.PGP, Pattern.PGP) -> Sequence(
                 // left right 3
                 intake.releaseLeft(),
-                Sleep(pusherWait),
-                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseRight(),
-                Parallel(Sleep(indexWait), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseDual()
             )
             Pair(Pattern.PGP, Pattern.PPG), Pair(Pattern.PPG, Pattern.PGP) -> Sequence(
                 // left 3 right
                 intake.releaseLeft(),
-                Sleep(pusherWait),
-                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseLeft(),
-                Parallel(Sleep(indexWait), shooter.waitForVelocity()),
+                Parallel(reload(), Sleep(indexWait)),
                 intake.releaseDual()
             )
             Pair(Pattern.PPG, Pattern.GPP), Pair(Pattern.PPG, Pattern.PPG) -> Sequence(
                 // BAD/GOOD
                 // left+right 3
                 intake.releaseDual(),
-                Sleep(pusherWait),
-                Parallel( intake.fullAdjustThird(), shooter.waitForVelocity()),
+                reload(),
                 intake.releaseDual(),
             )
 
@@ -147,12 +147,11 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
         }
     },
     Race(
-        intake.waitForStall(0.3),
         Sequence(
-            Sleep(0.2),
-            WaitUntil{ abs(drive.localizer.yVel) < 0.3 },
-            Sleep(0.2),
-            WaitUntil{ abs(drive.localizer.yVel) < 0.3 }
+            WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(isRed).y > 60 }
+        ),
+        Sequence(
+            WaitUntil{ drive.localizer.pose.vector().length < 0.2 && drive.localizer.pose.mirroredIf(isRed).y > 60},
         ),
     ),
     if (n == 1) {
@@ -183,40 +182,33 @@ fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
         ),
         drive.goToCircle(
             Pose(
-                59.528,
-                54.54 + 2.0,
-                1.24
+                59.4,
+                56.12 + 1.5,
+                1.09
             ).mirroredIf(isRed),
         ),
     ),
     Race(
-        intake.waitForStall(0.3),
-        Parallel(
-            Sleep(4.0),
-            drive.goToCircle(Pose(
-                56.528,
-                55.04,
-                1.34
-            ).mirroredIf(isRed))
-        )
+        intake.waitForStall(),
+        Sleep(3.0)
     )
 )
 
 fun loadZoneCycle(isRed: Boolean, intake: Intake, drive: Drive) = Race(
     Sequence(
         intake.spinUp(),
-        Sleep(0.3),
-        intake.waitForStall(0.3)
+        Sleep(2.0),
+        intake.waitForStall()
     ),
     Sequence(
-        Sleep(0.3),
+        Sleep(2.0),
         WaitUntil { drive.localizer.poseVel.vector().length < 0.1}
     ),
     Sequence(
         drive.goToCircle(
             Pose(
-                robotWidth / 2.0,
-                72.0 - robotLength / 2.0,
+                robotWidth / 2.0 + 1.0,
+                72.0 - robotLength / 2.0 - 1.0,
                 PI / 2.0
             ).mirroredIf(isRed),
         )

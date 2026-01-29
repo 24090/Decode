@@ -27,9 +27,11 @@ class Shooter(hwMap: HardwareMap) {
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0),
         Pair(0.0001, 0.08),
-        Pair(1340.0, 0.5),
-        Pair(1690.0, 0.6),
-        Pair(2000.0, 0.7779296875),
+        Pair(1380.0, 0.5),
+        Pair(1500.0, 0.55),
+        Pair(1640.0, 0.6),
+        Pair(1800.0, 0.66),
+        Pair(2150.0, 0.7779296875),
     ))
 
     val distanceToVelocityLeftLUT = InterpolatedLUT(mapOf(
@@ -37,20 +39,20 @@ class Shooter(hwMap: HardwareMap) {
         Pair(36*sqrt(2.0), 1355.0), // 36 sqrt 2 in
         Pair(48*sqrt(2.0), 1330.0), // 48 sqrt 2 in
         Pair(60*sqrt(2.0), 1390.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1520.0),  // 72 sqrt 2 in
+        Pair(72*sqrt(2.0), 1520.0 + 10.0),  // 72 sqrt 2 in
         Pair(84*sqrt(2.0), 1620.0),  // 84 sqrt 2 in
         Pair(96*sqrt(2.0), 1755.0),  // 96 sqrt 2 in
         Pair(108*sqrt(2.0), 1840.0),
     ))
     val distanceToVelocityRightLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0), // 0 in
-        Pair(36*sqrt(2.0), 1355.0), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1330.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1390.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1520.0),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 1620.0),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 1754.0),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 1850.0),
+        Pair(36*sqrt(2.0), 1355.0 - 30.0), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1330.0 - 30.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1390.0 - 30.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1520.0 - 30.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 1620.0 - 30.0),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 1774.0 - 30.0),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 1940.0 - 30.0),
     ))
 
     val exitVelocityToLeftVelocityLUT = InterpolatedLUT(mapOf(

@@ -59,6 +59,7 @@ class kVTuner: LinearOpMode() {
             telemetryPacket.put("vel", drive.localizer.xVel)
             telemetryPacket.put("maxVel", maxVel)
             telemetryPacket.put("Estimated kV", velPower / maxVel)
+            telemetry.addData("Estimated kV", velPower / maxVel)
             telemetry.update()
             dash.sendTelemetryPacket(telemetryPacket)
         }

@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.runVelocity
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.runVelocityBack
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 
@@ -29,8 +30,9 @@ class IntakeTesting(): LinearOpMode(){
             p.put("velocity", intake.motor.velocity)
             p.put("velocityBack", intake.motorBack.velocity)
             p.put("targetVelocity", runVelocity)
-            p.put("back feedforward", Intake.backF * runVelocity)
+            p.put("back feedforward", Intake.backF * runVelocityBack)
             p.put("front feedforward", Intake.frontF * runVelocity)
+            p.put("spikes", intake.velHistory.spikeCount())
             dash.sendTelemetryPacket(p)
         }
 

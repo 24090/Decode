@@ -34,13 +34,13 @@ class Camera(hwMap: HardwareMap) {
     fun initLocalize() {
         limelight.setPollRateHz(20)
         limelight.start()
-        limelight.pipelineSwitch(0)
+        limelight.pipelineSwitch(2)
         currentPipeline = Pipeline.Localize
     }
     fun initPattern() {
         limelight.setPollRateHz(5)
         limelight.start()
-        limelight.pipelineSwitch(0)
+        limelight.pipelineSwitch(2)
         currentPipeline = Pipeline.Pattern
     }
 
