@@ -28,9 +28,9 @@ class Intake(hwMap: HardwareMap) {
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
-    val velHistory = SpikyTest(50, 150.0)
+    val velHistory = SpikyTest(30, 100.0)
 
-    fun isStalling() = velHistory.spikeCount() > 7
+    fun isStalling() = velHistory.spikeCount() > 5
     private var nextShootTime: Long? = null
 
     init {
@@ -41,6 +41,7 @@ class Intake(hwMap: HardwareMap) {
         pusherRight.position = pusherRightBack
     }
     sealed class IntakeBehaviour() {
+        object Greedy: IntakeBehaviour()
         object Grab: IntakeBehaviour()
         object Hold: IntakeBehaviour()
         object Eject: IntakeBehaviour()
@@ -79,9 +80,6 @@ class Intake(hwMap: HardwareMap) {
                 motorBack.power = clamp(-runVelocityBack * backF + (-runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
             }
             IntakeBehaviour.Grab -> {
-                if (abs(motorBack.velocity) < 50.0){
-                    motorBack.power = -1.0
-                }
                 motorBack.power = clamp(runVelocityBack * backF + (runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
                 if (!isStalling()) {
                     motor.power = clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
@@ -89,6 +87,10 @@ class Intake(hwMap: HardwareMap) {
                     motor.power = clamp(0 * frontF + (0 - motor.velocity) * kP, -powerMax, 1.0)
                 }
 
+            }
+            IntakeBehaviour.Greedy -> {
+                motorBack.power = clamp(runVelocityBack * backF + (runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
+                motor.power = clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
             }
             IntakeBehaviour.Stop -> {
                 motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)

@@ -21,7 +21,7 @@ fun getScorePose(position: Vector, isRed: Boolean = false) =
     Pose(position.x, position.y, getScoreAngle(position, isRed))
 
 val farPose = getScorePose(Vector.fromCartesian(14.0, 14.0))
-val closePose = getScorePose(Vector.fromCartesian(76.5, 12.0))
+val closePose = getScorePose(Vector.fromCartesian(79.5, 12.0))
 val closeDistance = getScoreDistance(Vector.fromPose(closePose))
 
 val farDistance = getScoreDistance(Vector.fromPose(farPose))

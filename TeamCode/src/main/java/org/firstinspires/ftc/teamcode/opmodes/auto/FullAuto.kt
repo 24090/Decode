@@ -34,6 +34,8 @@ import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
+import org.firstinspires.ftc.teamcode.util.Reference
+import org.firstinspires.ftc.teamcode.util.storedIsRed
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 
@@ -44,6 +46,7 @@ class FullAutoRed: FullAuto(true)
 class FullAutoBlue: FullAuto(false)
 open class FullAuto(val isRed: Boolean): LinearOpMode() {
     override fun runOpMode() {
+        storedIsRed = Reference(isRed)
         val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
         val shooter = Shooter(hardwareMap)
@@ -71,10 +74,10 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
             name = "CloseShootCycle"
         )}
         val leaveShootCycle = {Sequence(
-            Instant{lights.turnOn()},
+            //Instant{lights.turnOn()},
             drive.goToCircle(getScorePose(Vector.fromCartesian(106.0, 12.0)).mirroredIf(isRed), 2.0),
-            shootPattern(intake,shooter,huskyLens,indexTracker),
-            Instant{lights.turnOff()},
+            shootAll(intake,shooter),
+            //Instant{lights.turnOff()},
             name = "CloseShootCycle"
         )}
 
@@ -102,6 +105,8 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
             Forever({
                 recordTime("other")
                 reads.update()
+                storedPose = drive.localizer.pose
+                storedPattern = indexTracker.pattern
                 recordTime("reads")
                 telemetry.addData("currentPose", drive.localizer.pose)
             }, "Reads" ),
@@ -124,14 +129,14 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                 shooter.stop(),
                 fromRampCycle(isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                closeShootCyclePattern(),
+                closeShootCycle(),
 
                 shooter.stop(),
                 grabBallCycle(0, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                closeShootCyclePattern(),
+                closeShootCycle(),
 
-                shooter.stop(),
+                 shooter.stop(),
                 grabBallCycle(2, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 leaveShootCycle(),
@@ -145,7 +150,5 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                 telemetry.update()
             }, "Writes")
         ))
-        storedPose = drive.localizer.pose
-        storedPattern = indexTracker.pattern
     }
 }

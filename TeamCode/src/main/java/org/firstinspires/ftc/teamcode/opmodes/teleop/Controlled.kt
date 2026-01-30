@@ -30,18 +30,18 @@ import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Reference
 import org.firstinspires.ftc.teamcode.util.clamp
+import org.firstinspires.ftc.teamcode.util.storedIsRed
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 
 @TeleOp(name="Controlled")
 class Controlled: LinearOpMode() {
     override fun runOpMode() {
-        val isRed = Reference(false)
+        val isRed = storedIsRed ?: Reference(false)
         val targetPose = Reference(Pose(0.0, 0.0, 0.0))
         val lastLockTranslational = Reference(false)
         val lastLockHeading = Reference(false)
 
-        var useStoredPose = true
         val reads = Reads(hardwareMap)
         val drive = Drive(hardwareMap)
         val shooter = Shooter(hardwareMap)
@@ -61,8 +61,7 @@ class Controlled: LinearOpMode() {
             if (gamepad2.guideWasPressed()) {
                 isRed.set(!isRed.get())
             }
-            telemetry.addData("isRed? (center button/guide)", isRed)
-            telemetry.addData("useStoredPose? (back)", useStoredPose)
+            telemetry.addData("isRed? (center button/guide)", isRed.get())
             telemetry.update()
         }
 

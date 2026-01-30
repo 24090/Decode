@@ -50,6 +50,7 @@ fun shootAll(intake: Intake, shooter: Shooter) = Sequence(
             intake.releaseDual(),
             intake.setAdjustThird()
         ),
+        intake.spinUp(),
         Sleep(pusherWait),
         Parallel(
             shooter.waitForVelocity(),
@@ -148,10 +149,10 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
     },
     Race(
         Sequence(
-            WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(isRed).y > 60 }
+            WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(isRed).y > 48 }
         ),
         Sequence(
-            WaitUntil{ drive.localizer.pose.vector().length < 0.2 && drive.localizer.pose.mirroredIf(isRed).y > 60},
+            WaitUntil{ drive.localizer.poseVel.vector().length < 0.2 && drive.localizer.pose.mirroredIf(isRed).y > 48},
         ),
     ),
     if (n == 1) {
@@ -166,7 +167,7 @@ fun grabBallCycle (n: Int, isRed: Boolean, intake: Intake, drive: Drive) = Seque
                 pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
             }
         }
-        WaitUntil { drive.localizer.pose.inCircle(closePose, 5.0, 0.1) }
+        WaitUntil { drive.localizer.pose.inCircle(closePose, 10.0, 0.2) }
         drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(isRed), yTolerance = 3.0, xTolerance = 3.0)
     } else {
         Instant {}
@@ -184,13 +185,13 @@ fun fromRampCycle(isRed: Boolean, intake: Intake, drive: Drive) = Sequence(
             Pose(
                 59.4,
                 56.12 + 1.5,
-                1.09
+                1.06
             ).mirroredIf(isRed),
         ),
     ),
     Race(
         intake.waitForStall(),
-        Sleep(3.0)
+        Sleep(2.0)
     )
 )
 
