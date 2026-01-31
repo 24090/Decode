@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.getHeadingLockTeleop
 import org.firstinspires.ftc.teamcode.subsystems.drive.getStopPosition
@@ -109,11 +110,10 @@ class NewControlled: LinearOpMode() {
         drive.follow = normalFollow
 
         val relocalize = {
-            val cameraPose = camera.getPose()
-            if (cameraPose != null){
-                drive.localizer.pose = drive.localizer.pose * 6.0/7.0 + cameraPose * 1.0/6.0
-            }
-
+//            val cameraPose = camera.getPose()
+//            if (cameraPose != null){
+//                drive.localizer.pose = drive.localizer.pose * 6.0/7.0 + cameraPose * 1.0/7.0
+//            }
         }
 
         val updateP2 = {
@@ -150,6 +150,12 @@ class NewControlled: LinearOpMode() {
                 runBlocking(intake.stop())
             }
             if (gamepad1.rightBumperWasPressed()){
+                intake.behaviour = Intake.IntakeBehaviour.Eject
+            }
+            if (gamepad1.rightBumperWasReleased()){
+                intake.behaviour = Intake.IntakeBehaviour.Grab
+            }
+            if (gamepad1.dpadUpWasPressed()){
                 shooter.targetVelocityLeft = 0.0
                 shooter.targetVelocityRight = 0.0
                 runBlocking(Race(
@@ -180,22 +186,19 @@ class NewControlled: LinearOpMode() {
                         updateP2()
                     },
                     Sequence(
-                        Instant {
+                        Future {
                             targetPose.set(
-                                getStopPosition(
-                                    drive.localizer.pose,
-                                    getRelativeVelocity(drive.localizer.pose, drive.localizer.poseVel).vector()
-                                ).let {
-                                    Pose(
-                                        it.x,
-                                        it.y,
-                                        getScoreAngle(Vector.fromCartesian(it.x, it.y), isRed.get())
-                                    )
-                                }
+                                getScorePose(
+                                    getStopPosition(
+                                        drive.localizer.pose,
+                                        getRelativeVelocity(drive.localizer.pose, drive.localizer.poseVel).vector()
+                                    ),
+                                    isRed.get()
+                                )
                             )
                             shooter.setTargetVelocityFromDistance(getScoreDistance(targetPose.get().vector(), isRed.get()))
+                            return@Future drive.goToCircle(targetPose.get())
                         },
-                        Future { drive.goToCircle(targetPose.get()) },
                         Parallel(
                             Instant {relocalize()} ,
                             shootAll(intake, shooter),

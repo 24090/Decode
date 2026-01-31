@@ -28,9 +28,9 @@ class Intake(hwMap: HardwareMap) {
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
-    val velHistory = SpikyTest(30, 100.0)
+    val velHistory = SpikyTest(25, 35.0)
 
-    fun isStalling() = velHistory.spikeCount() > 5
+    fun isStalling() = velHistory.spikeValue() > 400
     private var nextShootTime: Long? = null
 
     init {

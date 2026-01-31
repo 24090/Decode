@@ -50,14 +50,17 @@ fun shootAll(intake: Intake, shooter: Shooter) = Sequence(
             intake.releaseDual(),
             intake.setAdjustThird()
         ),
-        intake.spinUp(),
-        Sleep(pusherWait),
+        Parallel(
+            Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy},
+            Sleep(pusherWait),
+        ),
         Parallel(
             shooter.waitForVelocity(),
-            intake.spinUp(),
+            Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy},
             Sleep(0.3),
         ),
         intake.releaseDual(),
+        Instant { intake.behaviour = Intake.IntakeBehaviour.Grab},
         name = "ShootCycle"
     )
 fun shootPattern(intake: Intake, shooter: Shooter, huskyLens: HuskyLens, indexTracker: IndexTracker): Command = Future {

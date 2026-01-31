@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.shootPattern
@@ -128,7 +129,9 @@ class Controlled: LinearOpMode() {
                             getScoreAngle(drive.localizer.pose.vector(), isRed.get())
                         )),
                         Instant { updateLocalizer() },
-                        shootAll(intake, shooter)
+                        shootAll(intake, shooter),
+                        Parallel(Sleep(0.5), Instant{intake.behaviour = Intake.IntakeBehaviour.Grab}),
+                        intake.releaseDual(),
                     ),
                     Forever {
                         intake.update()

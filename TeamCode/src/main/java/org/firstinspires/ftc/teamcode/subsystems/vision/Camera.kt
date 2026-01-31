@@ -32,22 +32,22 @@ class Camera(hwMap: HardwareMap) {
     }
 
     fun initLocalize() {
+        limelight.pipelineSwitch(2)
         limelight.setPollRateHz(20)
         limelight.start()
-        limelight.pipelineSwitch(2)
         currentPipeline = Pipeline.Localize
     }
     fun initPattern() {
+        limelight.pipelineSwitch(2)
         limelight.setPollRateHz(5)
         limelight.start()
-        limelight.pipelineSwitch(2)
         currentPipeline = Pipeline.Pattern
     }
 
     fun initRampAnalysis() {
         limelight.setPollRateHz(12)
-        limelight.start()
         limelight.pipelineSwitch(1)
+        limelight.start()
         currentPipeline = Pipeline.RampAnalysis
     }
 
@@ -74,19 +74,22 @@ class Camera(hwMap: HardwareMap) {
     }
 
     fun getPose(): Pose? {
-        if (currentPipeline != Pipeline.Localize) error("Wrong Pipeline")
-        for (fiducialResult in limelight.latestResult.fiducialResults){
-            when(fiducialResult.fiducialId){
-                20, 19 -> {
-                    return Pose(
-                        fiducialResult.robotPoseFieldSpace.position.x * 39.37 + 72.0,
-                        fiducialResult.robotPoseFieldSpace.position.y * 39.37,
-                        fiducialResult.robotPoseFieldSpace.orientation.yaw / 360.0 * 2*PI
-                    )
-                }
-            }
+        val result = limelight.latestResult
+        if (result == null || !result.isValid){
+            return null
         }
-        return null
+        val botPose = result.botpose
+        if (result.botpose == null){
+            return null
+        }
+
+        if (currentPipeline != Pipeline.Localize) error("Wrong Pipeline")
+
+        return botPose.let { Pose(
+            it.position.x * 39.37 + 72.0,
+            it.position.y * 39.37,
+            it.orientation.yaw / 360.0 * 2*PI
+        ) }
     }
 
     fun aprilTagRelocalize(localizer: Localizer,  timeout: Double = 1.0): Command = Sequence(

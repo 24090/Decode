@@ -5,6 +5,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hT
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.xyT
+import org.firstinspires.ftc.teamcode.util.clamp
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 fun Pose(pose2d: Pose2D) = Pose(pose2d.getX(DistanceUnit.INCH), pose2d.getY(DistanceUnit.INCH), pose2d.getHeading(AngleUnit.RADIANS))
@@ -25,6 +27,11 @@ class Pose(var x: Double, var y: Double, var heading: Double) {
         return  (Vector.fromPose(this).length < distanceTolerance) &&
                 (this.heading.absoluteValue < headingTolerance)
     }
+
+    fun movedTowards(other: Pose, xyStep: Double, hStep: Double) =
+        this.vector().movedTowards(other.vector(), xyStep).let {
+            Pose(it.x, it.y, clamp(other.heading, this.heading - abs(hStep), this.heading + abs(hStep)))
+        }
 
     operator fun plus(v: Pose): Pose{
         return Pose(x + v.x, y + v.y, heading+v.heading)

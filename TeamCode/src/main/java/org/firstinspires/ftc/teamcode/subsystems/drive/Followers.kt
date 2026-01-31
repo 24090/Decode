@@ -27,6 +27,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVeloci
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import org.firstinspires.ftc.teamcode.util.Reference
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.ln
 import kotlin.math.max
@@ -34,9 +35,11 @@ import kotlin.math.pow
 import kotlin.math.sign
 
 fun getStopPosition(pose: Pose, relativeVelocity: Vector): Vector{
-    val maxAccel = if (relativeVelocity.x > 0) tipAccelForward else tipAccelBackward
-    val t = relativeVelocity.x/maxAccel
-    return pose.vector() + Vector.fromPolar(pose.heading, maxAccel * t.pow(2)/2 + relativeVelocity.x * t)
+    val maxAccel = if (relativeVelocity.x > 0) tipAccelBackward else tipAccelForward
+    val t = abs(relativeVelocity.x/maxAccel)
+    return pose.vector() +
+        Vector.fromPolar(pose.heading, maxAccel * t.pow(2)/2 + relativeVelocity.x * t) +
+        Vector.fromPolar(pose.heading + PI/2, maxAccel * t.pow(2)/2 + relativeVelocity.y * t)
 }
 fun getTeleopTranslational(
     gamepad: Gamepad,

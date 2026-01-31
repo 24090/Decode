@@ -78,6 +78,10 @@ class Vector {
         return "[$x, $y]"
     }
 
+    fun movedTowards(other: Vector, step: Double): Vector {
+        return this + (other - this).clampedLength(step)
+    }
+
     fun mirrored() = fromCartesian(this.x, -this.y)
 
     fun mirroredIf(v: Boolean) = if (v) this.mirrored() else this

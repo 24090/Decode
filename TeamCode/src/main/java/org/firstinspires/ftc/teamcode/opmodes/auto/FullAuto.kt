@@ -131,12 +131,12 @@ open class FullAuto(val isRed: Boolean): LinearOpMode() {
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 closeShootCycle(),
 
-                shooter.stop(),
-                grabBallCycle(0, isRed, intake, drive),
-                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                closeShootCycle(),
+//                shooter.stop(),
+//                grabBallCycle(0, isRed, intake, drive),
+//                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+//                closeShootCycle(),
 
-                 shooter.stop(),
+                shooter.stop(),
                 grabBallCycle(2, isRed, intake, drive),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 leaveShootCycle(),
