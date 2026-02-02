@@ -21,6 +21,8 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.getHeadingLockTeleop
 import org.firstinspires.ftc.teamcode.subsystems.drive.getStopPosition
@@ -37,6 +39,7 @@ import org.firstinspires.ftc.teamcode.util.Reference
 import org.firstinspires.ftc.teamcode.util.predictedShootPosition
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
+import kotlin.math.PI
 
 @TeleOp(name="NewControlled")
 class NewControlled: LinearOpMode() {
@@ -110,10 +113,10 @@ class NewControlled: LinearOpMode() {
         drive.follow = normalFollow
 
         val relocalize = {
-//            val cameraPose = camera.getPose()
-//            if (cameraPose != null){
-//                drive.localizer.pose = drive.localizer.pose * 6.0/7.0 + cameraPose * 1.0/7.0
-//            }
+            val cameraPose = camera.getPose()
+            if (cameraPose != null){
+                drive.localizer.pose = drive.localizer.pose * 6.0/7.0 + cameraPose * 1.0/7.0
+            }
         }
 
         val updateP2 = {
@@ -131,6 +134,32 @@ class NewControlled: LinearOpMode() {
             telemetry.addData("rampCount (x and y)", indexTracker.rampCount)
             telemetry.addData("pattern", indexTracker.pattern)
             telemetry.addLine("--------------------------")
+        }
+
+        val parkButton = {
+            pose: Pose, wasPressed: () -> Boolean, isPressed: () -> Boolean -> {
+                if (wasPressed()){
+                    shooter.targetVelocityLeft = 0.0
+                    shooter.targetVelocityRight = 0.0
+                    runBlocking(Race(
+                        WaitUntil { !isPressed() },
+                        Forever {
+                            reads.update()
+                            updateP2()
+                        },
+                        Sequence(
+                            drive.goToCircle(pose.mirroredIf(isRed.get())),
+                        ),
+                        Forever {
+                            intake.update()
+                            drive.update()
+                            shooter.update()
+                            telemetry.update()
+                        }
+                    ))
+                    drive.follow = normalFollow
+                }
+            }
         }
 
         drive.localizer.pose =
@@ -155,27 +184,23 @@ class NewControlled: LinearOpMode() {
             if (gamepad1.rightBumperWasReleased()){
                 intake.behaviour = Intake.IntakeBehaviour.Grab
             }
-            if (gamepad1.dpadUpWasPressed()){
-                shooter.targetVelocityLeft = 0.0
-                shooter.targetVelocityRight = 0.0
-                runBlocking(Race(
-                    WaitUntil { !gamepad1.right_bumper},
-                    Forever {
-                        reads.update()
-                        updateP2()
-                    },
-                    Sequence(
-                        drive.goToCircle(parkPose.mirroredIf(isRed.get())),
-                    ),
-                    Forever {
-                        intake.update()
-                        drive.update()
-                        shooter.update()
-                        telemetry.update()
-                    }
-                ))
-                drive.follow = normalFollow
-            }
+
+            parkButton(
+                Pose(36.0, -24.0 - robotLength/2.0, -PI/2),
+                gamepad1::dpadUpWasPressed, {gamepad1.dpad_up}
+            )
+            parkButton(
+                Pose(36.0, -48.0 + robotLength/2.0, PI/2),
+                gamepad1::dpadDownWasPressed, {gamepad1.dpad_down}
+            )
+            parkButton(
+                Pose(48.0 - robotLength/2.0, -60.0, 0.0),
+                if (!isRed.get()) gamepad1::dpadLeftWasPressed else gamepad1::dpadRightWasPressed, {if (!isRed.get()) gamepad1.dpad_left else gamepad1.dpad_right}
+            )
+            parkButton(
+                Pose(24.0 + robotLength/2.0, -60.0, PI),
+                if (!isRed.get()) gamepad1::dpadRightWasPressed else gamepad1::dpadLeftWasPressed, {if (!isRed.get()) gamepad1.dpad_right else gamepad1.dpad_left}
+            )
 
             if (inLaunchZone(drive.localizer.pose) && shootingMode) {
                 runBlocking(Race(
@@ -191,7 +216,7 @@ class NewControlled: LinearOpMode() {
                                 getScorePose(
                                     getStopPosition(
                                         drive.localizer.pose,
-                                        getRelativeVelocity(drive.localizer.pose, drive.localizer.poseVel).vector()
+                                        drive.localizer.poseVel
                                     ),
                                     isRed.get()
                                 )

@@ -88,7 +88,7 @@ class Camera(hwMap: HardwareMap) {
         return botPose.let { Pose(
             it.position.x * 39.37 + 72.0,
             it.position.y * 39.37,
-            it.orientation.yaw / 360.0 * 2*PI
+            it.orientation.yaw / 360.0 * 2*PI + PI
         ) }
     }
 

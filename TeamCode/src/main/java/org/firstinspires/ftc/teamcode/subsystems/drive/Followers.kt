@@ -24,6 +24,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
+import org.firstinspires.ftc.teamcode.subsystems.drive.tipCorrected
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import org.firstinspires.ftc.teamcode.util.Reference
 import kotlin.math.PI
@@ -34,12 +35,8 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sign
 
-fun getStopPosition(pose: Pose, relativeVelocity: Vector): Vector{
-    val maxAccel = if (relativeVelocity.x > 0) tipAccelBackward else tipAccelForward
-    val t = abs(relativeVelocity.x/maxAccel)
-    return pose.vector() +
-        Vector.fromPolar(pose.heading, maxAccel * t.pow(2)/2 + relativeVelocity.x * t) +
-        Vector.fromPolar(pose.heading + PI/2, maxAccel * t.pow(2)/2 + relativeVelocity.y * t)
+fun getStopPosition(pose: Pose, velocity: Pose): Vector{
+    return pose.vector() + velocity.vector().norm() * minStopDistance(pose.heading, velocity.vector().angle, velocity, tipAccelBackward, tipAccelForward)
 }
 fun getTeleopTranslational(
     gamepad: Gamepad,
@@ -57,7 +54,7 @@ fun getTeleopTranslational(
         val lockTranslational = isLockTranslational()
         if (lockTranslational) {
             if (!lastLockTranslational.get()) {
-                targetPose.set(getStopPosition(localizer.pose, -dError).let{
+                targetPose.set(getStopPosition(localizer.pose, localizer.poseVel).let{
                     Pose(it.x, it.y, targetPose.get().heading)
                 })
             }
@@ -144,6 +141,7 @@ fun minStopDistance(heading: Double, errorAngle: Double, velocity: Pose, minAcce
         .trimmed(controlHubVoltage / 14.0)
         .left.length
 
+    val uncorrectedAccel = (uncorrectedPower - kV * v - kS)/kA
 
     val minAccel = errorNorm.scalarInverseProjection(Vector.fromPolar(0.0, minAccelX))
     val minPower = minAccel * kA + vX * kV + kS * sign(v)
@@ -152,9 +150,9 @@ fun minStopDistance(heading: Double, errorAngle: Double, velocity: Pose, minAcce
     val maxPower = maxAccel * kA + vX * kV + kS * sign(v)
 
 
-    val constantAccel = if (minPower > uncorrectedPower) minAccel else if (maxPower < uncorrectedPower) maxAccel else uncorrectedPower
+    val constantAccel = if (minPower > uncorrectedPower) minAccel else if (maxPower < uncorrectedPower) maxAccel else uncorrectedAccel
     println("minAccel: $minAccelX")
-    println("maxAccel: $minAccelX")
+    println("maxAccel: $maxAccelX")
     println("constantAccel: $constantAccel")
     val t = max(
         (uncorrectedPower - (constantAccel * kA + v * kV + kS * sign(v)))/(constantAccel * kV),

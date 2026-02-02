@@ -38,7 +38,7 @@ fun predictedShootPosition(minimumTime: Double, currentPose: Pose, fieldVelocity
             if (fieldVelocity.x != 0.0) (closestIntersection - movementStart).x/fieldVelocity.x
             else if (fieldVelocity.y != 0.0) (closestIntersection - movementStart).y/fieldVelocity.y
             else 0.0
-        getStopPosition(intersectionPose, getRelativeVelocity(intersectionPose, fieldVelocity + acceleration * t).vector())
+        getStopPosition(intersectionPose, fieldVelocity + acceleration * t)
     } ?: movementEnd
 
 }
