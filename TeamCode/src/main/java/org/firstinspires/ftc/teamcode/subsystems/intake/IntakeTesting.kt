@@ -35,7 +35,7 @@ class IntakeTesting(): LinearOpMode(){
             p.put("max", 2000)
             p.put("min", 0)
 
-            p.put("spikes", intake.velHistory.spikeValue())
+            p.put("spikes", intake.spikeTester.spikeValue())
             dash.sendTelemetryPacket(p)
         }
 

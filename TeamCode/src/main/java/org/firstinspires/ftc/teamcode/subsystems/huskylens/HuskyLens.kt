@@ -72,7 +72,8 @@ class HuskyLensTesting: LinearOpMode() {
         val huskyLens = HuskyLens(hardwareMap)
         val lights = Lights(hardwareMap)
         lights.turnOn()
-        while (opModeInInit()){
+        waitForStart()
+        while (opModeIsActive()){
             huskyLens.read()
             telemetry.addData("PATTERN", huskyLens.getHeldPattern())
             telemetry.update()

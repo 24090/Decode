@@ -15,10 +15,9 @@ import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.SpikyTest
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.StallTest
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.util.clamp
-import kotlin.math.abs
 
 @Config
 class Intake(hwMap: HardwareMap) {
@@ -28,9 +27,9 @@ class Intake(hwMap: HardwareMap) {
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
-    val velHistory = SpikyTest(25, 35.0)
+    val spikeTester = StallTest(500, 200)
 
-    fun isStalling() = velHistory.spikeValue() > 400
+    fun isStalling() = spikeTester.spikeValue() > 20
     private var nextShootTime: Long? = null
 
     init {
@@ -72,7 +71,7 @@ class Intake(hwMap: HardwareMap) {
 
     fun update() {
         val behaviour = behaviour
-        velHistory.update(motorBack.velocity)
+        spikeTester.update(System.currentTimeMillis(), motorBack.velocity.toInt())
         when (behaviour) {
             IntakeBehaviour.Hold -> {
                 motor.power =

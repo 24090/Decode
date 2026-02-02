@@ -15,6 +15,10 @@ fun nCr(n: Int, r: Int) = n.factorial()/(r.factorial() * (n-r).factorial())
  */
 infix fun Int.choose(r: Int) = nCr(this, r)
 
+fun clamp(x: Int, min: Int, max: Int): Int {
+    assert(min <= max)
+    return min(max(x, min), max)
+}
 fun clamp(x: Double, min: Double, max: Double): Double {
     assert(min <= max)
     return min(max(x, min), max)
