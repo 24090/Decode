@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.Averager
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.StallTest
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.util.clamp
@@ -29,7 +30,9 @@ class Intake(hwMap: HardwareMap) {
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
     val spikeTester = StallTest(500, 100)
 
-    fun isStalling() = spikeTester.spikeValue() > 20
+    val averager: Averager = Averager(25)
+
+    fun isStalling() = (averager.get() < 1050)&&(averager.get() > 900)&&(Math.abs(averager.deriv())<27)
     private var nextShootTime: Long? = null
 
     init {
@@ -72,6 +75,7 @@ class Intake(hwMap: HardwareMap) {
     fun update() {
         val behaviour = behaviour
         spikeTester.update(System.currentTimeMillis(), motorBack.velocity.toInt())
+        averager.update(motorBack.velocity.toInt(), System.currentTimeMillis())
         when (behaviour) {
             IntakeBehaviour.Hold -> {
                 motor.power =

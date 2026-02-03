@@ -51,7 +51,7 @@ class kVTuner: LinearOpMode() {
         while (opModeIsActive()) {
             reads.update()
             println("test")
-            velAverager.update(drive.localizer.xVel)
+            velAverager.update(drive.localizer.xVel, System.currentTimeMillis())
             maxVel = max(maxVel, velAverager.get())
             recordTime("loop")
             telemetryPacket = TelemetryPacket()
