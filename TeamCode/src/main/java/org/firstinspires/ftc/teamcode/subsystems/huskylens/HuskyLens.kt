@@ -4,8 +4,6 @@ import com.qualcomm.hardware.dfrobot.HuskyLens
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
-import com.qualcomm.robotcore.hardware.Light
-import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.BallColor
 import org.firstinspires.ftc.teamcode.util.Pattern
 import java.util.Optional

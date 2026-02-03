@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.subsystems.drive
 import android.util.Log
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreAngle
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
@@ -24,11 +23,9 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
-import org.firstinspires.ftc.teamcode.subsystems.drive.tipCorrected
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import org.firstinspires.ftc.teamcode.util.Reference
 import kotlin.math.PI
-import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.ln
 import kotlin.math.max

@@ -5,7 +5,6 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.subsystems.drive.getStopPosition
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import kotlin.math.PI
 import kotlin.math.pow
 
