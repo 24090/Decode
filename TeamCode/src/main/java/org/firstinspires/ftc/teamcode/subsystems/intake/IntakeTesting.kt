@@ -37,6 +37,7 @@ class IntakeTesting(): LinearOpMode(){
             p.put("avg", intake.averager.get())
             p.put("deriv", intake.averager.deriv())
             p.put("spikes", intake.spikeTester.spikeValue())
+            p.put("derivAvg", intake.derivAverager.get())
             dash.sendTelemetryPacket(p)
         }
 
