@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.Teleop
-import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreAngle
 import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
@@ -80,7 +80,7 @@ class Controlled: Teleop({ opmode ->
         telemetry.addData("pattern", indexTracker.pattern)
         telemetry.addLine("--------------------------")
     }
-    drive.localizer.pose = storedPose ?: closeStartPose
+    drive.localizer.pose = storedPose ?: farStartPose
     while (opmode.opModeIsActive()){
         reads.update()
         updateP2()

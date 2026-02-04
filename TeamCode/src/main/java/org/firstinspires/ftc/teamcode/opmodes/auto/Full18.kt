@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto
 
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
+
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Instant
@@ -9,21 +13,19 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
-import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
-import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 
-@Autonomous(name="Red - Push - 12 Sorted", group="Push")
-class AutoPushPattern12Red: AutoPushPattern12(true)
+@Autonomous(name="Red - Close - 18 indiscriminate", group="Auto")
+class Full18Red: Full18(true)
 
-@Autonomous(name="Blue - Push - 12 Sorted", group="Push")
-class AutoPushPattern12Blue: AutoPushPattern12(false)
-open class AutoPushPattern12(val isRed: Boolean): Auto(
+@Autonomous(name="Blue - Close - 18 indiscriminate", group="Auto")
+class Full18Blue: Full18(false)
+open class Full18(isRed: Boolean): Auto(
     isRed,
-    farStartPose,
+    closeStartPose,
     {Race(
         Forever({
             recordTime("other")
@@ -34,40 +36,39 @@ open class AutoPushPattern12(val isRed: Boolean): Auto(
             telemetry.addData("currentPose", drive.localizer.pose)
         }, "Reads" ),
         Sequence(
-            Parallel(
-                Instant {
-                    drive.follow = {
-                        DriveVectors.fromTranslation(Vector.fromCartesian(0.0, 10.0).mirroredIf(isRed))
-                    }
-                },
-                WaitUntil {
-                    drive.localizer.pose.mirroredIf(red).y > 16.0
-                }
-            ),
-            Parallel(
+           Parallel(
                 intake.spinUp(),
-                Instant { shooter.setTargetVelocityFromDistance(farDistance) },
-                farShootCycle(),
+                Instant {
+                    shooter.setTargetVelocityFromDistance(closeDistance)
+                    camera.initPattern()
+                },
+                closeShootCycle(),
             ),
+
             shooter.stop(),
-            grabAndOpenCycle(),
+            grabBallCycle(1),
             Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-            closeShootCyclePattern(),
+            closeShootCycle(),
+
+            shooter.stop(),
+            fromRampCycle(),
+            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            closeShootCycle(),
+
+            shooter.stop(),
+            fromRampCycle(),
+            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            closeShootCycle(),
+
+            shooter.stop(),
+            fromRampCycle(),
+            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            closeShootCycle(),
 
             shooter.stop(),
             grabBallCycle(2),
             Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-            closeShootCyclePattern(),
-
-            shooter.stop(),
-            grabBallCycle(0),
-            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
             leaveShootCycle(),
-
-//                shooter.stop(),
-//                grabBallCycle(0, isRed, intake, drive),
-//                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-//                closeShootCycle(),
 
             name = "Auto"
         ),

@@ -6,9 +6,12 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
-import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 
@@ -19,7 +22,7 @@ class Pattern15Red: Pattern15(true)
 class Pattern15Blue: Pattern15(false)
 open class Pattern15(isRed: Boolean): Auto(
     isRed,
-    farStartPose,
+    closeStartPose,
     {
         Race(
             Forever({
@@ -31,11 +34,28 @@ open class Pattern15(isRed: Boolean): Auto(
                 telemetry.addData("currentPose", drive.localizer.pose)
             }, "Reads" ),
             Sequence(
-                Parallel(
-                    intake.spinUp(),
-                    Instant { shooter.setTargetVelocityFromDistance(closeDistance) },
-                    closeShootCycle(),
+                Race(
+                    Parallel(
+                        intake.spinUp(),
+                        Instant {
+                            shooter.setTargetVelocityFromDistance(closeDistance)
+                            camera.initPattern()
+                        },
+                        drive.goToCircle(closePose.let { Pose(it.x, it.y, 0.0) })
+                    ),
+                    WaitUntil {
+                        camera.getPattern().let {
+                            if (it != null){
+                                indexTracker.pattern = it
+                                true
+                            } else {
+                                false
+                            }
+                        }
+
+                    }
                 ),
+                closeShootCycle(),
                 shooter.stop(),
                 grabBallCycle(1),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
@@ -44,12 +64,12 @@ open class Pattern15(isRed: Boolean): Auto(
                 shooter.stop(),
                 fromRampCycle(),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                closeShootCycle(),
+                closeShootCyclePattern(),
 
                 shooter.stop(),
-                fromRampCycle(),
+                grabBallCycle(0),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                closeShootCycle(),
+                closeShootCyclePattern(),
 
 //                shooter.stop(),
 //                grabBallCycle(0, isRed, intake, drive),

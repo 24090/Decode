@@ -177,6 +177,40 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
             }
         )
     }
+    fun grabAndOpenCycle() = Sequence(
+        intake.spinUp(),
+        Instant {
+            drive.follow = {
+                val distanceX = abs((42.0 + 24.0) - drive.localizer.x)
+                val targetPose = Pose(
+                    66.0,
+                    80.0 - min(distanceX * 3, 60.0),
+                    PI/2
+                ).mirroredIf(red)
+                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
+            }
+        },
+        Race(
+            Sequence(
+                WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 }
+            ),
+            Sequence(
+                WaitUntil{ drive.localizer.poseVel.vector().length < 0.2 && drive.localizer.pose.mirroredIf(red).y > 48},
+            ),
+        ),
+        Instant {
+            drive.follow = {
+                val distanceY = abs(closePose.y - drive.localizer.y)
+                val targetPose = Pose(
+                    closePose.x - clamp(distanceY, 0.0, 16.0),
+                    closePose.y,
+                    closePose.heading * clamp(distanceY/20.0, 0.0, 1.0) + PI/2 * (1 - clamp(distanceY/20.0, 0.0, 1.0))
+                ).mirroredIf(red)
+                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
+            }
+        },
+        drive.goToSquare(Pose(38.0 + 24.0, 24.0, PI/2).mirroredIf(red), yTolerance = 3.0, xTolerance = 3.0)
+    )
     fun grabBallCycle (n: Int) = Sequence(
         intake.spinUp(),
         Instant {
@@ -234,7 +268,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         ),
         Race(
             intake.waitForStall(),
-            Sleep(2.0)
+            Sleep(2.5)
         )
     )
 
@@ -279,6 +313,13 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         name = "FarShootCycle"
     )
 
+    fun leaveShootCyclePattern() = Sequence(
+        Instant{lights.turnOn()},
+        drive.goToCircle(getScorePose(Vector.fromCartesian(106.0, 12.0)).mirroredIf(storedRed.get()), 2.0),
+        shootPattern(),
+        Instant{lights.turnOff()},
+        name = "CloseShootCycle"
+    )
 
     fun leaveShootCycle() = Sequence(
         //Instant{lights.turnOn()},

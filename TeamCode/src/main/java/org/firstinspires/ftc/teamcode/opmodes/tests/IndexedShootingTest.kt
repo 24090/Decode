@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.opmodes.commands.shootPattern
+import org.firstinspires.ftc.teamcode.opmodes.commands.Robot
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
@@ -18,9 +18,7 @@ import kotlin.math.sqrt
 @TeleOp()
 class IndexedShootingTest: LinearOpMode(){
     override fun runOpMode() {
-        val reads = Reads(hardwareMap)
-        val shooter = Shooter(hardwareMap)
-        val intake = Intake(hardwareMap)
+        val robot = Robot(hardwareMap, telemetry)
 
         var time = System.currentTimeMillis()
         val recordTime = { name:String ->
@@ -33,20 +31,20 @@ class IndexedShootingTest: LinearOpMode(){
         indexTracker.rampCount = 0
         indexTracker.pattern = Pattern.PPG
         waitForStart()
-        shooter.setTargetVelocityFromDistance(48.0 * sqrt(2.0))
+        robot.shooter.setTargetVelocityFromDistance(48.0 * sqrt(2.0))
         huskyLens.read()
         runBlocking(
             Race(
                 Forever {
-                    reads.update()
+                    robot.reads.update()
                     recordTime("reads")
                 },
                 Sequence(
-                    shootPattern(intake, shooter, huskyLens, indexTracker)
+                    robot.shootPattern()
                 ),
                 Forever({
-                    shooter.update(); recordTime("shooter")
-                    intake.update(); recordTime("intake")
+                    robot.shooter.update(); recordTime("shooter")
+                    robot.intake.update(); recordTime("intake")
                     telemetry.update()
                 }, "Writes")
             )

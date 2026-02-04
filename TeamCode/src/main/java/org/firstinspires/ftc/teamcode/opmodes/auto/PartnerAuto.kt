@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
-import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 
 @Autonomous(name="PartnerAutoRed", group="Auto")
 class PartnerAutoRed: PartnerAuto(true)
@@ -16,7 +16,7 @@ class PartnerAutoRed: PartnerAuto(true)
 @Autonomous(name="PartnerAutoBlue", group="Auto")
 class PartnerAutoBlue: PartnerAuto(false)
 
-open class PartnerAuto(val isRed: Boolean): Auto(isRed, farStartPose, {Race(
+open class PartnerAuto(val isRed: Boolean): Auto(isRed, closeStartPose, {Race(
     Forever({
         recordTime("other")
         reads.update();

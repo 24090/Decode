@@ -9,7 +9,7 @@ class StallTest(val storeTime: Int, val lookTime: Int) {
     private var pastStates = LinkedList<Pair<Int, Int>>()
 
     fun update(newTime: Long, newValue: Int){
-        while (!pastStates.isEmpty() && (newTime - pastStates[0].first) >= storeTime){
+        while (!pastStates.isEmpty() && ((newTime - pastStates[0].first) >= storeTime)){
             pastStates.removeAt(0)
         }
         pastStates.add(Pair(newTime.toInt(), newValue))

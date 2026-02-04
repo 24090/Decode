@@ -25,8 +25,8 @@ val closePose = getScorePose(Vector.fromCartesian(79.5, 12.0))
 val closeDistance = getScoreDistance(Vector.fromPose(closePose))
 
 val farDistance = getScoreDistance(Vector.fromPose(farPose))
-val closeStartPose = Pose(robotLength/2.0, robotWidth/2.0, 0.0)
-val farStartPose = Pose(122.45460330031989, 47.57810577632874, Math.PI/4.0)
+val farStartPose = Pose(robotLength/2.0, robotWidth/2.0, 0.0)
+val closeStartPose = Pose(122.45460330031989, 47.57810577632874, Math.PI/4.0)
 val parkPose = Pose(24.0+(robotLength/2.0), -24.0-(robotWidth/2.0), 0.0)
 
 fun inLaunchZone(pose: Pose, threshold: Double = 0.0) =

@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.Teleop
-import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreAngle
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
@@ -93,7 +93,7 @@ class NewControlled: Teleop( { opmode ->
     val relocalize = {
         val cameraPose = camera.getPose()
         if (cameraPose != null){
-            drive.localizer.pose = drive.localizer.pose * 6.0/7.0 + cameraPose * 1.0/7.0
+//            drive.localizer.pose = drive.localizer.pose * 6.0/7.0 + cameraPose * 1.0/7.0
         }
     }
 
@@ -142,9 +142,9 @@ class NewControlled: Teleop( { opmode ->
 
     drive.localizer.pose =
         if (useStoredPose)
-            storedPose ?: closeStartPose.mirroredIf(isRed.get())
+            storedPose ?: farStartPose.mirroredIf(isRed.get())
         else
-            closeStartPose.mirroredIf(isRed.get())
+            farStartPose.mirroredIf(isRed.get())
 
     while (opmode.opModeIsActive()){
         reads.update()
@@ -180,9 +180,9 @@ class NewControlled: Teleop( { opmode ->
             if (!isRed.get()) opmode.gamepad1::dpadRightWasPressed else opmode.gamepad1::dpadLeftWasPressed, {if (!isRed.get()) opmode.gamepad1.dpad_right else opmode.gamepad1.dpad_left}
         )
 
-        if (inLaunchZone(drive.localizer.pose) && shootingMode) {
+        if (inLaunchZone(drive.localizer.pose, threshold = 1.5) && shootingMode) {
             runBlocking(Race(
-                WaitUntil { opmode.gamepad1.leftBumperWasPressed() || !inLaunchZone(drive.localizer.pose, -2.0) },
+                WaitUntil { opmode.gamepad1.leftBumperWasPressed() || !inLaunchZone(drive.localizer.pose, -1.5) },
                 Forever {
                     val packet = TelemetryPacket()
                     reads.update()
