@@ -30,11 +30,9 @@ class Intake(hwMap: HardwareMap) {
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
     val spikeTester = StallTest(500, 100)
 
-    val averager: Averager = Averager(35)
+    val averager: Averager = Averager(40)
 
-    val derivAverager: Averager= Averager(25)
-
-    fun isStalling() = (averager.get() < 1050)&&(averager.get() > 900)&&(Math.abs(derivAverager.get())<3)
+    fun isStalling() = (averager.get() < 1050)&&(averager.get() > 900)&&(Math.abs(averager.deriv())<20)&&!(averager.rememberStall())
     private var nextShootTime: Long? = null
 
     init {
@@ -78,7 +76,6 @@ class Intake(hwMap: HardwareMap) {
         val behaviour = behaviour
         spikeTester.update(System.currentTimeMillis(), motorBack.velocity.toInt())
         averager.update(motorBack.velocity.toInt(), System.currentTimeMillis())
-        derivAverager.update(averager.deriv(), System.currentTimeMillis())
         when (behaviour) {
             IntakeBehaviour.Hold -> {
                 motor.power =

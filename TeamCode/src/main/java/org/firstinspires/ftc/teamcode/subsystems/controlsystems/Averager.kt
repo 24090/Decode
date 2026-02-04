@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.controlsystems
 
 import java.util.LinkedList
+import kotlin.math.min
 
 class Averager(val storeCount: Int) {
     private var pastStates = LinkedList<Double>()
@@ -14,24 +15,11 @@ class Averager(val storeCount: Int) {
         pastStates.add(newState.toDouble())
         thisTime = time
     }
-    fun get() = if (pastStates.isEmpty()) 0.0 else pastStates.sum()/ pastStates.size
+    fun get() = if (pastStates.isEmpty()) 0.0 else pastStates.takeLast(min(35, pastStates.size)).sum()/min(35, pastStates.size)
     fun deriv() = if(pastStates.size<20) 0.0 else (pastStates[pastStates.size-1]-pastStates[pastStates.size-20])/(thisTime-lastTime)
 
     fun derivSpike() = this.deriv() > 17
 
-    fun isStalling(): Boolean {
-        if (this.derivSpike()){
-            val current = System.currentTimeMillis()
-            while (System.currentTimeMillis()-current > 50){
-            }
-            if ((this.get() < 1050)&&(this.get() > 900)&&(Math.abs(this.deriv())<15)){
-                return true
-            } else {
-                return false
-            }
-        } else {
-            return (this.get() < 1050)&&(this.get() > 900)&&(Math.abs(this.deriv())<15)
-        }
-    }
+    fun rememberStall() = pastStates.map { (it < 700) }.reduceOrNull { a, b -> a || b } ?: false
 
 }
