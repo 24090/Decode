@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems.controlsystems
 
-import java.lang.Double.sum
 import java.util.LinkedList
 
 class Averager(val storeCount: Int) {

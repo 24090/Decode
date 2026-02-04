@@ -1,11 +1,5 @@
 package org.firstinspires.ftc.teamcode.util
 
-import android.graphics.Path
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import kotlin.reflect.KClass
-
 // 1: initialize
 // 2: runopmode
 

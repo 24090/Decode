@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kV
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getTranslationalVectors
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
-import org.firstinspires.ftc.teamcode.subsystems.drive.processTurnDriveStrafe
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 
 @TeleOp(group = "Drive")

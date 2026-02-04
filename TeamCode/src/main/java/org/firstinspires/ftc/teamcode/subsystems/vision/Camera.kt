@@ -4,14 +4,15 @@ import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.teamcode.commands.*
+import org.firstinspires.ftc.teamcode.commands.Command
+import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Race
+import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.drive.Localizer
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
-
 import org.firstinspires.ftc.teamcode.util.Observation
 import org.firstinspires.ftc.teamcode.util.Pattern
 import kotlin.math.PI

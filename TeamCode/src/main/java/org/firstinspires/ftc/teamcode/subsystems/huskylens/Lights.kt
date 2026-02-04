@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.subsystems.huskylens
 
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PwmControl
-import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoImplEx
 
 class Lights(hwMap: HardwareMap) {

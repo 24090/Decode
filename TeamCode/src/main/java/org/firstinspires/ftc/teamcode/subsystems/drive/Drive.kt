@@ -12,14 +12,12 @@ import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.lateralFactor
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getWheelVector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.Reference
 import kotlin.math.absoluteValue
-import kotlin.math.max
 import kotlin.math.sign
 
 @Config

@@ -5,8 +5,8 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.util.toDouble

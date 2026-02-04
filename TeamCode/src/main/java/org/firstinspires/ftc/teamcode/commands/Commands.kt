@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands
 
 import com.rathippo.commandviewer.CommandMessage
-import com.rathippo.commandviewer.CommandViewer
 import com.rathippo.commandviewer.CommandViewer.registerFunction
 
 var currentCommandID = 0
