@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.commands.Command
+import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Future
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
@@ -29,6 +30,7 @@ import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
+import org.firstinspires.ftc.teamcode.util.Observation
 import org.firstinspires.ftc.teamcode.util.Pattern
 import org.firstinspires.ftc.teamcode.util.Reference
 import org.firstinspires.ftc.teamcode.util.clamp
@@ -106,8 +108,9 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         }
         val held = huskyLens.getHeldPattern()
         val pattern = indexTracker.getRecommendations()
-        val indexWait = 1.0
-        return@Future org.firstinspires.ftc.teamcode.commands.Sequence(
+        val startCount = shooter.shootCounterLeft.count + shooter.shootCounterRight.count
+        val indexWait = 0.75
+        val command = Sequence(
             Parallel(
                 intake.setAdjustThird(),
                 shooter.waitForVelocity(),
@@ -174,8 +177,12 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
                 else -> {
                     throw UnsupportedOperationException("Unreachable")
                 }
+            },
+            Instant {
+                indexTracker.processObservation(Observation.Shot(shooter.shootCounterLeft.count + shooter.shootCounterRight.count - startCount))
             }
         )
+        return@Future command
     }
     fun grabAndOpenCycle() = Sequence(
         intake.spinUp(),
@@ -199,6 +206,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
             ),
         ),
         Instant {
+            indexTracker.processObservation(Observation.GateOpened)
             drive.follow = {
                 val distanceY = abs(closePose.y - drive.localizer.y)
                 val targetPose = Pose(
@@ -218,7 +226,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
                 val distanceX = abs((36.0 + 24.0 * n) - drive.localizer.x)
                 val targetPose = Pose(
                     (if (n == 1) 34.0 else 36.0) + 24.0 * n,
-                    (if (n == 2) 75.0 else 80.0) - min(distanceX * 3, 60.0),
+                    72.0 - min(distanceX * 3, 60.0),
                     PI/2
                 ).mirroredIf(red)
                 pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
@@ -255,21 +263,32 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
     fun fromRampCycle() = Sequence(
         Race(
             Sequence(
-                Sleep(0.3),
+                Parallel(
+                    Sleep(0.3),
+                ),
                 WaitUntil{drive.localizer.poseVel.vector().length < 0.5},
             ),
             drive.goToCircle(
                 Pose(
                     59.4,
-                    56.12 + 1.5,
+                    56.12 + 2.5,
                     1.06
                 ).mirroredIf(red),
             ),
         ),
         Race(
             intake.waitForStall(),
-            Sleep(2.5)
-        )
+            Sequence(
+                Sleep(0.75),
+                Instant {intake.behaviour = Intake.IntakeBehaviour.SlowIntake},
+                Sleep(0.5)
+            )
+
+        ),
+        Instant {
+            indexTracker.processObservation(Observation.GateOpened)
+            intake.behaviour = Intake.IntakeBehaviour.Grab
+        }
     )
 
     fun loadZoneCycle() = Race(
@@ -349,7 +368,7 @@ open class Auto(val red: Boolean, val startPose: Pose, val command: Robot.() -> 
 
         robot.drive.localizer.pose = startPose.mirroredIf(storedRed.get())
         robot.drive.startP2PWithTargetPose(closePose.mirroredIf(storedRed.get()))
-
+        robot.camera.sendHeading(startPose.heading)
         runBlocking(command)
     }
 

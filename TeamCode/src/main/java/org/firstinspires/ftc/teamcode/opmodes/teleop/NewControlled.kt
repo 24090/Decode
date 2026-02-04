@@ -93,7 +93,7 @@ class NewControlled: Teleop( { opmode ->
     val relocalize = {
         val cameraPose = camera.getPose()
         if (cameraPose != null){
-//            drive.localizer.pose = drive.localizer.pose * 6.0/7.0 + cameraPose * 1.0/7.0
+           // drive.localizer.pose = Pose(drive.localizer.x * 6.0/7.0 + cameraPose.x * 1.0/7.0, drive.localizer.y * 6.0/7.0 + cameraPose.y * 1.0/7.0, drive.localizer.heading)
         }
     }
 
@@ -114,29 +114,27 @@ class NewControlled: Teleop( { opmode ->
         telemetry.addLine("--------------------------")
     }
 
-    val parkButton = {
-        pose: Pose, wasPressed: () -> Boolean, isPressed: () -> Boolean -> {
-            if (wasPressed()){
-                shooter.targetVelocityLeft = 0.0
-                shooter.targetVelocityRight = 0.0
-                runBlocking(Race(
-                    WaitUntil { !isPressed() },
-                    Forever {
-                        reads.update()
-                        updateP2()
-                    },
-                    Sequence(
-                        drive.goToCircle(pose.mirroredIf(isRed.get())),
-                    ),
-                    Forever {
-                        intake.update()
-                        drive.update()
-                        shooter.update()
-                        telemetry.update()
-                    }
-                ))
-                drive.follow = normalFollow
-            }
+    val parkButton = { pose: Pose, wasPressed: () -> Boolean, isPressed: () -> Boolean ->
+        if (wasPressed()){
+            shooter.targetVelocityLeft = 0.0
+            shooter.targetVelocityRight = 0.0
+            runBlocking(Race(
+                WaitUntil { !isPressed() },
+                Forever {
+                    reads.update()
+                    updateP2()
+                },
+                Sequence(
+                    drive.goToCircle(pose.mirroredIf(isRed.get())),
+                ),
+                Forever {
+                    intake.update()
+                    drive.update()
+                    shooter.update()
+                    telemetry.update()
+                }
+            ))
+            drive.follow = normalFollow
         }
     }
 

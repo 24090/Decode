@@ -57,7 +57,7 @@ open class Pattern15(isRed: Boolean): Auto(
                 ),
                 closeShootCycle(),
                 shooter.stop(),
-                grabBallCycle(1),
+                grabAndOpenCycle(),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 closeShootCycle(),
 
@@ -79,7 +79,7 @@ open class Pattern15(isRed: Boolean): Auto(
                 shooter.stop(),
                 grabBallCycle(2),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                leaveShootCycle(),
+                leaveShootCyclePattern(),
 
                 name = "Auto"
             ),

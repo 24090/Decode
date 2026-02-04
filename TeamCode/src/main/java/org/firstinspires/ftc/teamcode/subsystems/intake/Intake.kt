@@ -15,7 +15,6 @@ import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.Averager
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.StallTest
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.util.clamp
@@ -30,9 +29,9 @@ class Intake(hwMap: HardwareMap) {
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
     val spikeTester = StallTest(500, 100)
 
-    val averager: Averager = Averager(40)
+    val stallTest: StallTest = StallTest(30)
 
-    fun isStalling() = (averager.get() < 1050)&&(averager.get() > 900)&&(Math.abs(averager.deriv())<20)&&!(averager.rememberStall())
+    fun isStalling() = (stallTest.get() < 1050)&&(stallTest.get() > 900)&&(Math.abs(stallTest.deriv())<20)&&!(stallTest.rememberStall())
     private var nextShootTime: Long? = null
 
     init {
@@ -43,6 +42,7 @@ class Intake(hwMap: HardwareMap) {
         pusherRight.position = pusherRightBack
     }
     sealed class IntakeBehaviour() {
+        object SlowIntake: IntakeBehaviour()
         object Greedy: IntakeBehaviour()
         object Grab: IntakeBehaviour()
         object Hold: IntakeBehaviour()
@@ -60,10 +60,10 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var kP = 0.0003
         @JvmField var powerMax = 0.67
         @JvmField var pusherLeftForward = 0.0
-        @JvmField var pusherLeftBack = 1.0
+        @JvmField var pusherLeftBack = 0.97
 
         @JvmField var pusherRightForward = 0.6
-        @JvmField var pusherRightBack = 0.00
+        @JvmField var pusherRightBack = 0.03
         @JvmField var pusherWait = 0.05
 
         @JvmField var kP_pos = 0.02
@@ -75,7 +75,7 @@ class Intake(hwMap: HardwareMap) {
     fun update() {
         val behaviour = behaviour
         spikeTester.update(System.currentTimeMillis(), motorBack.velocity.toInt())
-        averager.update(motorBack.velocity.toInt(), System.currentTimeMillis())
+        stallTest.update(motorBack.velocity.toInt(), System.currentTimeMillis())
         when (behaviour) {
             IntakeBehaviour.Hold -> {
                 motor.power =
@@ -87,7 +87,7 @@ class Intake(hwMap: HardwareMap) {
                 if (!isStalling()) {
                     motor.power = clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
                 } else {
-                    motor.power = clamp(0 * frontF + (0 - motor.velocity) * kP, -powerMax, 1.0)
+                    motor.power = clamp(-runVelocityBack * frontF + (-runVelocityBack - motor.velocity) * kP, -powerMax, 1.0)
                 }
 
             }
@@ -109,6 +109,23 @@ class Intake(hwMap: HardwareMap) {
             }
             is IntakeBehaviour.Wheelie -> {
                 motor.power = -(behaviour.fl.power + behaviour.fr.power)/10.0
+            }
+
+            IntakeBehaviour.SlowIntake -> {
+                motorBack.power = clamp(
+                    runVelocityBack * backF + (runVelocityBack - motorBack.velocity) * kP,
+                    -1.0,
+                    powerMax
+                )
+                if (!isStalling()) {
+                    motor.power = clamp(
+                        runVelocity * 0.67 * frontF + (runVelocity * 0.67 - motor.velocity) * kP,
+                        -1.0,
+                        powerMax
+                    )
+                } else {
+                    motor.power = clamp(0 * frontF + (0 - motor.velocity) * kP, -powerMax, 1.0)
+                }
             }
         }
     }

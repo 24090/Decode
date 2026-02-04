@@ -5,7 +5,7 @@ import com.acmerobotics.dashboard.config.Config
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.Averager
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.StallTest
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kV
@@ -31,7 +31,7 @@ class kATuner: LinearOpMode() {
         }
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
-        val velAverager = Averager(100)
+        val velStallTest = StallTest(100)
         var power = kS
         reads.update()
         telemetryPacket.put("avgAccel", 0.0)
@@ -53,8 +53,8 @@ class kATuner: LinearOpMode() {
             val avgAccel = if (System.currentTimeMillis() > startTime + 100) drive.localizer.xVel/(System.currentTimeMillis() - startTime - 100)*1000 else 0.001
             recordTime("loop")
             telemetryPacket = TelemetryPacket()
-            telemetryPacket.put("avgAccel", velAverager.get())
-            telemetry.addData("avgAccel", velAverager.get())
+            telemetryPacket.put("avgAccel", velStallTest.get())
+            telemetry.addData("avgAccel", velStallTest.get())
             telemetryPacket.put("Estimated kA", accelpower/avgAccel)
             telemetry.addData("Estimated kA", accelpower/avgAccel)
             telemetry.update()

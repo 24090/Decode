@@ -21,7 +21,7 @@ enum class Pattern(val n: Int) {
 
 sealed class Observation {
     class Camera(val num: Int) : Observation()
-    object Shot : Observation()
+    class Shot(val n: Int) : Observation()
     object GateOpened : Observation()
 }
 
@@ -35,7 +35,7 @@ class IndexTracker(){
                 min(rampCount, observation.num)
             }
             is Observation.Shot -> {
-                rampCount + 1
+                rampCount + observation.n
             }
             is Observation.GateOpened -> {
                 0

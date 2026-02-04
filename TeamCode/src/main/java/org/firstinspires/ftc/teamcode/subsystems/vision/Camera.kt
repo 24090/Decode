@@ -15,6 +15,9 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.util.Observation
 import org.firstinspires.ftc.teamcode.util.Pattern
+import java.net.HttpURLConnection
+import java.net.URL
+import java.nio.charset.StandardCharsets
 import kotlin.math.PI
 
 
@@ -30,6 +33,7 @@ class Camera(hwMap: HardwareMap) {
 
     init {
         initPattern()
+        sendPostRequest("/update-imumode", "3")
     }
 
     fun initLocalize() {
@@ -74,12 +78,15 @@ class Camera(hwMap: HardwareMap) {
         return null
     }
 
+    fun sendHeading(heading: Double){
+        limelight.updateRobotOrientation(heading)
+    }
     fun getPose(): Pose? {
         val result = limelight.latestResult
         if (result == null || !result.isValid){
             return null
         }
-        val botPose = result.botpose
+        val botPose = result.botpose_MT2
         if (result.botpose == null){
             return null
         }
@@ -89,12 +96,15 @@ class Camera(hwMap: HardwareMap) {
         return botPose.let { Pose(
             it.position.x * 39.37 + 72.0,
             it.position.y * 39.37,
-            it.orientation.yaw / 360.0 * 2*PI + PI
+            it.orientation.yaw / 360.0 * 2*PI
         ) }
     }
 
     fun aprilTagRelocalize(localizer: Localizer,  timeout: Double = 1.0): Command = Sequence(
-        Instant{ initPattern() },
+        Instant{
+            initPattern()
+            sendHeading(localizer.heading)
+        },
         Race(
             Sleep(timeout),
             WaitUntil {
@@ -104,6 +114,48 @@ class Camera(hwMap: HardwareMap) {
             }
         )
     )
+
+    /**
+     * Sends a POST request to the specified endpoint.
+     *
+     * @param endpoint The endpoint to send the request to.
+     * @param data The data to send in the request body.
+     * @return true if successful, false otherwise.
+     */
+    private fun sendPostRequest(endpoint: String, data: String?): Boolean {
+        var connection: HttpURLConnection? = null
+        try {
+            val urlString: String = "limelight.local:5807" + endpoint
+            val url = URL(urlString)
+            connection = url.openConnection() as HttpURLConnection?
+            connection!!.setRequestMethod("POST")
+            connection.setDoOutput(true)
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setReadTimeout(15000)
+            connection.setConnectTimeout(100)
+
+            if (data != null) {
+                connection.getOutputStream().use { os ->
+                    val input = data.toByteArray(StandardCharsets.UTF_8)
+                    os.write(input, 0, input.size)
+                }
+            }
+
+            val responseCode = connection.getResponseCode()
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                return true
+            } else {
+                //System.out.println("HTTP POST Error: " + responseCode);
+            }
+        } catch (e: Exception) {
+            //e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.disconnect()
+            }
+        }
+        return false
+    }
 }
 
 @TeleOp(name = "VisionTesting")

@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.commands.Command
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.InterpolatedLUT
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.ShootCounter
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -20,6 +21,8 @@ class Shooter(hwMap: HardwareMap) {
         @JvmField var kP = 0.005
         @JvmField var velocityThreshold: Double = 30.0
     }
+    val shootCounterLeft = ShootCounter(100.0)
+    val shootCounterRight = ShootCounter(100.0)
     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
     var targetVelocityLeft = 0.0
@@ -36,23 +39,23 @@ class Shooter(hwMap: HardwareMap) {
 
     val distanceToVelocityLeftLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0), // 0 in
-        Pair(36*sqrt(2.0), 1355.0), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1330.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1390.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1520.0 + 10.0),  // 72 sqrt 2 in
+        Pair(36*sqrt(2.0), 1355.0 ), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1345.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1410.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1530.0),  // 72 sqrt 2 in
         Pair(84*sqrt(2.0), 1620.0),  // 84 sqrt 2 in
         Pair(96*sqrt(2.0), 1755.0),  // 96 sqrt 2 in
         Pair(108*sqrt(2.0), 1840.0),
     ))
     val distanceToVelocityRightLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 0.0), // 0 in
-        Pair(36*sqrt(2.0), 1355.0 - 30.0), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1330.0 - 30.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1390.0 - 30.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1520.0 - 30.0),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 1620.0 - 30.0),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 1774.0 - 30.0),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 1940.0 - 30.0),
+        Pair(36*sqrt(2.0), 1355.0), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1345.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1410.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1530.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 1620.0),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 1774.0),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 1940.0),
     ))
 
     val exitVelocityToLeftVelocityLUT = InterpolatedLUT(mapOf(
@@ -85,6 +88,8 @@ class Shooter(hwMap: HardwareMap) {
     }
 
     fun update() {
+        shootCounterLeft.update(motorLeft.velocity, targetVelocityLeft)
+        shootCounterLeft.update(motorRight.velocity, targetVelocityRight)
         motorLeft.power  = velocityToPowerLUT.get(targetVelocityLeft) + (targetVelocityLeft - motorLeft.velocity) * kP
         motorRight.power = velocityToPowerLUT.get(targetVelocityRight) + (targetVelocityRight - motorRight.velocity) * kP
     }

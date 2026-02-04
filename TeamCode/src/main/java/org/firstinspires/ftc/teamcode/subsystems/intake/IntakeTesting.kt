@@ -34,8 +34,8 @@ class IntakeTesting(): LinearOpMode(){
             p.put("front feedforward", Intake.frontF * runVelocity)
             p.put("max", 2000)
             p.put("min", 0)
-            p.put("avg", intake.averager.get())
-            p.put("deriv", intake.averager.deriv())
+            p.put("avg", intake.stallTest.get())
+            p.put("deriv", intake.stallTest.deriv())
             p.put("spikes", intake.spikeTester.spikeValue())
             dash.sendTelemetryPacket(p)
         }

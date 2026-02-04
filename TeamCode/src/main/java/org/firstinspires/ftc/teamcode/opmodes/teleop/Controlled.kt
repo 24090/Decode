@@ -56,11 +56,11 @@ class Controlled: Teleop({ opmode ->
     }
 
     val updateLocalizer = {
-//            val cameraPose = camera.getPose()
-//            if (cameraPose != null){
-//                val diff = Vector.fromPose(cameraPose - drive.localizer.pose).clampedLength(0.5)
-//                drive.localizer.pose += Pose(diff.x, diff.y, 0.0)
-//            }
+            val cameraPose = camera.getPose()
+            if (cameraPose != null){
+                val diff = Vector.fromPose(cameraPose - drive.localizer.pose).clampedLength(0.5)
+                drive.localizer.pose += Pose(diff.x, diff.y, 0.0)
+            }
 
     }
 

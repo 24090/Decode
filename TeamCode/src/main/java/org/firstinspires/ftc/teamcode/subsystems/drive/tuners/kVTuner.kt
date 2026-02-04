@@ -5,7 +5,7 @@ import com.acmerobotics.dashboard.config.Config
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.Averager
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.StallTest
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getTranslationalVectors
@@ -31,7 +31,7 @@ class kVTuner: LinearOpMode() {
         }
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
-        val velAverager = Averager(100)
+        val velStallTest = StallTest(100)
         reads.update()
         telemetryPacket.put("velAvg", 0.0)
         telemetryPacket.put("vel", 0.0)
@@ -51,11 +51,11 @@ class kVTuner: LinearOpMode() {
         while (opModeIsActive()) {
             reads.update()
             println("test")
-            velAverager.update(drive.localizer.xVel, System.currentTimeMillis())
-            maxVel = max(maxVel, velAverager.get())
+            velStallTest.update(drive.localizer.xVel, System.currentTimeMillis())
+            maxVel = max(maxVel, velStallTest.get())
             recordTime("loop")
             telemetryPacket = TelemetryPacket()
-            telemetryPacket.put("velAvg", velAverager.get())
+            telemetryPacket.put("velAvg", velStallTest.get())
             telemetryPacket.put("vel", drive.localizer.xVel)
             telemetryPacket.put("maxVel", maxVel)
             telemetryPacket.put("Estimated kV", velPower / maxVel)
