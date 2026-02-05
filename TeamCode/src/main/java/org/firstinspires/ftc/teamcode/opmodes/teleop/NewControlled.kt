@@ -40,12 +40,14 @@ class NewControlled: Teleop( { opmode ->
     val lastLockTranslational = Reference(false)
     val targetPose = Reference(Pose(0.0, 0.0, 0.0))
     var shootingMode = false
+    var patternMode = false
+
     drive.localizer.pinpoint.recalibrateIMU()
 
     var time = System.currentTimeMillis()
     val recordTime = { name:String ->
         val newTime = System.currentTimeMillis()
-        telemetry.addData("$name (ms)", newTime - time)
+        telemetry.addData("$name (ms)",  newTime - time)
         time = newTime
     }
 
@@ -98,6 +100,9 @@ class NewControlled: Teleop( { opmode ->
     }
 
     val updateP2 = {
+        if (opmode.gamepad2.aWasPressed()){
+            patternMode = !patternMode
+        }
         if (opmode.gamepad2.guideWasPressed()) {
             isRed.set(!isRed.get())
         }
@@ -108,8 +113,9 @@ class NewControlled: Teleop( { opmode ->
             indexTracker.rampCount = ((indexTracker.rampCount - 1)%9 + 9)%9
         }
         telemetry.addLine("--------- FOR P2 ---------")
-        telemetry.addData("isRed? (center button/guide)", isRed)
+        telemetry.addData("red? (center button/guide)", isRed.get())
         telemetry.addData("rampCount (x and y)", indexTracker.rampCount)
+        telemetry.addData("patternMode (a)", patternMode)
         telemetry.addData("pattern", indexTracker.pattern)
         telemetry.addLine("--------------------------")
     }
@@ -162,23 +168,23 @@ class NewControlled: Teleop( { opmode ->
         }
 
         parkButton(
-            Pose(36.0, -24.0 - robotLength/2.0, -PI/2),
-            opmode.gamepad1::dpadUpWasPressed, {opmode.gamepad1.dpad_up}
-        )
-        parkButton(
-            Pose(36.0, -48.0 + robotLength/2.0, PI/2),
+            Pose(36.0, -24.0 - robotLength/2.0 - 2.0, -PI/2),
             opmode.gamepad1::dpadDownWasPressed, {opmode.gamepad1.dpad_down}
         )
         parkButton(
-            Pose(48.0 - robotLength/2.0, -60.0, 0.0),
+            Pose(36.0, -48.0 + robotLength/2.0 + 2.0, PI/2),
+            opmode.gamepad1::dpadUpWasPressed, {opmode.gamepad1.dpad_up}
+        )
+        parkButton(
+            Pose(48.0 - robotLength/2.0 - 2.0, -36.0, 0.0),
             if (!isRed.get()) opmode.gamepad1::dpadLeftWasPressed else opmode.gamepad1::dpadRightWasPressed, {if (!isRed.get()) opmode.gamepad1.dpad_left else opmode.gamepad1.dpad_right}
         )
         parkButton(
-            Pose(24.0 + robotLength/2.0, -60.0, PI),
+            Pose(24.0 + robotLength/2.0 + 2.0, -36.0, PI),
             if (!isRed.get()) opmode.gamepad1::dpadRightWasPressed else opmode.gamepad1::dpadLeftWasPressed, {if (!isRed.get()) opmode.gamepad1.dpad_right else opmode.gamepad1.dpad_left}
         )
 
-        if (inLaunchZone(drive.localizer.pose, threshold = 1.5) && shootingMode) {
+        if (inLaunchZone(drive.localizer.pose, threshold = 1.5) && shootingMode && getScoreDistance(drive.localizer.pose.vector(), isRed.get()) > 44.0) {
             runBlocking(Race(
                 WaitUntil { opmode.gamepad1.leftBumperWasPressed() || !inLaunchZone(drive.localizer.pose, -1.5) },
                 Forever {
@@ -202,7 +208,13 @@ class NewControlled: Teleop( { opmode ->
                     },
                     Parallel(
                         Instant {relocalize()} ,
-                        shootAll(),
+                        Future {
+                            if (patternMode){
+                                shootPattern()
+                            } else {
+                                shootAll()
+                            }
+                        }
                     )
                 ),
                 Forever {

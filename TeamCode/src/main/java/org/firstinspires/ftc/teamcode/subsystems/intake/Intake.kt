@@ -27,8 +27,6 @@ class Intake(hwMap: HardwareMap) {
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
-    val spikeTester = StallTest(500, 100)
-
     val stallTest: StallTest = StallTest(30)
 
     fun isStalling() = (stallTest.get() < 1050)&&(stallTest.get() > 900)&&(Math.abs(stallTest.deriv())<20)&&!(stallTest.rememberStall())
@@ -74,7 +72,6 @@ class Intake(hwMap: HardwareMap) {
 
     fun update() {
         val behaviour = behaviour
-        spikeTester.update(System.currentTimeMillis(), motorBack.velocity.toInt())
         stallTest.update(motorBack.velocity.toInt(), System.currentTimeMillis())
         when (behaviour) {
             IntakeBehaviour.Hold -> {

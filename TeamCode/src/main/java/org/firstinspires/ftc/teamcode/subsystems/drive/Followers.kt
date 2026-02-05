@@ -90,8 +90,8 @@ fun getTeleopFollower(
 
     return {
         if (gamepad.backWasPressed()) {
-            localizer.pose = Pose(robotWidth/2.0 + 2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get())
-            targetPose.set(Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get()))
+            localizer.pose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0 + 2.5, -PI/2).mirroredIf(isRed.get())
+            targetPose.set(Pose(robotWidth/2.0, -72.0 + robotLength/2.0 + 2.5, -PI/2).mirroredIf(isRed.get()))
         }
         val dError = -getRelativeVelocity(localizer.pose, localizer.poseVel)
         processTurnTranslational(heading(dError), teleopTranslational(dError.vector()), localizer.pose, localizer.poseVel)
@@ -268,8 +268,8 @@ fun DriveVectors.tipCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV
 
 fun getHeadingLockTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: Localizer, teleopTranslational: (dError: Vector) -> Vector, isRed: Reference<Boolean>, targetPose: Reference<Pose>) = {
     if (gamepad.backWasPressed()) {
-        localizer.pose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get())
-        targetPose.set(Pose(robotWidth/2.0, -72.0 + robotLength/2.0, -PI/2).mirroredIf(isRed.get()))
+        localizer.pose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0 + 2.0, -PI/2).mirroredIf(isRed.get())
+        targetPose.set(Pose(robotWidth/2.0, -72.0 + robotLength/2.0 + 2.0, -PI/2).mirroredIf(isRed.get()))
     }
 
     val angle = getAngle() ?: localizer.poseVel.vector().let {if (it.length > 3.0) it.angle else localizer.heading}
