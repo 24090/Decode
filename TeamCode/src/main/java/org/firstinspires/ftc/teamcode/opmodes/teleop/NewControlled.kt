@@ -124,6 +124,7 @@ class NewControlled: Teleop( { opmode ->
         if (wasPressed()){
             shooter.targetVelocityLeft = 0.0
             shooter.targetVelocityRight = 0.0
+            targetPose.set(pose.mirroredIf(isRed.get()))
             runBlocking(Race(
                 WaitUntil { !isPressed() },
                 Forever {
@@ -168,23 +169,23 @@ class NewControlled: Teleop( { opmode ->
         }
 
         parkButton(
-            Pose(36.0, -24.0 - robotLength/2.0 - 2.0, -PI/2),
+            Pose(36.0, -42.0 + robotLength/2.0, -PI/2),
             opmode.gamepad1::dpadDownWasPressed, {opmode.gamepad1.dpad_down}
         )
         parkButton(
-            Pose(36.0, -48.0 + robotLength/2.0 + 2.0, PI/2),
+            Pose(36.0, -24.0 - robotLength/2.0, PI/2),
             opmode.gamepad1::dpadUpWasPressed, {opmode.gamepad1.dpad_up}
         )
         parkButton(
-            Pose(48.0 - robotLength/2.0 - 2.0, -36.0, 0.0),
+            Pose(42.0 - robotLength/2.0, -36.0, 0.0),
             if (!isRed.get()) opmode.gamepad1::dpadLeftWasPressed else opmode.gamepad1::dpadRightWasPressed, {if (!isRed.get()) opmode.gamepad1.dpad_left else opmode.gamepad1.dpad_right}
         )
         parkButton(
-            Pose(24.0 + robotLength/2.0 + 2.0, -36.0, PI),
+            Pose(24.0 + robotLength/2.0, -36.0, PI),
             if (!isRed.get()) opmode.gamepad1::dpadRightWasPressed else opmode.gamepad1::dpadLeftWasPressed, {if (!isRed.get()) opmode.gamepad1.dpad_right else opmode.gamepad1.dpad_left}
         )
 
-        if (inLaunchZone(drive.localizer.pose, threshold = 1.5) && shootingMode && getScoreDistance(drive.localizer.pose.vector(), isRed.get()) > 44.0) {
+        if (inLaunchZone(drive.localizer.pose, threshold = 1.5) && shootingMode && getScoreDistance(drive.localizer.pose.vector(), isRed.get()) > 50.0) {
             runBlocking(Race(
                 WaitUntil { opmode.gamepad1.leftBumperWasPressed() || !inLaunchZone(drive.localizer.pose, -1.5) },
                 Forever {

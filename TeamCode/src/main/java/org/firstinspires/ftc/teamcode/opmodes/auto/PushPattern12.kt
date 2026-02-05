@@ -50,7 +50,7 @@ open class AutoPushPattern12(val isRed: Boolean): Auto(
                 farShootCycle(),
             ),
             shooter.stop(),
-            grabAndOpenCycle(),
+            grabAndOpenCycleFar(),
             Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
             closeShootCyclePattern(),
 

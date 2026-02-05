@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.commands.Command
-import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Future
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
@@ -108,7 +107,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         }
         val held = huskyLens.getHeldPattern()
         val pattern = indexTracker.getRecommendations()
-        val startCount = shooter.shootCounterLeft.count + shooter.shootCounterRight.count
+        //val startCount = shooter.shootCounterLeft.count + shooter.shootCounterRight.count
         val indexWait = 0.75
         val command = Sequence(
             Parallel(
@@ -178,13 +177,52 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
                     throw UnsupportedOperationException("Unreachable")
                 }
             },
-            Instant {
-                indexTracker.processObservation(Observation.Shot(shooter.shootCounterLeft.count + shooter.shootCounterRight.count - startCount))
-            }
+//            Instant {
+//                indexTracker.processObservation(Observation.Shot(shooter.shootCounterLeft.count + shooter.shootCounterRight.count - startCount))
+//            }
         )
         return@Future command
     }
-    fun grabAndOpenCycle() = Sequence(
+    fun grabAndOpenCycleClose() = Sequence(
+        intake.spinUp(),
+        Instant {
+            drive.follow = {
+                val distanceX = abs((60.0) - drive.localizer.x)
+                val targetPose = Pose(
+                    58.0,
+                    72.0 - min(distanceX * 3, 60.0),
+                    PI/2
+                ).mirroredIf(red)
+                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
+            }
+        },
+        Race(
+            Sequence(
+                WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 }
+            ),
+            Sequence(
+                WaitUntil{ drive.localizer.poseVel.vector().length < 0.2 && drive.localizer.pose.mirroredIf(red).y > 48},
+            ),
+        ),
+        drive.goToSquare(Pose(62.0, 48.0, PI/2.0).mirroredIf(red)),
+        Race(
+            drive.goToSquare(Pose(64.0, 55.0, PI/2.0).mirroredIf(red)),
+            Sleep(0.75)
+        ),
+        Instant {
+            drive.follow = {
+                val distanceY = abs(closePose.y - drive.localizer.y)
+                val targetPose = Pose(
+                    closePose.x - clamp(distanceY, 0.0, 16.0),
+                    closePose.y,
+                    closePose.heading * clamp(distanceY/20.0, 0.0, 1.0) + PI/2 * (1 - clamp(distanceY/20.0, 0.0, 1.0))
+                ).mirroredIf(red)
+                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
+            }
+        },
+        WaitUntil { drive.localizer.pose.inCircle(closePose, 15.0, 0.5) },
+    )
+    fun grabAndOpenCycleFar() = Sequence(
         intake.spinUp(),
         Instant {
             drive.follow = {
