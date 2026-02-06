@@ -206,21 +206,22 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         ),
         drive.goToSquare(Pose(62.0, 48.0, PI/2.0).mirroredIf(red)),
         Race(
-            drive.goToSquare(Pose(64.0, 55.0, PI/2.0).mirroredIf(red)),
+            drive.goToSquare(Pose(65.0, 54.0, PI/2.0).mirroredIf(red)),
             Sleep(0.75)
         ),
         Instant {
             drive.follow = {
-                val distanceY = abs(closePose.y - drive.localizer.y)
+                val distanceY = abs(closePose.mirroredIf(red).y - drive.localizer.y)
+                val t = clamp(distanceY/20.0, 0.0, 1.0)
                 val targetPose = Pose(
                     closePose.x - clamp(distanceY, 0.0, 16.0),
                     closePose.y,
-                    closePose.heading * clamp(distanceY/20.0, 0.0, 1.0) + PI/2 * (1 - clamp(distanceY/20.0, 0.0, 1.0))
+                    closePose.heading * (1-t) + PI/2 * t
                 ).mirroredIf(red)
                 pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
             }
         },
-        WaitUntil { drive.localizer.pose.inCircle(closePose, 15.0, 0.5) },
+        WaitUntil { drive.localizer.pose.inCircle(closePose.mirroredIf(red), 15.0, 0.5) },
     )
     fun grabAndOpenCycleFar() = Sequence(
         intake.spinUp(),

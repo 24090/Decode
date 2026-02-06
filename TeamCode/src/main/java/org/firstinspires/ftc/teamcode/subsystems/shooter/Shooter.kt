@@ -89,7 +89,7 @@ class Shooter(hwMap: HardwareMap) {
 
     fun update() {
         shootCounterLeft.update(motorLeft.velocity, targetVelocityLeft)
-        shootCounterLeft.update(motorRight.velocity, targetVelocityRight)
+        shootCounterRight.update(motorRight.velocity, targetVelocityRight)
         motorLeft.power  = velocityToPowerLUT.get(targetVelocityLeft) + (targetVelocityLeft - motorLeft.velocity) * kP
         motorRight.power = velocityToPowerLUT.get(targetVelocityRight) + (targetVelocityRight - motorRight.velocity) * kP
     }

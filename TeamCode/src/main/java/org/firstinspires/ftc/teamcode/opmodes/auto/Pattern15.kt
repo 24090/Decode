@@ -41,7 +41,7 @@ open class Pattern15(isRed: Boolean): Auto(
                             shooter.setTargetVelocityFromDistance(closeDistance)
                             camera.initPattern()
                         },
-                        drive.goToCircle(closePose.let { Pose(it.x, it.y, 0.0) })
+                        drive.goToCircle(closePose.let { Pose(it.x, it.y, 0.0).mirroredIf(isRed) })
                     ),
                     WaitUntil {
                         camera.getPattern().let {
