@@ -4,7 +4,7 @@ class ShootCounter(val threshold: Double = 100.0) {
     private var last = 0.0
     var count = 0
     fun update(newState: Double, target: Double){
-        if ((newState < target - threshold) && !(last < target - threshold) && (newState - last) < threshold){
+        if ((newState < target - threshold) && !(last < (target - threshold)) && (newState - last) < -threshold/3.0){
             count += 1
         }
         last = newState

@@ -44,7 +44,7 @@ class Camera(hwMap: HardwareMap) {
     }
     fun initPattern() {
         limelight.pipelineSwitch(2)
-        limelight.setPollRateHz(5)
+        limelight.setPollRateHz(10)
         limelight.start()
         currentPipeline = Pipeline.Pattern
     }
@@ -162,7 +162,7 @@ class Camera(hwMap: HardwareMap) {
 class VisionTesting: LinearOpMode() {
     override fun runOpMode() {
         val camera = Camera(hardwareMap)
-        camera.initLocalize()
+        camera.initPattern()
         waitForStart()
         while (opModeIsActive()){
             if (gamepad1.xWasPressed()){camera.initLocalize()}

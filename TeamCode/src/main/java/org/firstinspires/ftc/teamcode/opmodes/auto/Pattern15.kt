@@ -12,7 +12,9 @@ import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 
@@ -42,7 +44,7 @@ open class Pattern15(isRed: Boolean): Auto(
                             shooter.setTargetVelocityFromDistance(closeDistance)
                             camera.initPattern()
                         },
-                        drive.goToCircle(closePose.let { Pose(it.x, it.y, -0.4).mirroredIf(isRed) }),
+                        drive.goToCircle(closePose.let { Pose(it.x, it.y, -0.2).mirroredIf(isRed) }),
                         Sleep(5.0)
                     ),
                     WaitUntil {
@@ -80,7 +82,7 @@ open class Pattern15(isRed: Boolean): Auto(
 
                 shooter.stop(),
                 grabBallCycle(2),
-                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+                Instant{shooter.setTargetVelocityFromDistance(getScoreDistance(Vector.fromCartesian(106.0, 12.0)))},
                 leaveShootCyclePattern(),
 
                 name = "Auto"

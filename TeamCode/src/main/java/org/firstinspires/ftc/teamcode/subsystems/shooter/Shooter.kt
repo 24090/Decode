@@ -21,8 +21,8 @@ class Shooter(hwMap: HardwareMap) {
         @JvmField var kP = 0.005
         @JvmField var velocityThreshold: Double = 30.0
     }
-    val shootCounterLeft = ShootCounter(100.0)
-    val shootCounterRight = ShootCounter(100.0)
+    val shootCounterLeft = ShootCounter(150.0)
+    val shootCounterRight = ShootCounter(150.0)
     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
     var targetVelocityLeft = 0.0

@@ -107,7 +107,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         }
         val held = huskyLens.getHeldPattern()
         val pattern = indexTracker.getRecommendations()
-        //val startCount = shooter.shootCounterLeft.count + shooter.shootCounterRight.count
+        val startCount = shooter.shootCounterLeft.count + shooter.shootCounterRight.count
         val indexWait = 0.75
         val command = Sequence(
             Parallel(
@@ -177,9 +177,9 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
                     throw UnsupportedOperationException("Unreachable")
                 }
             },
-//            Instant {
-//                indexTracker.processObservation(Observation.Shot(shooter.shootCounterLeft.count + shooter.shootCounterRight.count - startCount))
-//            }
+            Instant {
+                indexTracker.processObservation(Observation.Shot(shooter.shootCounterLeft.count + shooter.shootCounterRight.count - startCount))
+            }
         )
         return@Future command
     }
@@ -310,16 +310,14 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
             drive.goToCircle(
                 Pose(
                     59.4,
-                    56.12 + 2.5,
-                    1.06
+                    56.12 + 1,
+                    0.99
                 ).mirroredIf(red),
             ),
         ),
         Race(
             Sequence(
-                intake.waitForStall(),
-                intake.waitForStall(),
-                intake.waitForStall(),
+                intake.waitForStall()
             ),
             Sequence(
                 Sleep(0.75),
