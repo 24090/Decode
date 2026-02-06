@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes.tests
 
+import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.commands.Forever
+import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
@@ -14,32 +16,44 @@ import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 
 @TeleOp
+@Config
 class ShootCycleTesting: LinearOpMode() {
+    companion object {
+        @JvmField var targetValue = 1400.0
+    }
     override fun runOpMode() {
         val intake = Intake(hardwareMap)
         val shooter = Shooter(hardwareMap)
         val reads = Reads(hardwareMap)
-        shooter.motorLeft.power = 0.28
-        shooter.motorRight.power = 0.28
+        shooter.targetVelocityLeft = targetValue
+        shooter.targetVelocityRight = targetValue
         intake.behaviour = Intake.IntakeBehaviour.Grab
         intake.update()
+        shooter.update()
         waitForStart()
         runBlocking(Race(
             Forever {
                 reads.update()
                 intake.update()
+                shooter.update()
             },
             Sequence(
+                shooter.waitForVelocity(),
                 Parallel(
                     intake.releaseDual(),
                     intake.setAdjustThird()
                 ),
-                Sleep(pusherWait),
                 Parallel(
-                    intake.spinUp(),
+                    Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy },
+                    Sleep(pusherWait),
+                ),
+                Parallel(
+                    shooter.waitForVelocity(),
+                    Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy },
                     Sleep(0.3),
                 ),
                 intake.releaseDual(),
+                Instant { intake.behaviour = Intake.IntakeBehaviour.Grab },
             )
         ))
     }

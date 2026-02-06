@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
@@ -41,7 +42,8 @@ open class Pattern15(isRed: Boolean): Auto(
                             shooter.setTargetVelocityFromDistance(closeDistance)
                             camera.initPattern()
                         },
-                        drive.goToCircle(closePose.let { Pose(it.x, it.y, 0.0).mirroredIf(isRed) })
+                        drive.goToCircle(closePose.let { Pose(it.x, it.y, -0.4).mirroredIf(isRed) }),
+                        Sleep(5.0)
                     ),
                     WaitUntil {
                         camera.getPattern().let {

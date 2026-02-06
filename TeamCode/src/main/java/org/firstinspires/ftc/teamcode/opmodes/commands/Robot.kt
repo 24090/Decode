@@ -190,7 +190,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
                 val distanceX = abs((60.0) - drive.localizer.x)
                 val targetPose = Pose(
                     58.0,
-                    72.0 - min(distanceX * 3, 60.0),
+                    64.0 - min(distanceX * 3, 60.0),
                     PI/2
                 ).mirroredIf(red)
                 pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
@@ -204,7 +204,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
                 WaitUntil{ drive.localizer.poseVel.vector().length < 0.2 && drive.localizer.pose.mirroredIf(red).y > 48},
             ),
         ),
-        drive.goToSquare(Pose(62.0, 48.0, PI/2.0).mirroredIf(red)),
+        drive.goToSquare(Pose(62.0, 48.0, PI/2.0).mirroredIf(red), 1.5, 1.5, 0.1),
         Race(
             drive.goToSquare(Pose(65.0, 54.0, PI/2.0).mirroredIf(red)),
             Sleep(0.75)
@@ -265,7 +265,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
                 val distanceX = abs((36.0 + 24.0 * n) - drive.localizer.x)
                 val targetPose = Pose(
                     (if (n == 1) 34.0 else 36.0) + 24.0 * n,
-                    72.0 - min(distanceX * 3, 60.0),
+                    (if (n == 2) 65.0 else 72.0) - min(distanceX * 3, 60.0),
                     PI/2
                 ).mirroredIf(red)
                 pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
@@ -316,11 +316,15 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
             ),
         ),
         Race(
-            intake.waitForStall(),
+            Sequence(
+                intake.waitForStall(),
+                intake.waitForStall(),
+                intake.waitForStall(),
+            ),
             Sequence(
                 Sleep(0.75),
                 Instant {intake.behaviour = Intake.IntakeBehaviour.SlowIntake},
-                Sleep(0.5)
+                Sleep(2.5)
             )
 
         ),

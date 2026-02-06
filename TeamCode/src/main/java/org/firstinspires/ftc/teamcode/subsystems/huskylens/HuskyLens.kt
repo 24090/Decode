@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.huskylens
 
+import com.acmerobotics.dashboard.FtcDashboard
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.hardware.dfrobot.HuskyLens
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -69,12 +71,16 @@ class HuskyLensTesting: LinearOpMode() {
     override fun runOpMode() {
         val huskyLens = HuskyLens(hardwareMap)
         val lights = Lights(hardwareMap)
+        val dash = FtcDashboard.getInstance()
         lights.turnOn()
         waitForStart()
         while (opModeIsActive()){
+            val p = TelemetryPacket()
             huskyLens.read()
+            p.put("Pattern", huskyLens.getHeldPattern().toString())
             telemetry.addData("PATTERN", huskyLens.getHeldPattern())
             telemetry.update()
+            dash.sendTelemetryPacket(p)
         }
     }
 

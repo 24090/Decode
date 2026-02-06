@@ -11,6 +11,8 @@ import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.util.storedPattern
@@ -61,7 +63,7 @@ open class AutoPushPattern12(val isRed: Boolean): Auto(
 
             shooter.stop(),
             grabBallCycle(0),
-            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            Instant{shooter.setTargetVelocityFromDistance(getScoreDistance(Vector.fromCartesian(106.0, 12.0)))},
             leaveShootCycle(),
 
 //                shooter.stop(),
