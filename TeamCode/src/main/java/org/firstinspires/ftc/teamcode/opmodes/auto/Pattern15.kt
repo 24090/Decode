@@ -60,15 +60,16 @@ open class Pattern15(isRed: Boolean): Auto(
                     }
                 ),
                 closeShootCycle(),
+
                 shooter.stop(),
                 grabAndOpenCycleClose(),
                 Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-                closeShootCycle(),
-
-                shooter.stop(),
-                fromRampCycle(),
-                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
                 closeShootCyclePattern(),
+
+//                shooter.stop(),
+//                fromRampCycle(),
+//                Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+//                closeShootCyclePattern(),
 
                 shooter.stop(),
                 grabBallCycle(0),

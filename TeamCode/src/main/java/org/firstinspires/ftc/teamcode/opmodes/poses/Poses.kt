@@ -54,5 +54,5 @@ fun inLaunchZone(pose: Pose, threshold: Double = 0.0) =
         threshold
     )
 
-private fun inLaunchZone(point: Vector, threshold: Double = 1.5) = (point.x - 72.0 - threshold >= point.y && point.x - 72.0 - threshold >= -point.y)
+private fun inLaunchZone(point: Vector, threshold: Double = 3.0) = (point.x - 72.0 - threshold >= point.y && point.x - 72.0 - threshold >= -point.y)
                             || (point.x <= point.y + 24.0 - threshold && point.x <= -point.y + 24.0 - threshold)

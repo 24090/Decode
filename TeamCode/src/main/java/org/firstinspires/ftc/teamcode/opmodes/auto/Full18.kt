@@ -46,12 +46,7 @@ open class Full18(isRed: Boolean): Auto(
             ),
 
             shooter.stop(),
-            grabBallCycle(1),
-            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
-            closeShootCycle(),
-
-            shooter.stop(),
-            fromRampCycle(),
+            grabAndOpenCycleClose(),
             Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
             closeShootCycle(),
 

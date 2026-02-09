@@ -43,5 +43,5 @@ class IndexTracker(){
         }
     }
 
-    fun getRecommendations() = patternFromG(pattern.n - rampCount)
+    fun getRecommendations() = patternFromG(((pattern.n - rampCount)%3 + 3) % 3)
 }

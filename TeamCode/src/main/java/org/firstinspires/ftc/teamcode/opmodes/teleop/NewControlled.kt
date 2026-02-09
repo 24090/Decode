@@ -145,11 +145,11 @@ class NewControlled: Teleop( { opmode ->
         }
     }
 
-    drive.localizer.pose =
-        if (useStoredPose)
-            storedPose ?: farStartPose.mirroredIf(isRed.get())
-        else
-            farStartPose.mirroredIf(isRed.get())
+//    drive.localizer.pose =
+//        if (useStoredPose)
+//            storedPose ?: farStartPose.mirroredIf(isRed.get())
+//        else
+//            farStartPose.mirroredIf(isRed.get())
 
     while (opmode.opModeIsActive()){
         reads.update()

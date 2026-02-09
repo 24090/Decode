@@ -107,7 +107,8 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         }
         val held = huskyLens.getHeldPattern()
         val pattern = indexTracker.getRecommendations()
-        val startCount = shooter.shootCounterLeft.count + shooter.shootCounterRight.count
+        lights.turnOn()
+        //val startCount = shooter.shootCounterLeft.count + shooter.shootCounterRight.count
         val indexWait = 0.75
         val command = Sequence(
             Parallel(
@@ -178,8 +179,11 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
                 }
             },
             Instant {
-                indexTracker.processObservation(Observation.Shot(shooter.shootCounterLeft.count + shooter.shootCounterRight.count - startCount))
+                lights.turnOff()
             }
+//            Instant {
+//                indexTracker.processObservation(Observation.Shot(shooter.shootCounterLeft.count + shooter.shootCounterRight.count - startCount))
+//            }
         )
         return@Future command
     }
@@ -190,7 +194,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
                 val distanceX = abs((60.0) - drive.localizer.x)
                 val targetPose = Pose(
                     58.0,
-                    64.0 - min(distanceX * 3, 60.0),
+                    65.0 - min(distanceX * 3, 60.0),
                     PI/2
                 ).mirroredIf(red)
                 pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
@@ -207,7 +211,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         drive.goToSquare(Pose(62.0, 48.0, PI/2.0).mirroredIf(red), 1.5, 1.5, 0.1),
         Race(
             drive.goToSquare(Pose(65.0, 54.0, PI/2.0).mirroredIf(red)),
-            Sleep(0.75)
+            Sleep(1.75)
         ),
         Instant {
             drive.follow = {
@@ -310,19 +314,20 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
             drive.goToCircle(
                 Pose(
                     59.4,
-                    56.12 + 1,
-                    0.99
+                    56.12 + 2.5,
+                    1.06
                 ).mirroredIf(red),
             ),
         ),
         Race(
             Sequence(
-                intake.waitForStall()
+                intake.waitForStall(),
+                intake.waitForStall(),
+                intake.waitForStall(),
             ),
             Sequence(
-                Sleep(0.75),
                 Instant {intake.behaviour = Intake.IntakeBehaviour.SlowIntake},
-                Sleep(2.5)
+                Sleep(1.8)
             )
 
         ),
@@ -345,8 +350,8 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         Sequence(
             drive.goToCircle(
                 Pose(
-                    robotWidth / 2.0 + 1.0,
-                    72.0 - robotLength / 2.0 - 1.0,
+                    robotWidth / 2.0 + 0.5,
+                    72.0 - robotLength / 2.0 + 1.0,
                     PI / 2.0
                 ).mirroredIf(red),
             )
@@ -369,7 +374,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
 
     fun farShootCycle() = Sequence(
         drive.goToCircle(farPose.mirroredIf(red), 2.0),
-        shootPattern(),
+        shootAll(),
         name = "FarShootCycle"
     )
 

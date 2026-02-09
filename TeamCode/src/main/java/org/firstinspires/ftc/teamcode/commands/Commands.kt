@@ -52,6 +52,7 @@ abstract class Command(
             CommandOverride.None -> try {
                 run()
             } catch (e: Throwable){
+                throw e
                 CommandMessage.Error(e).send()
                 CommandResult.End(Result.failure(e))
             }

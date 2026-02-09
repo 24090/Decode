@@ -48,11 +48,12 @@ open class AutoPushPattern12(val isRed: Boolean): Auto(
             ),
             Parallel(
                 intake.spinUp(),
-                Instant { shooter.setTargetVelocityFromDistance(farDistance) },
-                farShootCycle(),
+                Instant { shooter.setTargetVelocityFromDistance(closeDistance) },
+                closeShootCycle(),
             ),
             shooter.stop(),
-            grabAndOpenCycleFar(),
+            grabAndOpenCycleClose(),
+
             Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
             closeShootCyclePattern(),
 
@@ -64,7 +65,7 @@ open class AutoPushPattern12(val isRed: Boolean): Auto(
             shooter.stop(),
             grabBallCycle(0),
             Instant{shooter.setTargetVelocityFromDistance(getScoreDistance(Vector.fromCartesian(106.0, 12.0)))},
-            leaveShootCycle(),
+            leaveShootCyclePattern(),
 
 //                shooter.stop(),
 //                grabBallCycle(0, isRed, intake, drive),
