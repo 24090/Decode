@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.ShootCounter
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import kotlin.math.abs
 import kotlin.math.sqrt
+import kotlin.text.compareTo
 
 @Config
 class Shooter(hwMap: HardwareMap) {
@@ -103,15 +104,23 @@ class Shooter(hwMap: HardwareMap) {
         }
     }
 
+    fun setTargetVelocities(left: Double, right: Double = left){
+        targetVelocityLeft = left
+        targetVelocityRight = right
+    }
+
     fun setTargetVelocityFromDistance(distance: Double) {
-        targetVelocityLeft = distanceToVelocityLeftLUT.get(distance)
-        targetVelocityRight = distanceToVelocityRightLUT.get(distance)
+        setTargetVelocities(distanceToVelocityLeftLUT.get(distance), distanceToVelocityRightLUT.get(distance))
     }
 
     fun stop(): Command = Instant({
         targetVelocityRight = 0.0
         targetVelocityLeft = 0.0
     }, "Shooter:SpinDown")
+
+    fun velocitiesInThreshold(threshold: Double = velocityThreshold) =
+        abs(targetVelocityLeft - motorLeft.velocity) <= velocityThreshold
+        && abs((targetVelocityRight) - motorRight.velocity) <= velocityThreshold
 
     fun waitForRightVelocity(): Command = WaitUntil {
         abs(targetVelocityRight - motorRight.velocity) <= velocityThreshold
@@ -120,8 +129,5 @@ class Shooter(hwMap: HardwareMap) {
     fun waitForLeftVelocity(): Command = WaitUntil {
         abs(targetVelocityLeft - motorLeft.velocity) <= velocityThreshold
     }
-    fun waitForVelocity(): Command = WaitUntil ({
-        abs(targetVelocityLeft - motorLeft.velocity) <= velocityThreshold
-        && abs((targetVelocityRight) - motorRight.velocity) <= velocityThreshold
-    }, "WaitForVelocity")
+    fun waitForVelocity(): Command = WaitUntil ({velocitiesInThreshold(velocityThreshold)}, "WaitForVelocity")
 }

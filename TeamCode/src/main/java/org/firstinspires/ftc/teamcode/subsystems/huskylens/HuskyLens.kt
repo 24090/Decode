@@ -22,7 +22,7 @@ class HuskyLens(hwMap: HardwareMap) {
     init {
         camera.selectAlgorithm(HuskyLens.Algorithm.COLOR_RECOGNITION)
     }
-    fun read(){
+    fun update(){
         left = null
         right = null
 
@@ -53,6 +53,10 @@ class HuskyLens(hwMap: HardwareMap) {
     }
 
     // LEFT RIGHT 3 -> GPP/PGP/PPG
+    /**
+    Returns the held pattern where the first letter represents the left shooter, the second the right shooter, and the third the third ball.
+    (e.g. GPP means green in left shooter, purple in other two)
+     */
     fun getHeldPattern() = when (BallColor.GREEN) {
         left?.getOrNull() -> {
             Pattern.GPP
@@ -76,7 +80,7 @@ class HuskyLensTesting: LinearOpMode() {
         waitForStart()
         while (opModeIsActive()){
             val p = TelemetryPacket()
-            huskyLens.read()
+            huskyLens.update()
             p.put("Pattern", huskyLens.getHeldPattern().toString())
             telemetry.addData("PATTERN", huskyLens.getHeldPattern())
             telemetry.update()

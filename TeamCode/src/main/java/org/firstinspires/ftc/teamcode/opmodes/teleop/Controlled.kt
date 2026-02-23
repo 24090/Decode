@@ -196,8 +196,7 @@ class Controlled: Teleop({ opmode ->
             intake.behaviour = Intake.IntakeBehaviour.Grab
         }
         if (opmode.gamepad1.rightBumperWasPressed()){
-            shooter.targetVelocityLeft = 0.0
-            shooter.targetVelocityRight = 0.0
+            shooter.setTargetVelocities(0.0)
             runBlocking(Race(
                 WaitUntil { !opmode.gamepad1.right_bumper},
                 Forever {

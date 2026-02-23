@@ -8,9 +8,6 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.Robot
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
-import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
-import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
-import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Pattern
 import kotlin.math.sqrt
@@ -32,7 +29,7 @@ class IndexedShootingTest: LinearOpMode(){
         indexTracker.pattern = Pattern.PPG
         waitForStart()
         robot.shooter.setTargetVelocityFromDistance(48.0 * sqrt(2.0))
-        huskyLens.read()
+        huskyLens.update()
         runBlocking(
             Race(
                 Forever {

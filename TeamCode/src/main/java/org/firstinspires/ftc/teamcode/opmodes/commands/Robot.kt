@@ -66,8 +66,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
             intake.fullAdjustThird(),
             WaitUntil {
                 abs(getHeading() - (getMoveShootOutputs()?.second ?: 10.0)) < 0.06
-                        && abs(shooter.targetVelocityRight - shooter.motorRight.velocity) < 50
-                        && abs(shooter.targetVelocityLeft - shooter.motorLeft.velocity) < 50
+                && shooter.velocitiesInThreshold(50.0)
             },
             intake.releaseDual(),
             Sleep(pusherWait),
@@ -75,8 +74,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
             Sleep(1.0),
             WaitUntil {
                 abs(getHeading() - (getMoveShootOutputs()?.second ?: 10.0)) < 0.06
-                        && abs(shooter.targetVelocityRight - shooter.motorRight.velocity) < 50
-                        && abs(shooter.targetVelocityLeft - shooter.motorLeft.velocity) < 50
+                && shooter.velocitiesInThreshold(50.0)
             },
             intake.releaseDual(),
         )
@@ -100,7 +98,7 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         name = "ShootCycle"
     )
     fun shootPattern(): Command = Future {
-        huskyLens.read()
+        huskyLens.update()
         val reload = {
             Parallel(
                 shooter.waitForVelocity(),

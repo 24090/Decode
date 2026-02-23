@@ -26,8 +26,7 @@ open class PartnerAuto(val isRed: Boolean): Auto(isRed, farStartPose, {Race(
     }, "Reads" ),
     Sequence(
         Instant{
-            shooter.targetVelocityLeft = 1820.0
-            shooter.targetVelocityRight = 1820.0
+            shooter.setTargetVelocities(1820.0)
        },
         farShootCycle(),
         ForeverCommand({

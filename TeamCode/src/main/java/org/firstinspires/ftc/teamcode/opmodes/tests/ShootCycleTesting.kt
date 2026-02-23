@@ -28,8 +28,7 @@ class ShootCycleTesting: LinearOpMode() {
         val intake = Intake(hardwareMap)
         val shooter = Shooter(hardwareMap)
         val reads = Reads(hardwareMap)
-        shooter.targetVelocityLeft = targetValue
-        shooter.targetVelocityRight = targetValue
+        shooter.setTargetVelocities(targetValue)
         intake.behaviour = Intake.IntakeBehaviour.Grab
         val a = TelemetryPacket()
         a.put("left shot", shooter.shootCounterLeft.count)

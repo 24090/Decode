@@ -63,8 +63,10 @@ class MoveShootTest: LinearOpMode(){
                 recordTime("reads")
                 drive.update()
                 val relativePose = (scorePosition - Vector.fromPose(drive.localizer.pose))
-                shooter.targetVelocityLeft = shooter.exitVelocityToLeftVelocityLUT.get(moveShootOutputs?.first ?: 1000.0)
-                shooter.targetVelocityRight = shooter.exitVelocityToRightVelocityLUT.get(moveShootOutputs?.first ?: 1000.0)
+                shooter.setTargetVelocities(
+                    shooter.exitVelocityToLeftVelocityLUT.get(moveShootOutputs?.first ?: 1000.0),
+                    shooter.exitVelocityToRightVelocityLUT.get(moveShootOutputs?.first ?: 1000.0)
+                )
                 telemetry.addData("target exit velocity", moveShootOutputs?.first)
                 telemetry.addData("target heading", moveShootOutputs?.second)
                 telemetry.addData("pose", relativePose)

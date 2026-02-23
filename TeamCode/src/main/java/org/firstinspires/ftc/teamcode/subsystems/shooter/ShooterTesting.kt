@@ -45,8 +45,7 @@ class ShooterTesting(): LinearOpMode(){
             }
             intake.update()
             shooter.update()
-            shooter.targetVelocityLeft = targetVelocity
-            shooter.targetVelocityRight = targetVelocity
+            shooter.setTargetVelocities(targetVelocity)
             val p = TelemetryPacket()
             intake.pusherLeft.position = if (gamepad1.x) pusherLeftForward else pusherLeftBack
             intake.pusherRight.position = if (gamepad1.x) pusherRightForward else pusherRightBack

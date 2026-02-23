@@ -73,10 +73,7 @@ class NewControlled: Teleop( { opmode ->
         drive.estimateAcceleration()
     )}
     val setShooters = { position: Vector ->
-        getScoreDistance(position, isRed.get()).let {
-            shooter.targetVelocityLeft = shooter.distanceToVelocityLeftLUT.get(it)
-            shooter.targetVelocityRight = shooter.distanceToVelocityRightLUT.get(it)
-        }
+        shooter.setTargetVelocityFromDistance(getScoreDistance(position, isRed.get()))
     }
 
     val translationalFunction = getTeleopTranslational(opmode.gamepad1, drive.localizer, lastLockTranslational, targetPose, isRed)
@@ -122,8 +119,7 @@ class NewControlled: Teleop( { opmode ->
 
     val parkButton = { pose: Pose, wasPressed: () -> Boolean, isPressed: () -> Boolean ->
         if (wasPressed()){
-            shooter.targetVelocityLeft = 0.0
-            shooter.targetVelocityRight = 0.0
+            shooter.setTargetVelocities(0.0)
             targetPose.set(pose.mirroredIf(isRed.get()))
             runBlocking(Race(
                 WaitUntil { !isPressed() },
@@ -240,8 +236,7 @@ class NewControlled: Teleop( { opmode ->
         if (shootingMode) (
             setShooters(getPredictedPosition())
         ) else {
-            shooter.targetVelocityLeft = 0.0
-            shooter.targetVelocityRight = 0.0
+            shooter.setTargetVelocities(0.0)
         }
         shooter.update()
         intake.update()
