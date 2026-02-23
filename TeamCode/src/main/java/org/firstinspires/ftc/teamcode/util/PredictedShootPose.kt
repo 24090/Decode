@@ -19,16 +19,16 @@ fun predictedShootPosition(minimumTime: Double, currentPose: Pose, fieldVelocity
     } else { (
             getLaunchZoneIntersections(
                 (Vector.fromPolar(effectivePose.heading, robotLength/2) + Vector.fromPolar(effectivePose.heading + PI/2, robotLength/2))
-                    .let{Pair(movementStart + it, movementEnd + it)}
+                    .let{Line(movementStart + it, movementEnd + it)}
             ) + getLaunchZoneIntersections(
                 (Vector.fromPolar(effectivePose.heading, robotLength/2) + Vector.fromPolar(effectivePose.heading + PI/2, -robotLength/2))
-                    .let{Pair(movementStart + it, movementEnd + it)}
+                    .let{Line(movementStart + it, movementEnd + it)}
             ) + getLaunchZoneIntersections(
                 (Vector.fromPolar(effectivePose.heading, -robotLength/2) + Vector.fromPolar(effectivePose.heading + PI/2, robotLength/2))
-                    .let{Pair(movementStart + it, movementEnd + it)}
+                    .let{Line(movementStart + it, movementEnd + it)}
             ) + getLaunchZoneIntersections(
                 (Vector.fromPolar(effectivePose.heading, -robotLength/2) + Vector.fromPolar(effectivePose.heading + PI/2, -robotLength/2))
-                    .let{Pair(movementStart + it, movementEnd + it)}
+                    .let{Line(movementStart + it, movementEnd + it)}
             )
             ).reduceOrNull { a, b -> if ((a - effectivePose.vector()).length < (b - effectivePose.vector()).length) a else b } }
     return closestIntersection?.let{ intersection ->
