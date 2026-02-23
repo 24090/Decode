@@ -15,10 +15,13 @@ import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
+import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
+import org.firstinspires.ftc.teamcode.subsystems.drive.HeadingBehaviour
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pointToPoint
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
@@ -189,43 +192,25 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
     }
     fun grabAndOpenCycleClose() = Sequence(
         intake.spinUp(),
-        Instant {
-            drive.follow = {
-                val distanceX = abs((60.0) - drive.localizer.x)
-                val targetPose = Pose(
-                    58.0,
-                    65.0 - min(distanceX * 3, 60.0),
-                    PI/2
-                ).mirroredIf(red)
-                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
-            }
-        },
         Race(
-            Sequence(
-                WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 }
-            ),
-            Sequence(
-                WaitUntil{ drive.localizer.poseVel.vector().length < 0.2 && drive.localizer.pose.mirroredIf(red).y > 48},
-            ),
+            drive.followPath(PurePursuitPath(
+                listOf(Pose(58.0, 25.0, PI/2.0), Pose(58.0, 65.0, PI/2.0)),
+                listOf(HeadingBehaviour.Tangent(0.0)),
+                listOf(30.0)
+            )),
+            WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
+            WaitUntil{ drive.localizer.poseVel.vector().length < 0.2 && drive.localizer.pose.mirroredIf(red).y > 48}
         ),
         drive.goToSquare(Pose(62.0, 48.0, PI/2.0).mirroredIf(red), 1.5, 1.5, 0.1),
         Race(
             drive.goToSquare(Pose(65.0, 54.0, PI/2.0).mirroredIf(red)),
             Sleep(1.75)
         ),
-        Instant {
-            drive.follow = {
-                val distanceY = abs(closePose.mirroredIf(red).y - drive.localizer.y)
-                val t = clamp(distanceY/20.0, 0.0, 1.0)
-                val targetPose = Pose(
-                    closePose.x - clamp(distanceY, 0.0, 16.0),
-                    closePose.y,
-                    closePose.heading * (1-t) + PI/2 * t
-                ).mirroredIf(red)
-                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
-            }
-        },
-        WaitUntil { drive.localizer.pose.inCircle(closePose.mirroredIf(red), 15.0, 0.5) },
+        drive.followPath(PurePursuitPath(
+            listOf(closePose, Pose(58.0, 25.0, PI/2.0)),
+            listOf(HeadingBehaviour.Tangent(0.0)),
+            listOf(30.0)
+        ), 5.0, 0.1),
     )
     fun grabAndOpenCycleFar() = Sequence(
         intake.spinUp(),
@@ -262,46 +247,50 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         },
         drive.goToSquare(Pose(38.0 + 24.0, 24.0, PI/2).mirroredIf(red), yTolerance = 3.0, xTolerance = 3.0)
     )
-    fun grabBallCycle (n: Int) = Sequence(
-        intake.spinUp(),
-        Instant {
-            drive.follow = {
-                val distanceX = abs((36.0 + 24.0 * n) - drive.localizer.x)
-                val targetPose = Pose(
-                    (if (n == 1) 34.0 else 36.0) + 24.0 * n,
-                    (if (n == 2) 65.0 else 72.0) - min(distanceX * 3, 60.0),
-                    PI/2
-                ).mirroredIf(red)
-                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
-            }
-        },
-        Race(
-            Sequence(
-                WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 }
+    fun grabBallCycle (n: Int, endPark: Boolean = false): Sequence{
+        val endPoint = Pose(
+            (if (n == 1) 34.0 else 36.0) + 24.0 * n,
+            (65.0),
+            PI/2
+        )
+        val shootPoint = if (endPark) parkPose else closePose
+        return Sequence(
+            intake.spinUp(),
+
+            Race(
+                drive.followPath(PurePursuitPath(
+                    listOf(
+                        Pose(
+                            endPoint.x,
+                            30.0,
+                            PI/2
+                        ).mirroredIf(red),
+                        endPoint.mirroredIf(red)
+                    ),
+                    listOf(HeadingBehaviour.Tangent(0.0)),
+                    listOf(30.0)
+                )),
+                WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
+                WaitUntil{ drive.localizer.poseVel.vector().length < 1.0 && drive.localizer.pose.mirroredIf(red).y > 48},
             ),
-            Sequence(
-                WaitUntil{ drive.localizer.poseVel.vector().length < 0.2 && drive.localizer.pose.mirroredIf(red).y > 48},
+            Race(
+                drive.followPath(PurePursuitPath(
+                    listOf(
+                        Pose(endPoint.x, if (n == 1) 20.0 else 40.0, PI/2).mirroredIf(red),
+                        shootPoint.mirroredIf(red)
+                    ),
+                    listOf(
+                        HeadingBehaviour.Interpolate,
+                    ),
+                    listOf(
+                        30.0
+                    ),
+                )),
+                WaitUntil{drive.localizer.pose.inCircle(shootPoint.mirroredIf(red), 5.0, 1.0)},
             ),
-        ),
-        if (n == 1) {
-            Instant {
-                drive.follow = {
-                    val distanceY = abs(closePose.y - drive.localizer.y)
-                    val targetPose = Pose(
-                        closePose.x - clamp(distanceY, 0.0, 16.0),
-                        closePose.y,
-                        closePose.heading * clamp(distanceY/20.0, 0.0, 1.0) + PI/2 * (1 - clamp(distanceY/20.0, 0.0, 1.0))
-                    ).mirroredIf(red)
-                    pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
-                }
-            }
-            WaitUntil { drive.localizer.pose.inCircle(closePose, 10.0, 0.2) }
-            drive.goToSquare(Pose(36.0 + 24.0 * n, 24.0, PI/2).mirroredIf(red), yTolerance = 3.0, xTolerance = 3.0)
-        } else {
-            Instant {}
-        },
-        name = "GrabBallCycle $n"
-    )
+            name = "GrabBallCycle $n"
+        )
+    }
 
     fun fromRampCycle() = Sequence(
         Race(
@@ -334,7 +323,33 @@ open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
         Instant {
             indexTracker.processObservation(Observation.GateOpened)
             intake.behaviour = Intake.IntakeBehaviour.Grab
-        }
+        },
+        Race(
+            drive.followPath(PurePursuitPath(
+                listOf(
+                    Pose(
+                        59.4,
+                        56.12 + 2.5,
+                        1.06
+                    ).mirroredIf(red),
+                    Pose(
+                        59.4,
+                        35.0,
+                        PI/2
+                    ).mirroredIf(red),
+                    closePose
+                ),
+                listOf(
+                    HeadingBehaviour.Tangent(PI),
+                    HeadingBehaviour.Interpolate
+                ),
+                listOf(
+                    20.0,
+                    20.0
+                )
+            )),
+            WaitUntil {drive.localizer.pose.inCircle(closePose, 5.0, 0.1)}
+        )
     )
 
     fun loadZoneCycle() = Race(

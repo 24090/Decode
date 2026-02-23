@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.lateralFactor
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
@@ -116,6 +117,11 @@ class Drive(hwMap: HardwareMap) {
             localizer.setDefaultBulkreadScope()
         }
     )
+    fun followPath(path: PurePursuitPath, distanceTolerance: Double = xyT * 4, headingTolerance: Double = hT * 4)=
+        Sequence (
+            Instant {follow = getPurePursuit(path, localizer)},
+            WaitUntil{(path.lastT == path.lines.size.toDouble()) && localizer.pose.inCircle(path.poses.last(), distanceTolerance, headingTolerance)}
+        )
 
     fun goToCircle(
         pose: Pose,

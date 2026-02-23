@@ -20,10 +20,12 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.xyT
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getTranslationalVectors
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.BezierCurve
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
+import org.firstinspires.ftc.teamcode.util.Line
 import org.firstinspires.ftc.teamcode.util.Reference
 import kotlin.math.PI
 import kotlin.math.absoluteValue
@@ -67,6 +69,12 @@ fun getTeleopTranslational(
     }
 }
 
+sealed class HeadingBehaviour{
+    class Tangent(val angle: Double): HeadingBehaviour()
+    object Snap: HeadingBehaviour()
+    object Interpolate: HeadingBehaviour()
+}
+
 fun getTeleopFollower(
     gamepad: Gamepad,
     localizer: Localizer,
@@ -96,6 +104,18 @@ fun getTeleopFollower(
         val dError = -getRelativeVelocity(localizer.pose, localizer.poseVel)
         processTurnTranslational(heading(dError), teleopTranslational(dError.vector()), localizer.pose, localizer.poseVel)
     }
+}
+
+fun getPurePursuit(path: PurePursuitPath, localizer: Localizer): () -> DriveVectors{
+    return {
+        purePursuit(path, localizer.pose, localizer.poseVel)
+    }
+}
+
+fun purePursuit(path: PurePursuitPath, pose: Pose, velocity: Pose): DriveVectors{
+    val followPoint = path.getFollowPoint(pose.vector(), 48.0)
+    Log.i("follow point", followPoint.toString())
+    return pointToPoint(pose, velocity, followPoint)
 }
 
 fun getFollowCurve(curve: BezierCurve, localizer: Localizer) = { followCurve(curve, localizer.pose, localizer.poseVel) }

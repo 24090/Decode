@@ -90,8 +90,17 @@ class Shooter(hwMap: HardwareMap) {
     fun update() {
         shootCounterLeft.update(motorLeft.velocity, targetVelocityLeft)
         shootCounterRight.update(motorRight.velocity, targetVelocityRight)
-        motorLeft.power  = velocityToPowerLUT.get(targetVelocityLeft) + (targetVelocityLeft - motorLeft.velocity) * kP
-        motorRight.power = velocityToPowerLUT.get(targetVelocityRight) + (targetVelocityRight - motorRight.velocity) * kP
+        if (targetVelocityLeft == 0.0) {
+            motorLeft.power = 0.0
+        } else {
+            motorLeft.power  = velocityToPowerLUT.get(targetVelocityLeft) + (targetVelocityLeft - motorLeft.velocity) * kP
+        }
+
+        if (targetVelocityRight == 0.0) {
+            motorRight.power = 0.0
+        } else {
+            motorRight.power = velocityToPowerLUT.get(targetVelocityRight) + (targetVelocityRight - motorRight.velocity) * kP
+        }
     }
 
     fun setTargetVelocityFromDistance(distance: Double) {
