@@ -11,12 +11,20 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kA
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kV
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.lateralFactor
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelBackward
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelForward
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getPointToPoint
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getPurePursuit
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
+import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.controlHubVoltage
 import org.firstinspires.ftc.teamcode.util.Reference
 import kotlin.math.absoluteValue
 import kotlin.math.sign
@@ -157,6 +165,7 @@ class Drive(hwMap: HardwareMap) {
     fun inShootableZone(): Boolean{
         return true
     }
+
 }
 
 data class DriveVectors(val left: Vector, val right: Vector) {
@@ -216,6 +225,34 @@ data class DriveVectors(val left: Vector, val right: Vector) {
             (back.x * targetVector.y - targetVector.x * back.y) / (back.x * front.y - front.x * back.y)
         )
 
+    fun strafeAccelCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV: Double, kA: Double, velocity: Double): DriveVectors {
+        val minPower: Double = minAccel * kA + velocity * kV + kS * sign(velocity)
+        val maxPower: Double = maxAccel * kA + velocity * kV + kS * sign(velocity)
+        val power = (left.y + right.y)/2.0
+
+        return if (power > maxPower) {
+            DriveVectors(left * (maxPower/power), right * (maxPower/power))
+        } else if (power < minPower) {
+            DriveVectors(left * (minPower/power), right * (minPower/power))
+        } else {
+            this
+        }
+    }
+
+    fun driveAccelCorrected(minAccel: Double, maxAccel: Double, kS: Double, kV: Double, kA: Double, velocity: Double): DriveVectors {
+        val minPower: Double = minAccel * kA + velocity * kV + kS * sign(velocity)
+        val maxPower: Double = maxAccel * kA + velocity * kV + kS * sign(velocity)
+        val power = (left.x + right.x)/2.0
+
+        return if (power > maxPower) {
+            DriveVectors(left * (maxPower/power), right * (maxPower/power))
+        } else if (power < minPower) {
+            DriveVectors(left * (minPower/power), right * (minPower/power))
+        } else {
+            this
+        }
+    }
+
     companion object {
         fun fromTranslation(v: Vector) = DriveVectors(v, v)
         fun fromTranslation(drive: Double, strafe: Double) = fromTranslation(Vector.fromCartesian(drive, strafe))
@@ -231,6 +268,18 @@ data class DriveVectors(val left: Vector, val right: Vector) {
             left = Vector.fromCartesian(drive, strafe),
             right = Vector.fromCartesian(drive, strafe)
         )
+
+        fun processTurnTranslational(turn: Double, translational: Vector, pose: Pose, velocity: Pose) =
+            processTurnDriveStrafe(turn, translational.x, translational.y, pose, velocity)
+
+        fun processTurnDriveStrafe(turn: Double, drive: Double, strafe: Double, pose: Pose, velocity: Pose) =
+            DriveVectors.fromRotation(turn)
+                .addWithoutPriority(DriveVectors.fromTranslation(drive, strafe), controlHubVoltage / 14.0)
+                .driveAccelCorrected(
+                    tipAccelBackward, tipAccelForward,
+                    kS, kV, kA,
+                    getRelativeVelocity(pose, velocity).x
+                )
     }
 
     override fun toString() = "[L $left, R $right]"

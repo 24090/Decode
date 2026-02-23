@@ -1,8 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive.pathing
 
-import android.util.Log
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.teamcode.subsystems.drive.HeadingBehaviour
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
 import org.firstinspires.ftc.teamcode.util.Line
 import org.firstinspires.ftc.teamcode.util.clamp
 import kotlin.math.abs

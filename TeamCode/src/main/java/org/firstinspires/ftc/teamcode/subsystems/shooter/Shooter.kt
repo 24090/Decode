@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.ShootCounter
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import kotlin.math.abs
 import kotlin.math.sqrt
-import kotlin.text.compareTo
 
 @Config
 class Shooter(hwMap: HardwareMap) {

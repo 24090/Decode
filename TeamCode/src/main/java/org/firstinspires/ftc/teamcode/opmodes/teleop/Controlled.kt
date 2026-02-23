@@ -14,10 +14,10 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreAngle
 import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.scorePosition
-import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopFollower
-import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopTranslational
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getTeleopFollower
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getTeleopTranslational
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Reference

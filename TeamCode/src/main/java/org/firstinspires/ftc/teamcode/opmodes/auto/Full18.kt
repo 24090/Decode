@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto
 
-import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
-import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
-
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import org.firstinspires.ftc.teamcode.commands.Forever
@@ -10,11 +7,9 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
-import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
-import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 

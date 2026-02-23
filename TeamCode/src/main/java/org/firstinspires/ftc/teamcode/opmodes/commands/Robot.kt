@@ -19,11 +19,11 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
-import org.firstinspires.ftc.teamcode.subsystems.drive.HeadingBehaviour
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
-import org.firstinspires.ftc.teamcode.subsystems.drive.pointToPoint
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.pointToPoint
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.Lights
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake

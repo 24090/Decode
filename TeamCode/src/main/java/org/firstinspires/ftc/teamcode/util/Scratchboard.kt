@@ -6,13 +6,10 @@ package org.firstinspires.ftc.teamcode.util
  */
 
 import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelBackward
-import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.tipAccelForward
-import org.firstinspires.ftc.teamcode.subsystems.drive.HeadingBehaviour
-import org.firstinspires.ftc.teamcode.subsystems.drive.minStopDistance
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
 import kotlin.math.PI
 
 fun main(){

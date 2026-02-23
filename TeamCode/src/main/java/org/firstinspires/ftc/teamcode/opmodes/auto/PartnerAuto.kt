@@ -8,7 +8,6 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
-import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 
 @Autonomous(name="PartnerAutoRed", group="Auto")

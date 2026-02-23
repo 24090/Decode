@@ -13,9 +13,9 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hD
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hP
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hT
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.processTurnTranslational
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
-import org.firstinspires.ftc.teamcode.subsystems.drive.processTurnTranslational
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftBack
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherLeftForward

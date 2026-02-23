@@ -10,9 +10,7 @@ import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
-import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
-import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.util.storedPattern

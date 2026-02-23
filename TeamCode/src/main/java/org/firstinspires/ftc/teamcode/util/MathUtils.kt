@@ -1,12 +1,7 @@
 package org.firstinspires.ftc.teamcode.util
 
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
-import org.opencv.core.Core.sqrt
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sign
-import kotlin.math.sqrt
 
 fun Int.factorial() : Int = (1..this).fold(1, Int::times)
 /**

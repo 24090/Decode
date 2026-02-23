@@ -5,9 +5,9 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
-import org.firstinspires.ftc.teamcode.subsystems.drive.getFollowCurve
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.CubicHermiteSpline
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getFollowCurve
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import kotlin.math.PI
 

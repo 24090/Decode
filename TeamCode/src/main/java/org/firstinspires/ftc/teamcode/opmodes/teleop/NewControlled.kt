@@ -12,23 +12,21 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.Teleop
-import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreAngle
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.inLaunchZone
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
-import org.firstinspires.ftc.teamcode.subsystems.drive.getHeadingLockTeleop
-import org.firstinspires.ftc.teamcode.subsystems.drive.getStopPosition
-import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopFollower
-import org.firstinspires.ftc.teamcode.subsystems.drive.getTeleopTranslational
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getHeadingLockTeleop
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getTeleopFollower
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getTeleopTranslational
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getStopPosition
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.predictedShootPosition
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.Reference
-import org.firstinspires.ftc.teamcode.util.predictedShootPosition
 import org.firstinspires.ftc.teamcode.util.storedPattern
-import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.PI
 
 @TeleOp(group = "A", name="NewControlled")
