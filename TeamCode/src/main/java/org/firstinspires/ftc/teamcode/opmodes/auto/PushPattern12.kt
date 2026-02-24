@@ -46,23 +46,23 @@ open class AutoPushPattern12(val isRed: Boolean): Auto(
             ),
             Parallel(
                 intake.spinUp(),
-                Instant { shooter.setTargetVelocityFromDistance(closeDistance) },
+                Instant { shooter.setHoodAngleAndVelocityFromDistance(closeDistance) },
                 closeShootCycle(),
             ),
             shooter.stop(),
             grabAndOpenCycleClose(),
 
-            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
             closeShootCyclePattern(),
 
             shooter.stop(),
             grabBallCycle(2),
-            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
             closeShootCyclePattern(),
 
             shooter.stop(),
             grabBallCycle(0),
-            Instant{shooter.setTargetVelocityFromDistance(getScoreDistance(Vector.fromCartesian(106.0, 12.0)))},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance(Vector.fromCartesian(106.0, 12.0)))},
             leaveShootCyclePattern(),
 
 //                shooter.stop(),

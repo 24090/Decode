@@ -34,7 +34,7 @@ open class Full18(isRed: Boolean): Auto(
            Parallel(
                 intake.spinUp(),
                 Instant {
-                    shooter.setTargetVelocityFromDistance(closeDistance)
+                    shooter.setHoodAngleAndVelocityFromDistance(closeDistance)
                     camera.initPattern()
                 },
                 closeShootCycle(),
@@ -42,22 +42,22 @@ open class Full18(isRed: Boolean): Auto(
 
             shooter.stop(),
             grabAndOpenCycleClose(),
-            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
             closeShootCycle(),
 
             shooter.stop(),
             fromRampCycle(),
-            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
             closeShootCycle(),
 
             shooter.stop(),
             fromRampCycle(),
-            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
             closeShootCycle(),
 
             shooter.stop(),
             grabBallCycle(2),
-            Instant{shooter.setTargetVelocityFromDistance(closeDistance)},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
             leaveShootCycle(),
 
             name = "Auto"

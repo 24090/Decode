@@ -71,7 +71,7 @@ class NewControlled: Teleop( { opmode ->
         drive.estimateAcceleration()
     )}
     val setShooters = { position: Vector ->
-        shooter.setTargetVelocityFromDistance(getScoreDistance(position, isRed.get()))
+        shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance(position, isRed.get()))
     }
 
     val translationalFunction = getTeleopTranslational(opmode.gamepad1, drive.localizer, lastLockTranslational, targetPose, isRed)
@@ -198,7 +198,7 @@ class NewControlled: Teleop( { opmode ->
                                 isRed.get()
                             )
                         )
-                        shooter.setTargetVelocityFromDistance(getScoreDistance(targetPose.get().vector(), isRed.get()))
+                        shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance(targetPose.get().vector(), isRed.get()))
                         return@Future drive.goToCircle(targetPose.get())
                     },
                     Parallel(

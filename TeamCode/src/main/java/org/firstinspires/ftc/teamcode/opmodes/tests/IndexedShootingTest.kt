@@ -28,7 +28,7 @@ class IndexedShootingTest: LinearOpMode(){
         indexTracker.rampCount = 0
         indexTracker.pattern = Pattern.PPG
         waitForStart()
-        robot.shooter.setTargetVelocityFromDistance(48.0 * sqrt(2.0))
+        robot.shooter.setHoodAngleAndVelocityFromDistance(48.0 * sqrt(2.0))
         huskyLens.update()
         runBlocking(
             Race(

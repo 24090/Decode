@@ -32,7 +32,7 @@ open class PartnerAuto(val isRed: Boolean): Auto(isRed, farStartPose, {Race(
             Sequence(
                 shooter.stop(),
                 loadZoneCycle(),
-                Instant { shooter.setTargetVelocityFromDistance(farDistance) },
+                Instant { shooter.setHoodAngleAndVelocityFromDistance(farDistance) },
                 farShootCycle(),
             )
         })

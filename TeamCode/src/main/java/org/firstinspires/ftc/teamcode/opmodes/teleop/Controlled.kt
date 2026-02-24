@@ -102,7 +102,7 @@ class Controlled: Teleop({ opmode ->
                         reads.update()
                         updateP2()
                         val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
-                        shooter.setTargetVelocityFromDistance(relativePose.length)
+                        shooter.setHoodAngleAndVelocityFromDistance(relativePose.length)
                         targetPose.get().heading = getScoreAngle(drive.localizer.pose.vector(), isRed.get())
                     },
                     Sequence(
@@ -140,7 +140,7 @@ class Controlled: Teleop({ opmode ->
                     reads.update()
                     updateP2()
                     val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
-                    shooter.setTargetVelocityFromDistance(relativePose.length)
+                    shooter.setHoodAngleAndVelocityFromDistance(relativePose.length)
                 },
                 Sequence(
                     Parallel(
@@ -173,7 +173,7 @@ class Controlled: Teleop({ opmode ->
                     reads.update()
                     updateP2()
                     val relativePose = (scorePosition.mirroredIf(isRed.get()) - Vector.fromPose(drive.localizer.pose))
-                    shooter.setTargetVelocityFromDistance(relativePose.length)
+                    shooter.setHoodAngleAndVelocityFromDistance(relativePose.length)
                 },
                 shootAll(),
                 Forever {

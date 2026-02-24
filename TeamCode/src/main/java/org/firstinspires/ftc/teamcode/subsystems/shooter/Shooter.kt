@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.commands.Command
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
@@ -25,6 +26,8 @@ class Shooter(hwMap: HardwareMap) {
     val shootCounterRight = ShootCounter(150.0)
     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
+
+    val hoodServo: Servo = hwMap.get(Servo::class.java, "hoodServo")
     var targetVelocityLeft = 0.0
     var targetVelocityRight = 0.0
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
@@ -56,6 +59,17 @@ class Shooter(hwMap: HardwareMap) {
         Pair(84*sqrt(2.0), 1620.0),  // 84 sqrt 2 in
         Pair(96*sqrt(2.0), 1774.0),  // 96 sqrt 2 in
         Pair(108*sqrt(2.0), 1940.0),
+    ))
+
+    val distanceToAngleLUT = InterpolatedLUT(mapOf(
+        Pair(0.0, 0.0), // 0 in
+        Pair(36*sqrt(2.0), 0.0), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 0.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 0.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 0.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 0.0),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 0.0),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 0.0),
     ))
 
     val exitVelocityToLeftVelocityLUT = InterpolatedLUT(mapOf(
@@ -110,6 +124,15 @@ class Shooter(hwMap: HardwareMap) {
 
     fun setTargetVelocityFromDistance(distance: Double) {
         setTargetVelocities(distanceToVelocityLeftLUT.get(distance), distanceToVelocityRightLUT.get(distance))
+    }
+
+    fun setHoodAngleFromDistance(distance: Double) {
+        hoodServo.position = distanceToAngleLUT.get(distance)
+    }
+
+    fun setHoodAngleAndVelocityFromDistance(distance: Double) {
+        setTargetVelocities(distanceToVelocityLeftLUT.get(distance), distanceToVelocityRightLUT.get(distance))
+        hoodServo.position = distanceToAngleLUT.get(distance)
     }
 
     fun stop(): Command = Instant({
