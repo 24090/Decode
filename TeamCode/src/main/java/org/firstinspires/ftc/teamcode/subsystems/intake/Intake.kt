@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.StallTest
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.util.clamp
+import kotlin.math.abs
 
 @Config
 class Intake(hwMap: HardwareMap) {
@@ -29,7 +30,7 @@ class Intake(hwMap: HardwareMap) {
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
     val stallTest: StallTest = StallTest(40)
 
-    fun isStalling() = (stallTest.get() < 1050)&&(stallTest.get() > 900)&&(Math.abs(stallTest.deriv())<20)&&!(stallTest.rememberStall())
+    fun isStalling() = (stallTest.get() < 1050)&&(stallTest.get() > 900)&&(abs(stallTest.deriv()) <20)&&!(stallTest.rememberStall())
     private var nextShootTime: Long? = null
 
     init {
@@ -63,11 +64,6 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var pusherRightForward = 0.6
         @JvmField var pusherRightBack = 0.0
         @JvmField var pusherWait = 0.05
-
-        @JvmField var kP_pos = 0.02
-        @JvmField var kD_Pos = 0.001
-        @JvmField var kL_Pos = 0.15
-        @JvmField var kT_Pos = 3.0
     }
 
     fun update() {
