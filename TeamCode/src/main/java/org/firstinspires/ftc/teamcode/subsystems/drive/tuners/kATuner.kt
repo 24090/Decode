@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems.drive.tuners
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -20,13 +21,11 @@ class kATuner: LinearOpMode() {
         @JvmField var accelpower = 0.0
     }
     override fun runOpMode() {
-        val dash = FtcDashboard.getInstance()
-        var telemetryPacket = TelemetryPacket()
+        val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
         var time: Long = 0
         val recordTime = { name:String ->
             val newTime = System.currentTimeMillis()
             telemetry.addData("$name (ms)", newTime - time)
-            telemetryPacket.put("$name (ms)", newTime - time)
             time = newTime
         }
         val drive = Drive(hardwareMap)
@@ -34,9 +33,9 @@ class kATuner: LinearOpMode() {
         val velStallTest = StallTest(100)
         var power = kS
         reads.update()
-        telemetryPacket.put("avgAccel", 0.0)
-        telemetryPacket.put("Estimated kA", 0.0)
-        dash.sendTelemetryPacket(telemetryPacket)
+        telemetry.addData("avgAccel", 0.0)
+        telemetry.addData("Estimated kA", 0.0)
+        telemetry.update()
         waitForStart()
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
         drive.follow = {
@@ -52,13 +51,9 @@ class kATuner: LinearOpMode() {
             drive.update()
             val avgAccel = if (System.currentTimeMillis() > startTime + 100) drive.localizer.xVel/(System.currentTimeMillis() - startTime - 100)*1000 else 0.001
             recordTime("loop")
-            telemetryPacket = TelemetryPacket()
-            telemetryPacket.put("avgAccel", velStallTest.get())
             telemetry.addData("avgAccel", velStallTest.get())
-            telemetryPacket.put("Estimated kA", accelpower/avgAccel)
             telemetry.addData("Estimated kA", accelpower/avgAccel)
             telemetry.update()
-            dash.sendTelemetryPacket(telemetryPacket)
         }
         power = 0.0
         drive.update()

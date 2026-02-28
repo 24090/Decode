@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems.intake
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -21,30 +22,28 @@ class IntakeTesting(): LinearOpMode(){
         val intake = Intake(hardwareMap)
         val shooter = Shooter(hardwareMap)
         val reads = Reads(hardwareMap)
-        val dash = FtcDashboard.getInstance()
-        val p = TelemetryPacket()
-        val f = {
+        val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
+        val f: () -> Unit = {
             reads.update()
             intake.update()
-            val p = TelemetryPacket()
-            p.put("velocity", intake.motor.velocity)
-            p.put("velocityBack", intake.motorBack.velocity)
-            p.put("targetVelocity", runVelocity)
-            p.put("back feedforward", Intake.backF * runVelocityBack)
-            p.put("front feedforward", Intake.frontF * runVelocity)
-            p.put("max", 2000)
-            p.put("min", 0)
-            p.put("avg", intake.stallTest.get())
-            p.put("deriv", intake.stallTest.deriv())
-            dash.sendTelemetryPacket(p)
+            telemetry.addData("velocity", intake.motor.velocity)
+            telemetry.addData("velocityBack", intake.motorBack.velocity)
+            telemetry.addData("targetVelocity", runVelocity)
+            telemetry.addData("back feedforward", Intake.backF * runVelocityBack)
+            telemetry.addData("front feedforward", Intake.frontF * runVelocity)
+            telemetry.addData("max", 2000)
+            telemetry.addData("min", 0)
+            telemetry.addData("avg", intake.stallTest.get())
+            telemetry.addData("deriv", intake.stallTest.deriv())
+            telemetry.update()
         }
 
-        p.put("velocity", 0.0)
-        p.put("velocityBack", 0.0)
-        p.put("targetVelocity", 0.0)
-        p.put("back feedforward", 0.0)
-        p.put("front feedforward", 0.0)
-        dash.sendTelemetryPacket(p)
+        telemetry.addData("velocity", 0.0)
+        telemetry.addData("velocityBack", 0.0)
+        telemetry.addData("targetVelocity", 0.0)
+        telemetry.addData("back feedforward", 0.0)
+        telemetry.addData("front feedforward", 0.0)
+        telemetry.update()
         waitForStart()
         intake.behaviour = Intake.IntakeBehaviour.Grab
         shooter.motorLeft.power = 0.12

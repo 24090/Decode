@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.commands
 
+import com.acmerobotics.dashboard.FtcDashboard
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -41,7 +43,8 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.min
 
-open class Robot(hwMap: HardwareMap, val telemetry: Telemetry) {
+open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
+    val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
     var red
         get() = storedRed.get()
         set(v) = storedRed.set(v)

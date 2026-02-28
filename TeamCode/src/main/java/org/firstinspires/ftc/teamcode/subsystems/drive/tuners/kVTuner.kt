@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems.drive.tuners
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -20,24 +21,22 @@ class kVTuner: LinearOpMode() {
         @JvmField var velPower = 0.1
     }
     override fun runOpMode() {
-        val dash = FtcDashboard.getInstance()
-        var telemetryPacket = TelemetryPacket()
+        val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
         var time: Long = 0
         val recordTime = { name:String ->
             val newTime = System.currentTimeMillis()
             telemetry.addData("$name (ms)", newTime - time)
-            telemetryPacket.put("$name (ms)", newTime - time)
             time = newTime
         }
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         val velStallTest = StallTest(100)
         reads.update()
-        telemetryPacket.put("velAvg", 0.0)
-        telemetryPacket.put("vel", 0.0)
-        telemetryPacket.put("maxVel", 0.0)
-        telemetryPacket.put("Estimated kV", 0.0)
-        dash.sendTelemetryPacket(telemetryPacket)
+        telemetry.addData("velAvg", 0.0)
+        telemetry.addData("vel", 0.0)
+        telemetry.addData("maxVel", 0.0)
+        telemetry.addData("Estimated kV", 0.0)
+        telemetry.update()
         var maxVel = 0.0
         waitForStart()
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
@@ -54,14 +53,11 @@ class kVTuner: LinearOpMode() {
             velStallTest.update(drive.localizer.xVel, System.currentTimeMillis())
             maxVel = max(maxVel, velStallTest.get())
             recordTime("loop")
-            telemetryPacket = TelemetryPacket()
-            telemetryPacket.put("velAvg", velStallTest.get())
-            telemetryPacket.put("vel", drive.localizer.xVel)
-            telemetryPacket.put("maxVel", maxVel)
-            telemetryPacket.put("Estimated kV", velPower / maxVel)
+            telemetry.addData("velAvg", velStallTest.get())
+            telemetry.addData("vel", drive.localizer.xVel)
+            telemetry.addData("maxVel", maxVel)
             telemetry.addData("Estimated kV", velPower / maxVel)
             telemetry.update()
-            dash.sendTelemetryPacket(telemetryPacket)
         }
         power = 0.0
         drive.update()

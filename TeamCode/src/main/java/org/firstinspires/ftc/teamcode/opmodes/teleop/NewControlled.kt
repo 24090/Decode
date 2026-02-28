@@ -31,7 +31,6 @@ import kotlin.math.PI
 
 @TeleOp(group = "A", name="NewControlled")
 class NewControlled: Teleop( { opmode ->
-    val dashboard = FtcDashboard.getInstance()
     val isRed = Reference(false)
     var useStoredPose = false
     val lastLockHeading = Reference(false)

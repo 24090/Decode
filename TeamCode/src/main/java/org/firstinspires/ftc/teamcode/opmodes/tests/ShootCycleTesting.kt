@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.tests
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -24,18 +25,18 @@ class ShootCycleTesting: LinearOpMode() {
         @JvmField var targetValue = 1400.0
     }
     override fun runOpMode() {
-        val dash = FtcDashboard.getInstance()
+        val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
         val intake = Intake(hardwareMap)
         val shooter = Shooter(hardwareMap)
         val reads = Reads(hardwareMap)
         shooter.setTargetVelocities(targetValue)
         intake.behaviour = Intake.IntakeBehaviour.Grab
         val a = TelemetryPacket()
-        a.put("left shot", shooter.shootCounterLeft.count)
-        a.put("right shot", shooter.shootCounterRight.count)
-        a.put("left vel", shooter.motorLeft.velocity)
-        a.put("right vel", shooter.motorRight.velocity)
-        dash.sendTelemetryPacket(a)
+        telemetry.addData("left shot", shooter.shootCounterLeft)
+        telemetry.addData("right shot", shooter.shootCounterRight)
+        telemetry.addData("left vel", shooter.targetVelocityLeft)
+        telemetry.addData("right vel", shooter.targetVelocityRight)
+        telemetry.update()
         waitForStart()
         runBlocking(Race(
             Forever {
@@ -44,16 +45,9 @@ class ShootCycleTesting: LinearOpMode() {
                 shooter.update()
                 telemetry.addData("left shot", shooter.shootCounterLeft)
                 telemetry.addData("right shot", shooter.shootCounterRight)
-                telemetry.update()
                 telemetry.addData("left vel", shooter.targetVelocityLeft)
                 telemetry.addData("right vel", shooter.targetVelocityRight)
                 telemetry.update()
-                val p = TelemetryPacket()
-                p.put("left shot", shooter.shootCounterLeft.count)
-                p.put("right shot", shooter.shootCounterRight.count)
-                p.put("left vel", shooter.motorLeft.velocity)
-                p.put("right vel", shooter.motorRight.velocity)
-                dash.sendTelemetryPacket(p)
             },
             Sequence(
                 shooter.waitForVelocity(),
@@ -75,10 +69,6 @@ class ShootCycleTesting: LinearOpMode() {
                 Sleep(1.0)
             )
         ))
-        val p = TelemetryPacket()
-        p.put("left shot", shooter.shootCounterLeft.count)
-        p.put("right shot", shooter.shootCounterRight.count)
-        dash.sendTelemetryPacket(p)
         telemetry.addData("left shot", shooter.shootCounterLeft)
         telemetry.addData("right shot", shooter.shootCounterRight)
         telemetry.update()
