@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
-import org.firstinspires.ftc.teamcode.opmodes.poses.farDistance
+import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 
 @Autonomous(name="PartnerAutoRed", group="Auto")
@@ -32,7 +32,7 @@ open class PartnerAuto(val isRed: Boolean): Auto(isRed, farStartPose, {Race(
             Sequence(
                 shooter.stop(),
                 loadZoneCycle(),
-                Instant { shooter.setHoodAngleAndVelocityFromDistance(farDistance) },
+                Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
                 farShootCycle(),
             )
         })

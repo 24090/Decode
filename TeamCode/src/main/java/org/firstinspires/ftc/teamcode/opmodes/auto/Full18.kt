@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
-import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
+import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
@@ -34,7 +34,7 @@ open class Full18(isRed: Boolean): Auto(
            Parallel(
                 intake.spinUp(),
                 Instant {
-                    shooter.setHoodAngleAndVelocityFromDistance(closeDistance)
+                    shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)
                     camera.initPattern()
                 },
                 closeShootCycle(),
@@ -42,22 +42,22 @@ open class Full18(isRed: Boolean): Auto(
 
             shooter.stop(),
             grabAndOpenCycleClose(),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCycle(),
 
             shooter.stop(),
-            fromRampCycle(),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
+            gateIntakeCycleClose(),
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCycle(),
 
             shooter.stop(),
-            fromRampCycle(),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
+            gateIntakeCycleClose(),
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCycle(),
 
             shooter.stop(),
-            grabBallCycle(2),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
+            spikeIntakeCycleClose(2),
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             leaveShootCycle(),
 
             name = "Auto"

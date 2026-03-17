@@ -45,25 +45,25 @@ class Localizer(hwMap: HardwareMap) {
         get() = pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS)
 
     fun setDefaultBulkreadScope() {
-        pinpoint.setBulkReadScope(
-            GoBildaPinpointDriver.Register.X_VELOCITY,
-            GoBildaPinpointDriver.Register.Y_VELOCITY,
-            GoBildaPinpointDriver.Register.H_VELOCITY,
-            GoBildaPinpointDriver.Register.X_POSITION,
-            GoBildaPinpointDriver.Register.Y_POSITION,
-            GoBildaPinpointDriver.Register.H_ORIENTATION,
-        )
+//        pinpoint.setBulkReadScope(
+//            GoBildaPinpointDriver.Register.X_VELOCITY,
+//            GoBildaPinpointDriver.Register.Y_VELOCITY,
+//            GoBildaPinpointDriver.Register.H_VELOCITY,
+//            GoBildaPinpointDriver.Register.X_POSITION,
+//            GoBildaPinpointDriver.Register.Y_POSITION,
+//            GoBildaPinpointDriver.Register.H_ORIENTATION,
+//        )
     }
 
     fun setWheelieBulkreadScope() {
-        pinpoint.setBulkReadScope(
-            GoBildaPinpointDriver.Register.X_VELOCITY,
-            GoBildaPinpointDriver.Register.Y_VELOCITY,
-            GoBildaPinpointDriver.Register.H_VELOCITY,
-            GoBildaPinpointDriver.Register.X_POSITION,
-            GoBildaPinpointDriver.Register.Y_POSITION,
-            GoBildaPinpointDriver.Register.H_ORIENTATION,
-            GoBildaPinpointDriver.Register.PITCH
-        )
+//        pinpoint.setBulkReadScope(
+//            GoBildaPinpointDriver.Register.X_VELOCITY,
+//            GoBildaPinpointDriver.Register.Y_VELOCITY,
+//            GoBildaPinpointDriver.Register.H_VELOCITY,
+//            GoBildaPinpointDriver.Register.X_POSITION,
+//            GoBildaPinpointDriver.Register.Y_POSITION,
+//            GoBildaPinpointDriver.Register.H_ORIENTATION,
+//            GoBildaPinpointDriver.Register.PITCH
+//        )
     }
 }

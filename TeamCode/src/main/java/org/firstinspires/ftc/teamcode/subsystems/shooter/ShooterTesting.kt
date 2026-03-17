@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.expansionHu
 class ShooterTesting(): LinearOpMode(){
     companion object {
         @JvmField var targetVelocity = 1500.0
+        @JvmField var servoPos = 0.0
     }
     override fun runOpMode() {
         val reads = Reads(hardwareMap)
@@ -43,6 +44,7 @@ class ShooterTesting(): LinearOpMode(){
                 targetVelocity -= 50
             }
             intake.update()
+            shooter.hoodServo.position = servoPos
             shooter.update()
             shooter.setTargetVelocities(targetVelocity)
             val p = TelemetryPacket()

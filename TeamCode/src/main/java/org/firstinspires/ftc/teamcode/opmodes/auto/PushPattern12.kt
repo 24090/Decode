@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
-import org.firstinspires.ftc.teamcode.opmodes.poses.closeDistance
+import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
@@ -46,22 +46,22 @@ open class AutoPushPattern12(val isRed: Boolean): Auto(
             ),
             Parallel(
                 intake.spinUp(),
-                Instant { shooter.setHoodAngleAndVelocityFromDistance(closeDistance) },
+                Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance) },
                 closeShootCycle(),
             ),
             shooter.stop(),
             grabAndOpenCycleClose(),
 
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCyclePattern(),
 
             shooter.stop(),
-            grabBallCycle(2),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(closeDistance)},
+            spikeIntakeCycleClose(2),
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCyclePattern(),
 
             shooter.stop(),
-            grabBallCycle(0),
+            spikeIntakeCycleClose(0),
             Instant{shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance(Vector.fromCartesian(106.0, 12.0)))},
             leaveShootCyclePattern(),
 

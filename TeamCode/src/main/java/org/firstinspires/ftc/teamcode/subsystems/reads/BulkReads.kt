@@ -4,8 +4,11 @@ import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.HardwareMap
 
 class BulkReads(hardwareMap: HardwareMap){
-    private val lynxModules = hardwareMap.getAll(LynxModule::class.java)
+    private val lynxModules:  List<LynxModule> = listOf(
+        hardwareMap.get(LynxModule::class.java, "Expansion Hub 2")
+    )
     init {
+        hardwareMap.get(LynxModule::class.java, "Control Hub").bulkCachingMode = LynxModule.BulkCachingMode.MANUAL // just in case we accidentally plug something into the control hub it won't be a silent error
         for (module in lynxModules) {
             module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
         }

@@ -14,10 +14,8 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
-import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
-import org.firstinspires.ftc.teamcode.opmodes.poses.farPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
-import org.firstinspires.ftc.teamcode.opmodes.poses.parkPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
@@ -208,53 +206,44 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             Sleep(1.75)
         ),
         drive.followPath(PurePursuitPath(
-            listOf(closePose, Pose(58.0, 25.0, PI/2.0)),
+            listOf(ShootPose.Close, Pose(58.0, 25.0, PI/2.0)),
             listOf(HeadingBehaviour.Tangent(0.0)),
             listOf(30.0)
         ), 5.0, 0.1),
     )
     fun grabAndOpenCycleFar() = Sequence(
         intake.spinUp(),
-        Instant {
-            drive.follow = {
-                val distanceX = abs((42.0 + 24.0) - drive.localizer.x)
-                val targetPose = Pose(
-                    66.0,
-                    80.0 - min(distanceX * 3, 60.0),
-                    PI/2
-                ).mirroredIf(red)
-                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
-            }
-        },
         Race(
-            Sequence(
-                WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 }
-            ),
-            Sequence(
-                WaitUntil{ drive.localizer.poseVel.vector().length < 0.2 && drive.localizer.pose.mirroredIf(red).y > 48},
-            ),
+            drive.followPath(PurePursuitPath(
+                listOf(
+                    Pose(62.0, 30.0, PI/2).mirroredIf(red),
+                    Pose(66.0, 60.0, PI/2).mirroredIf(red)
+                ),
+                listOf(HeadingBehaviour.Tangent(0.0), HeadingBehaviour.Tangent(0.0)),
+                listOf(40.0)
+            )),
+            WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
+            WaitUntil{ drive.localizer.poseVel.vector().length < 0.2 && drive.localizer.pose.mirroredIf(red).y > 48},
         ),
-        Instant {
-            indexTracker.processObservation(Observation.GateOpened)
-            drive.follow = {
-                val distanceY = abs(closePose.y - drive.localizer.y)
-                val targetPose = Pose(
-                    closePose.x - clamp(distanceY, 0.0, 16.0),
-                    closePose.y,
-                    closePose.heading * clamp(distanceY/20.0, 0.0, 1.0) + PI/2 * (1 - clamp(distanceY/20.0, 0.0, 1.0))
-                ).mirroredIf(red)
-                pointToPoint(drive.localizer.pose, drive.localizer.poseVel, targetPose)
-            }
-        },
-        drive.goToSquare(Pose(38.0 + 24.0, 24.0, PI/2).mirroredIf(red), yTolerance = 3.0, xTolerance = 3.0)
+        drive.followPath(PurePursuitPath(
+            listOf(
+                Pose(60.0, 30.0, PI/2).mirroredIf(red),
+                ShootPose.Far.mirroredIf(red),
+            ),
+            listOf(HeadingBehaviour.Tangent(PI)),
+            listOf(30.0)
+        ))
     )
-    fun grabBallCycle (n: Int, endPark: Boolean = false): Sequence{
+    fun spikeIntakeCycleClose(n: Int) = spikeIntakeCycle(n, ShootPose.Close)
+    fun spikeIntakeCycleFar(n: Int) = spikeIntakeCycle(n, ShootPose.Far)
+
+    fun spikeIntakeCycle(n: Int, shootPose: ShootPose): Sequence{
         val endPoint = Pose(
             (if (n == 1) 34.0 else 36.0) + 24.0 * n,
             (65.0),
             PI/2
         )
-        val shootPoint = if (endPark) parkPose else closePose
+        val shootPoint = shootPose
         return Sequence(
             intake.spinUp(),
 
@@ -293,7 +282,10 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         )
     }
 
-    fun fromRampCycle() = Sequence(
+    fun gateIntakeCycleClose() = gateIntakeCycle(ShootPose.Close)
+    fun gateIntakeCycleFar() = gateIntakeCycle(ShootPose.Far)
+
+    fun gateIntakeCycle(shootPose: ShootPose) = Sequence(
         Race(
             Sequence(
                 Parallel(
@@ -338,7 +330,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                         35.0,
                         PI/2
                     ).mirroredIf(red),
-                    closePose
+                    shootPose
                 ),
                 listOf(
                     HeadingBehaviour.Tangent(PI),
@@ -349,7 +341,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                     20.0
                 )
             )),
-            WaitUntil {drive.localizer.pose.inCircle(closePose, 5.0, 0.1)}
+            WaitUntil {drive.localizer.pose.inCircle(shootPose, 5.0, 0.1)}
         )
     )
 
@@ -376,20 +368,20 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
 
     fun closeShootCyclePattern() = Sequence(
         Instant{lights.turnOn()},
-        drive.goToCircle(closePose.mirroredIf(red), 2.0),
+        drive.goToCircle(ShootPose.Close.mirroredIf(red), 2.0),
         shootPattern(),
         Instant{lights.turnOff()},
         name = "CloseShootCycle"
     )
 
     fun closeShootCycle() = Sequence(
-        drive.goToCircle(closePose.mirroredIf(red), 2.0),
+        drive.goToCircle(ShootPose.Close.mirroredIf(red), 2.0),
         shootAll(),
         name = "CloseShootCycle"
     )
 
     fun farShootCycle() = Sequence(
-        drive.goToCircle(farPose.mirroredIf(red), 2.0),
+        drive.goToCircle(ShootPose.Far.mirroredIf(red), 2.0),
         shootAll(),
         name = "FarShootCycle"
     )
@@ -429,7 +421,7 @@ open class Auto(val red: Boolean, val startPose: Pose, val command: Robot.() -> 
         }
 
         robot.drive.localizer.pose = startPose.mirroredIf(storedRed.get())
-        robot.drive.startP2PWithTargetPose(closePose.mirroredIf(storedRed.get()))
+        robot.drive.startP2PWithTargetPose(ShootPose.Close.mirroredIf(storedRed.get()))
         robot.camera.sendHeading(startPose.heading)
         runBlocking(command)
     }

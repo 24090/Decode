@@ -5,7 +5,7 @@ package org.firstinspires.ftc.teamcode.util
     for running random tests and stuff
  */
 
-import org.firstinspires.ftc.teamcode.opmodes.poses.closePose
+import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
@@ -15,7 +15,7 @@ import kotlin.math.PI
 fun main(){
     val path = PurePursuitPath(
         listOf(
-            closePose,
+            ShootPose.Close,
             Pose(60.0, 20.0, PI),
             Pose(60.0, 60.0, -PI/2),
         ),
@@ -34,7 +34,7 @@ fun main(){
     )
     println(path.lines.map { "{${it.start}, ${it.end}}" })
     var v = Pose(0.0, 0.0, 0.0).vector()
-    var position = closePose.vector()
+    var position = ShootPose.Close.vector()
     for (n in (1..1000)){
         println(position.let { Pose(it.x, it.y, 0.0) })
         val followPoint = path.getFollowPoint(position, 40.0, true)

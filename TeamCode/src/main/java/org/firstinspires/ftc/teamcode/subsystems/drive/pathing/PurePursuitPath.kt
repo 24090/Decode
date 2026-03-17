@@ -19,8 +19,13 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
         return (0..t.toInt()).sumOf { lines[it].length } + lines[t.toInt()].length * (t%1)
     }
 
+    fun maxRadius(t: Double) = maxRadii[clamp(t, 0.0, maxRadii.size.toDouble() - 1).toInt()]
+    fun headingBehaviour(t: Double) = headingBehaviours[clamp(t, 0.0, maxRadii.size.toDouble() - 1).toInt()]
+
+
     fun getFollowPoint(currentPosition: Vector, tThresh: Double, updateLastT: Boolean = true): Pose {
-        if ((lastT > (lines.size-1))&&((currentPosition - points.last()).length < maxRadii[lastT.toInt()] * 2.0)){
+        if ((lastT > (lines.size-1))&&((currentPosition - points.last()).length < maxRadius(lastT) * 2.0)){
+            if (updateLastT) lastT = lines.size.toDouble()
             return poses.last()
         }
         val lastAdjustedT = adjustT(lastT)
@@ -28,7 +33,7 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
             .mapIndexed { index, line ->
                 line.circleIntersection(
                     currentPosition,
-                    maxRadii[lastT.toInt()]
+                    maxRadius(lastT)
                 ).map { Pair(
                     index.toDouble() + line.getTvalue(it),
                     it
@@ -38,7 +43,7 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
             .filter { abs(adjustT(it.first) - lastAdjustedT) <= tThresh }
             .reduceOrNull{ a, b -> if(a.first > b.first) a else b }
             ?: Pair(lastT, getPosition(lastT))
-        val headingBehaviour = headingBehaviours[t.toInt()]
+        val headingBehaviour = headingBehaviour(t)
         val heading = when (headingBehaviour){
             is HeadingBehaviour.Tangent -> AngleUnit.normalizeRadians((followPoint - currentPosition).angle + headingBehaviour.angle)
             HeadingBehaviour.Snap -> poses[t.toInt() + 1].heading

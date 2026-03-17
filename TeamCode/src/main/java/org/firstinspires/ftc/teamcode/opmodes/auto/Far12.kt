@@ -10,21 +10,19 @@ import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
-import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
-import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 
-@Autonomous(name="Red - Close - 15 Sorted", group="Auto")
-class Pattern15Red: Pattern15(true)
+@Autonomous(name="Red - Far - 15", group="Auto")
+class Far12Red: Far12(true)
 
-@Autonomous(name="Blue - Close - 15 Sorted", group="Push")
-class Pattern15Blue: Pattern15(false)
-open class Pattern15(isRed: Boolean): Auto(
+@Autonomous(name="Blue - Far - 15", group="Auto")
+class Far12Blue: Far12(false)
+
+open class Far12(isRed: Boolean): Auto(
     isRed,
-    closeStartPose,
+    farStartPose,
     {
         Race(
             Forever({
@@ -40,15 +38,15 @@ open class Pattern15(isRed: Boolean): Auto(
                     Parallel(
                         intake.spinUp(),
                         Instant {
-                            shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)
+                            shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance)
                             camera.initPattern()
                         },
-                        drive.goToCircle(ShootPose.Close.let { Pose(it.x, it.y, -0.2).mirroredIf(isRed) }),
+                        drive.goToCircle(ShootPose.Far.mirroredIf(isRed)),
                         Sleep(5.0)
                     ),
                     WaitUntil {
                         camera.getPattern().let {
-                            if (it != null){
+                            if (it != null) {
                                 indexTracker.pattern = it
                                 true
                             } else {
@@ -58,27 +56,27 @@ open class Pattern15(isRed: Boolean): Auto(
 
                     }
                 ),
-                closeShootCycle(),
+                farShootCycle(),
 
                 shooter.stop(),
-                grabAndOpenCycleClose(),
-                Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
-                closeShootCycle(),
+                grabAndOpenCycleFar(),
+                Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
+                farShootCycle(),
 
                 shooter.stop(),
-                gateIntakeCycleClose(),
-                Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
-                closeShootCyclePattern(),
+                gateIntakeCycleFar(),
+                Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
+                farShootCycle(),
 
                 shooter.stop(),
-                spikeIntakeCycleClose(0),
-                Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
-                closeShootCyclePattern(),
+                spikeIntakeCycleFar(0),
+                Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
+                farShootCycle(),
 
                 shooter.stop(),
-                spikeIntakeCycleClose(2),
-                Instant{shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance(Vector.fromCartesian(106.0, 12.0)))},
-                leaveShootCyclePattern(),
+                Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
+                loadZoneCycle(),
+                farShootCycle(),
 
                 name = "Auto"
             ),

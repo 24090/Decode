@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.poses
 
+import com.sun.tools.javac.util.Position
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.util.clamp
@@ -9,6 +10,12 @@ const val robotWidth = 18.0
 const val robotLength = 13.38
 val scorePosition = Vector.fromCartesian(144.0, 72.0)
 
+sealed class ShootPose(val position: Vector): Pose(position.x, position.y, getScoreAngle(position)) {
+    object Far: ShootPose(Vector.fromCartesian(14.0, 14.0))
+    object Close: ShootPose(Vector.fromCartesian(79.5, 12.0))
+    val distance = getScoreDistance(position)
+
+}
 fun getScoreDistance(position: Vector, isRed: Boolean = false) =
     (scorePosition.mirroredIf(isRed) - position).length
 
@@ -19,12 +26,6 @@ fun getScoreAngle(position: Vector, isRed: Boolean = false) =
 
 fun getScorePose(position: Vector, isRed: Boolean = false) =
     Pose(position.x, position.y, getScoreAngle(position, isRed))
-
-val farPose = getScorePose(Vector.fromCartesian(14.0, 14.0))
-val closePose = getScorePose(Vector.fromCartesian(79.5, 12.0))
-val closeDistance = getScoreDistance(Vector.fromPose(closePose))
-
-val farDistance = getScoreDistance(Vector.fromPose(farPose))
 val farStartPose = Pose(robotLength/2.0, robotWidth/2.0, 0.0)
 val closeStartPose = Pose(122.45460330031989, 47.57810577632874, Math.PI/4.0)
 val parkPose = Pose(24.0+(robotLength/2.0), -24.0-(robotWidth/2.0), 0.0)

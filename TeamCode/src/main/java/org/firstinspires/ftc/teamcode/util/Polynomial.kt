@@ -42,7 +42,6 @@ class Polynomial(vararg val coefficients: Double) {
 
         return possible.takeWhile { (_, b) -> (b - possible.first().second) <= 1e-5}.map { (a, _) -> a }
     }
-
     fun solve(interval: Interval, iterations: Int = 16): List<Double>{
         val out = evaluateInterval(interval)
         if (!out.contains(0.0)) {
@@ -62,6 +61,19 @@ class Polynomial(vararg val coefficients: Double) {
             Interval(pivot, interval.upper),
             iterations - 1,
         )
+    }
+
+    fun solveNewton(initialGuess: Double): Double{
+        val derivative = derivative()
+        var guess: Double = initialGuess
+        var i = 0
+        while (i<100){
+            val slope: Double = evaluate(guess)
+            val newGuess: Double = guess -(derivative.evaluate(guess))/slope
+            guess = newGuess
+            i++
+        }
+        return guess
     }
 
     operator fun plus(other: Double): Polynomial {

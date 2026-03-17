@@ -11,7 +11,7 @@ import kotlin.math.absoluteValue
 
 fun Pose(pose2d: Pose2D) = Pose(pose2d.getX(DistanceUnit.INCH), pose2d.getY(DistanceUnit.INCH), pose2d.getHeading(AngleUnit.RADIANS))
 
-class Pose(var x: Double, var y: Double, var heading: Double) {
+open class Pose(var x: Double, var y: Double, var heading: Double) {
     fun inSquare(pose: Pose, xTolerance: Double, yTolerance: Double, headingTolerance: Double): Boolean{
         return (this - pose).inSquare(xTolerance, yTolerance, headingTolerance)
     }
