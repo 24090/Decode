@@ -33,6 +33,7 @@ class ShooterTesting(): LinearOpMode(){
         telemetry.addData("rightVelocity", 0.0)
         telemetry.addData("targetVelocity", 1500.0)
         telemetry.addData("powerFeedforward", 0.0)
+        telemetry.update()
         intake.behaviour = Intake.IntakeBehaviour.Grab
         waitForStart()
         while (opModeIsActive()){
@@ -47,13 +48,13 @@ class ShooterTesting(): LinearOpMode(){
             shooter.hoodServo.position = servoPos
             shooter.update()
             shooter.setTargetVelocities(targetVelocity)
-            val p = TelemetryPacket()
             intake.pusherLeft.position = if (gamepad1.x) pusherLeftForward else pusherLeftBack
             intake.pusherRight.position = if (gamepad1.x) pusherRightForward else pusherRightBack
             telemetry.addData("voltage", expansionHubVoltage)
             telemetry.addData("leftVelocity", shooter.motorLeft.velocity)
             telemetry.addData("rightVelocity", shooter.motorRight.velocity)
             telemetry.addData("powerFeedforwardLeft", shooter.velocityToPowerLUT.get(shooter.targetVelocityLeft))
+            telemetry.update()
         }
     }
 }

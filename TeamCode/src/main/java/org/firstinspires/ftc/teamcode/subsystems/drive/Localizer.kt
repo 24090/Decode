@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 class Localizer(hwMap: HardwareMap) {
     var pinpoint: GoBildaPinpointDriver = hwMap.get(GoBildaPinpointDriver::class.java, "pinpoint")
     companion object {
-        @JvmStatic var driveY: Double = -2.4
-        @JvmStatic var strafeX: Double = -2.68
+        @JvmStatic var driveY: Double = -2.99
+        @JvmStatic var strafeX: Double = -4.88
     }
     init {
         // X and Y are INTENTIONALLY swapped

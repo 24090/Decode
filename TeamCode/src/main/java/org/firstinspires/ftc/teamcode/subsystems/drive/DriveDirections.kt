@@ -51,10 +51,10 @@ class DriveDebugger: LinearOpMode() {
             telemetry.addLine("A -> BL")
             telemetry.addLine("B -> BR")
             telemetry.addLine("Switch directions of backwards encoders in Localizer.kt")
-            telemetry.addData("x", drive.localizer.y)
-            telemetry.addData("y", drive.localizer.x)
+            telemetry.addData("x", drive.localizer.x)
+            telemetry.addData("y", drive.localizer.y)
             telemetry.addData("h", drive.localizer.heading)
-            telemetry.addData("pitch", drive.localizer.pinpoint.getPitch(AngleUnit.RADIANS))
+            //telemetry.addData("pitch", drive.localizer.pinpoint.getPitch(AngleUnit.RADIANS))
             telemetry.update()
         }
     }
