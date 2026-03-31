@@ -7,6 +7,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.StallTest
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.TimeAverager
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.getTranslationalVectors
@@ -23,14 +24,9 @@ class kVTuner: LinearOpMode() {
     override fun runOpMode() {
         val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
         var time: Long = 0
-        val recordTime = { name:String ->
-            val newTime = System.currentTimeMillis()
-            telemetry.addData("$name (ms)", newTime - time)
-            time = newTime
-        }
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
-        val velStallTest = StallTest(100)
+        val velAverager = TimeAverager(30)
         reads.update()
         telemetry.addData("velAvg", 0.0)
         telemetry.addData("vel", 0.0)
@@ -49,12 +45,10 @@ class kVTuner: LinearOpMode() {
         time = System.currentTimeMillis()
         while (opModeIsActive()) {
             reads.update()
-            println("test")
-            velStallTest.update(drive.localizer.xVel, System.currentTimeMillis())
-            maxVel = max(maxVel, velStallTest.get())
-            recordTime("loop")
-            telemetry.addData("velAvg", velStallTest.get())
-            telemetry.addData("vel", drive.localizer.xVel)
+            velAverager.update(System.currentTimeMillis(), drive.localizer.xVel)
+            maxVel = max(maxVel, velAverager.get().let { if (it.isFinite()) it else 0.0 })
+            telemetry.addData("velAvg", velAverager.get())
+            telemetry.addData("vel", drive.localizer.poseVel.vector().length)
             telemetry.addData("maxVel", maxVel)
             telemetry.addData("Estimated kV", velPower / maxVel)
             telemetry.update()

@@ -27,7 +27,9 @@ class Shooter(hwMap: HardwareMap) {
     val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
     val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
 
-    val hoodServo: Servo = hwMap.get(Servo::class.java, "hoodServo")
+    val hoodServoLeft: Servo = hwMap.get(Servo::class.java, "hoodServoLeft")
+    val hoodServoRight: Servo = hwMap.get(Servo::class.java, "hoodServoRight")
+
     var targetVelocityLeft = 0.0
     var targetVelocityRight = 0.0
     val velocityToPowerLUT = InterpolatedLUT(mapOf(
@@ -41,37 +43,38 @@ class Shooter(hwMap: HardwareMap) {
     ))
 
     val distanceToVelocityLeftLUT = InterpolatedLUT(mapOf(
-        Pair(0.0, 0.0), // 0 in
-        Pair(36*sqrt(2.0), 1360.0 ), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1420.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1480.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1580.0),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 1700.0),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 1820.0),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 1840.0),
-    ))
+        Pair(0.0, 1040.0), // 0 in
+        Pair(36*sqrt(2.0), 1040.0 ), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1160.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1260.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1350.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 1440.0),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 1510.0),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 1650.0),
+        Pair(120*sqrt(2.0), 1750.0),
+        ))
     val distanceToVelocityRightLUT = InterpolatedLUT(mapOf(
-        Pair(0.0, 0.0), // 0 in
-        Pair(36*sqrt(2.0), 1360.0), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1420.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1480.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1580.0),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 1700.0),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 1820.0),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 1940.0),
-    ))
+        Pair(0.0, 1040.0), // 0 in
+        Pair(36*sqrt(2.0), 1040.0), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1160.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1260.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1350.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 1440.0),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 1510.0),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 1650.0),
+        Pair(120*sqrt(2.0), 1750.0),
+        ))
 
     val distanceToAngleLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 1.0), // 0 in
-        Pair(36*sqrt(2.0), 1.0), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 0.9),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 0.9),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 0.75),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 0.65),
-        Pair(120*sqrt(2.0), 0.5),
-
+        Pair(36*sqrt(2.0), 0.0), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 0.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 0.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 0.2),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 0.3),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 0.45),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 0.6),
+        Pair(120*sqrt(2.0), 0.7),
         ))
 
     val exitVelocityToLeftVelocityLUT = InterpolatedLUT(mapOf(
@@ -131,12 +134,14 @@ class Shooter(hwMap: HardwareMap) {
     }
 
     fun setHoodAngleFromDistance(distance: Double) {
-        hoodServo.position = distanceToAngleLUT.get(distance)
+        hoodServoLeft.position = 1.0 - distanceToAngleLUT.get(distance)
+        hoodServoRight.position = distanceToAngleLUT.get(distance)
+
     }
 
     fun setHoodAngleAndVelocityFromDistance(distance: Double) {
-        setTargetVelocities(distanceToVelocityLeftLUT.get(distance), distanceToVelocityRightLUT.get(distance))
-        hoodServo.position = distanceToAngleLUT.get(distance)
+        setTargetVelocityFromDistance(distance)
+        setHoodAngleFromDistance(distance)
     }
 
     fun stop(): Command = Instant({

@@ -92,7 +92,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         Parallel(
             shooter.waitForVelocity(),
             Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy },
-            Sleep(0.3),
+            Sleep(0.05),
         ),
         intake.releaseDual(),
         Instant { intake.behaviour = Intake.IntakeBehaviour.Grab },
@@ -330,7 +330,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                         35.0,
                         PI/2
                     ).mirroredIf(red),
-                    shootPose
+                    shootPose.mirroredIf(red)
                 ),
                 listOf(
                     HeadingBehaviour.Tangent(PI),
@@ -341,7 +341,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                     20.0
                 )
             )),
-            WaitUntil {drive.localizer.pose.inCircle(shootPose, 5.0, 0.1)}
+            WaitUntil {drive.localizer.pose.inCircle(shootPose.mirroredIf(red), 5.0, 0.1)}
         )
     )
 

@@ -81,7 +81,7 @@ class Intake(hwMap: HardwareMap) {
                 if (!isStalling()) {
                     motor.power = clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
                 } else {
-                    motor.power = clamp(-runVelocityBack * frontF + (-runVelocityBack - motor.velocity) * kP, -powerMax, 1.0)
+                    motor.power = clamp(0 * frontF + (0 - motor.velocity) * kP, -powerMax, 1.0)
                 }
 
             }

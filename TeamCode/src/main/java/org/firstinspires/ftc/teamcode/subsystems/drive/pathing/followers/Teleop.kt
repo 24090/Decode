@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDLT
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hD
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hP
+import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hS
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.hT
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.xyD
@@ -71,7 +72,7 @@ fun getTeleopFollower(
                 targetPose.set(Pose(targetPose.get().x, targetPose.get().y, localizer.heading))
             }
             lastLockHeading.set(true)
-            PDLT(AngleUnit.normalizeRadians(targetPose.get().heading - localizer.heading), dError.heading, hP, hD, kS, hT)
+            PDLT(AngleUnit.normalizeRadians(targetPose.get().heading - localizer.heading), dError.heading, hP, hD, hS, hT)
         } else {
             lastLockHeading.set(false)
             -gamepad.right_stick_x.toDouble()
@@ -96,7 +97,7 @@ fun getHeadingLockTeleop(getAngle: () -> Double?, gamepad: Gamepad, localizer: L
 
     val angle = getAngle() ?: localizer.poseVel.vector().let {if (it.length > 3.0) it.angle else localizer.heading}
     val translational = teleopTranslational(getRelativeVelocity(localizer.pose, localizer.poseVel).vector() * -1)
-    val turn = PDLT(AngleUnit.normalizeRadians(angle - localizer.heading), -localizer.headingVel, hP, hD, kS, hT)
+    val turn = PDLT(AngleUnit.normalizeRadians(angle - localizer.heading), -localizer.headingVel, hP, hD, hS, hT)
 
     processTurnTranslational(turn, translational, localizer.pose, localizer.poseVel)
 }

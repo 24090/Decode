@@ -62,7 +62,6 @@ class ShootCycleTesting: LinearOpMode() {
                 Parallel(
                     shooter.waitForVelocity(),
                     Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy },
-                    Sleep(0.1),
                 ),
                 intake.releaseDual(),
                 Instant { intake.behaviour = Intake.IntakeBehaviour.Grab },

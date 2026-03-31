@@ -36,18 +36,20 @@ class Drive(hwMap: HardwareMap) {
     companion object DriveConstants {
         @JvmField var lateralFactor = 0.7
 
-        @JvmField var kS = 0.15
-        @JvmField var kV = 0.0151
+        @JvmField var kS = 0.12
+        @JvmField var kV = 0.012
 
-        @JvmField var kA = 0.0067
+        @JvmField var kA = 0.0065
         @JvmField var hP = 2.5
-        @JvmField var hD = 0.18
+        @JvmField var hD = 0.1
         @JvmField var hT = 0.02
+        @JvmField var hS = 0.09
+
         @JvmField var xyP = 0.13
-        @JvmField var xyD = 0.04
+        @JvmField var xyD = 0.025
         @JvmField var xyT = 0.5
         @JvmField var tipAccelForward = 450.0
-        @JvmField var tipAccelBackward = -140.0
+        @JvmField var tipAccelBackward = -280.0
     }
      val flMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fl"), true, 0.01)
     fun setFlPower(power: Double) { flMotor.power = power }
@@ -139,7 +141,6 @@ class Drive(hwMap: HardwareMap) {
         Instant {startP2PWithTargetPose(pose)},
         WaitUntil {
             localizer.pose.inCircle(pose, distanceTolerance, headingTolerance)
-            //&& localizer.poseVel.inCircle(5.0 * distanceTolerance, headingTolerance * 0.25)
         },
     )
     fun goToSquare(

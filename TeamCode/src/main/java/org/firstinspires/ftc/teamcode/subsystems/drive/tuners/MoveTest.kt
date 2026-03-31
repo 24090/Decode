@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
+import kotlin.math.PI
 
 @TeleOp
 class MoveTest: LinearOpMode() {
@@ -29,7 +30,7 @@ class MoveTest: LinearOpMode() {
         val drive = Drive(hardwareMap)
         val reads = Reads(hardwareMap)
         drive.localizer.pose = Pose(0.0, 0.0, 0.0)
-        drive.startP2PWithTargetPose(Pose(-90.0, 0.0, 0.0))
+        drive.startP2PWithTargetPose(Pose(0.0, 0.0, 0.0))
         reads.update()
         telemetry.addLine("x ${drive.localizer.x}")
         telemetry.addLine("y ${drive.localizer.y}")
@@ -45,12 +46,12 @@ class MoveTest: LinearOpMode() {
                 recordTime("loop")
                 telemetry.update()
             },
-            ForeverCommand{
-                Sequence(
-                    drive.goToCircle(Pose(60.0, 0.0, 0.0)),
-                    Sleep(1.0),
-                    drive.goToCircle(Pose(10.0, 0.0, 0.0)),
-                    Sleep(1.0)
+            ForeverCommand {
+                Sequence (
+                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
+                    Sleep(2.0),
+                    drive.goToCircle(Pose(40.0, 0.0, 0.0)),
+                    Sleep(2.0)
                 )
             }
         ))

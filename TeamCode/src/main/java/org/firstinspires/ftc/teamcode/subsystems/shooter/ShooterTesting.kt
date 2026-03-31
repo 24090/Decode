@@ -45,7 +45,8 @@ class ShooterTesting(): LinearOpMode(){
                 targetVelocity -= 50
             }
             intake.update()
-            shooter.hoodServo.position = servoPos
+            shooter.hoodServoRight.position = servoPos
+            shooter.hoodServoLeft.position = 1.0 - servoPos
             shooter.update()
             shooter.setTargetVelocities(targetVelocity)
             intake.pusherLeft.position = if (gamepad1.x) pusherLeftForward else pusherLeftBack

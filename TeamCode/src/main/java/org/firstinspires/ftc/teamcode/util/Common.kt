@@ -8,3 +8,5 @@ class Reference<T>(private var value: T){
         this.value = newValue
     }
 }
+
+fun timeSeconds() = System.nanoTime()/1_000_000_00.0
