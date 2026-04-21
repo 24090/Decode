@@ -61,7 +61,7 @@ class NewControlled: Teleop( { opmode ->
     }
 
     indexTracker.pattern = storedPattern ?: indexTracker.pattern
-    camera.initLocalize()
+    //camera.initLocalize()
 
     val getPredictedPosition = {predictedShootPosition(
         intake.getMinShootTime(),
@@ -87,7 +87,7 @@ class NewControlled: Teleop( { opmode ->
     drive.follow = normalFollow
 
     val relocalize = {
-        val cameraPose = camera.getPose()
+        val cameraPose = null //camera.getPose()
         if (cameraPose != null){
            // drive.localizer.pose = Pose(drive.localizer.x * 6.0/7.0 + cameraPose.x * 1.0/7.0, drive.localizer.y * 6.0/7.0 + cameraPose.y * 1.0/7.0, drive.localizer.heading)
         }

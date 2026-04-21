@@ -15,6 +15,9 @@ import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PD
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDL
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PV
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.StallTest
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.util.clamp
@@ -29,8 +32,8 @@ class Intake(hwMap: HardwareMap) {
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
+    var stopPosition: Int? = null
     val stallTest: StallTest = StallTest(40)
-
     fun isStalling() = (stallTest.get() < 1050) && (stallTest.deriv().absoluteValue < 100) && (stallTest.get() > 500)
     private var nextShootTime: Long? = null
 
@@ -42,13 +45,11 @@ class Intake(hwMap: HardwareMap) {
         pusherRight.position = pusherRightBack
     }
     sealed class IntakeBehaviour() {
-        object SlowIntake: IntakeBehaviour()
         object Greedy: IntakeBehaviour()
         object Grab: IntakeBehaviour()
         object Hold: IntakeBehaviour()
         object Eject: IntakeBehaviour()
         object Stop: IntakeBehaviour()
-        object Stopfront: IntakeBehaviour()
         class Wheelie(val fl: DcMotor, val fr: DcMotor): IntakeBehaviour()
     }
     companion object Params {
@@ -58,6 +59,12 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var backF = 0.00037
         @JvmField var frontF = 0.00051
         @JvmField var kP = 0.0003
+        @JvmField var kP_positional = 0.01
+        @JvmField var kD_positional = 0.0002
+        @JvmField var kL_positional = 0.15
+
+
+
         @JvmField var powerMax = 0.67
         @JvmField var pusherLeftForward = 0.0
         @JvmField var pusherLeftBack = 0.95
@@ -67,35 +74,45 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var pusherWait = 0.05
     }
 
+    private fun holdFront() {
+        if (abs(motor.velocity) > 40 && stopPosition == null) {
+            motor.power = clamp(-motor.velocity * kP, -powerMax, powerMax)
+        } else if (stopPosition != null){
+            motor.power = clamp(PDL((stopPosition!! - motor.currentPosition).toDouble(), motor.velocity, kP_positional, kD_positional, kL_positional), -powerMax, powerMax)
+        } else {
+            stopPosition = motor.currentPosition
+        }
+    }
+    private fun runFront() {
+        stopPosition = null
+        motor.power = clamp(PV(runVelocity, motor.velocity, kP, frontF), -1.0, powerMax)
+    }
+    private fun runBack() { motorBack.power = clamp(PV(runVelocity, motorBack.velocity, kP, backF), -1.0, powerMax) }
+
     fun update() {
         val behaviour = behaviour
         stallTest.update(motorBack.velocity.toInt(), System.currentTimeMillis())
         when (behaviour) {
             IntakeBehaviour.Hold -> {
-                motor.power =
-                    clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
-                motorBack.power = clamp(-runVelocityBack * backF + (-runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
+                runBack()
+                holdFront()
             }
             IntakeBehaviour.Grab -> {
-                motorBack.power = clamp(runVelocityBack * backF + (runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
+                runBack()
                 if (!isStalling()) {
-                    motor.power = clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
+                    runFront()
                 } else {
-                    motor.power = clamp(0 * frontF + (0 - motor.velocity) * kP, -powerMax, 1.0)
+                    holdFront()
                 }
 
             }
             IntakeBehaviour.Greedy -> {
-                motorBack.power = clamp(runVelocityBack * backF + (runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
-                motor.power = clamp(runVelocity * frontF + (runVelocity - motor.velocity) * kP, -1.0, powerMax)
+                runBack()
+                runFront()
             }
             IntakeBehaviour.Stop -> {
-                motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)
+                holdFront()
                 motorBack.power = clamp((0 -motor.velocity) * kP, -1.0, powerMax)
-            }
-            IntakeBehaviour.Stopfront -> {
-                motor.power = clamp((0 - motor.velocity) * kP, -1.0, powerMax)
-                motorBack.power = clamp(runVelocityBack * backF + (runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
             }
             IntakeBehaviour.Eject -> {
                 motorBack.power = clamp(-runVelocityBack * backF + (-runVelocityBack - motorBack.velocity) * kP, -1.0, powerMax)
@@ -103,23 +120,6 @@ class Intake(hwMap: HardwareMap) {
             }
             is IntakeBehaviour.Wheelie -> {
                 motor.power = -(behaviour.fl.power + behaviour.fr.power)/10.0
-            }
-
-            IntakeBehaviour.SlowIntake -> {
-                motorBack.power = clamp(
-                    runVelocityBack * backF + (runVelocityBack - motorBack.velocity) * kP,
-                    -1.0,
-                    powerMax
-                )
-                if (!isStalling()) {
-                    motor.power = clamp(
-                        runVelocity * 0.67 * frontF + (runVelocity * 0.67 - motor.velocity) * kP,
-                        -1.0,
-                        powerMax
-                    )
-                } else {
-                    motor.power = clamp(0 * frontF + (0 - motor.velocity) * kP, -powerMax, 1.0)
-                }
             }
         }
     }
@@ -131,11 +131,6 @@ class Intake(hwMap: HardwareMap) {
     fun setAdjustThird(): Command = Instant({
         behaviour = IntakeBehaviour.Hold
     }, "SetAdjustThird")
-
-    fun stopFront(): Command = Instant({
-        behaviour = IntakeBehaviour.Stopfront
-    }, "StopFront")
-
     fun fullAdjustThird(): Command = Sequence(
         setAdjustThird(),
         Future {

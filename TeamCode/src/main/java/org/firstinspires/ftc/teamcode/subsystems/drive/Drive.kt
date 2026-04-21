@@ -49,7 +49,7 @@ class Drive(hwMap: HardwareMap) {
         @JvmField var xyD = 0.025
         @JvmField var xyT = 0.5
         @JvmField var tipAccelForward = 450.0
-        @JvmField var tipAccelBackward = -280.0
+        @JvmField var tipAccelBackward = -140.0
     }
      val flMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fl"), true, 0.01)
     fun setFlPower(power: Double) { flMotor.power = power }

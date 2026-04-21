@@ -5,6 +5,8 @@ import kotlin.math.absoluteValue
 import kotlin.math.sign
 import kotlin.math.sqrt
 
+fun PV(targetVelocity: Double, currentVelocity: Double, kP: Double, kV: Double) = (targetVelocity-currentVelocity) * kP + kV * targetVelocity
+
 fun PD(error: Double, dError: Double, kP: Double, kD: Double) = error * kP + dError * kD
 fun PD(error: Vector, dError: Vector, kP: Double, kD: Double) = error * kP + dError * kD
 

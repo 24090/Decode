@@ -1,21 +1,19 @@
 package org.firstinspires.ftc.teamcode.subsystems.controlsystems.sysid
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import kotlin.math.abs
 
-
-class MotorSysID(name: String, getMotor: HardwareMap.() -> VoltageCompensatedMotor) : SysIDRoutine<VoltageCompensatedMotor>(
+public open class MotorSysID(name: String, getMotor: HardwareMap.() -> VoltageCompensatedMotor) : SysIDRoutine<VoltageCompensatedMotor>(
     name,
-    listOf("position"),
+    arrayOf("position"),
     {
-        hardwareMap.getMotor()
+       hardwareMap.getMotor()
     },
     { signal ->
         power = signal
-        listOf(currentPosition)
+        arrayOf(currentPosition)
     },
-    {
-        abs(power/compensationFactor) > 1.0
-    },
+    { signal, t -> signal > 1.0 },
 )

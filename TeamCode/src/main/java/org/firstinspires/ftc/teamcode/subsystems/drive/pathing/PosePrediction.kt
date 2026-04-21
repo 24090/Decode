@@ -46,7 +46,7 @@ fun minStopDistance(heading: Double, errorAngle: Double, velocity: Pose, minAcce
     )
     val s = 0 + t * v + t.pow(2)/2 * constantAccel
     val newVelocity = v + constantAccel * t
-    return s + minStopDistanceWithoutTipCorrection(errorAngle, newVelocity) * 0.8
+    return s + minStopDistanceWithoutTipCorrection(errorAngle, newVelocity) * 1.5
 }
 
 fun minStopDistanceWithoutTipCorrection(errorAngle: Double, velocity: Double): Double{

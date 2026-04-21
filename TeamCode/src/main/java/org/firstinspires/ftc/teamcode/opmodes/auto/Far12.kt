@@ -39,21 +39,21 @@ open class Far12(isRed: Boolean): Auto(
                         intake.spinUp(),
                         Instant {
                             shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance)
-                            camera.initPattern()
+                            //camera.initPattern()
                         },
                         drive.goToCircle(ShootPose.Far.mirroredIf(isRed)),
                         Sleep(5.0)
                     ),
                     WaitUntil {
-                        camera.getPattern().let {
-                            if (it != null) {
-                                indexTracker.pattern = it
-                                true
-                            } else {
-                                false
-                            }
-                        }
-
+//                        camera.getPattern().let {
+//                            if (it != null) {
+//                                indexTracker.pattern = it
+//                                true
+//                            } else {
+//                                false
+//                            }
+//                        }
+                        true
                     }
                 ),
                 farShootCycle(),

@@ -31,6 +31,7 @@ class IntakeTesting(): LinearOpMode(){
             telemetry.addData("targetVelocity", runVelocity)
             telemetry.addData("back feedforward", Intake.backF * runVelocityBack)
             telemetry.addData("front feedforward", Intake.frontF * runVelocity)
+            telemetry.addData("stalling", intake.isStalling())
             telemetry.addData("max", 2000)
             telemetry.addData("min", 0)
             telemetry.addData("avg", intake.stallTest.get())
@@ -43,6 +44,7 @@ class IntakeTesting(): LinearOpMode(){
         telemetry.addData("targetVelocity", 0.0)
         telemetry.addData("back feedforward", 0.0)
         telemetry.addData("front feedforward", 0.0)
+
         telemetry.update()
         waitForStart()
         intake.behaviour = Intake.IntakeBehaviour.Grab

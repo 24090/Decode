@@ -1,5 +1,5 @@
 package org.firstinspires.ftc.teamcode.commands
-class ForeverCommand(f: () -> Command, name: String): RepeatUntil(f, {false}, name)
+class ForeverCommand(f: () -> Command, name: String): RepeatCommandUntil(f, {false}, name)
 
 fun ForeverCommand(f: () -> Command) = ForeverCommand(f, "Forever")
 class Forever(val f: () -> Unit, name: String = "Forever"): OverrideButtonCommand(name) {

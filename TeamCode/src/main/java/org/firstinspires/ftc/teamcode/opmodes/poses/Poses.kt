@@ -13,6 +13,8 @@ val scorePosition = Vector.fromCartesian(144.0, 72.0)
 sealed class ShootPose(val position: Vector): Pose(position.x, position.y, getScoreAngle(position)) {
     object Far: ShootPose(Vector.fromCartesian(14.0, 14.0))
     object Close: ShootPose(Vector.fromCartesian(79.5, 12.0))
+    object Park: ShootPose(Vector.fromCartesian(106.0, 12.0))
+
     val distance = getScoreDistance(position)
 
 }

@@ -41,21 +41,21 @@ open class Pattern15(isRed: Boolean): Auto(
                         intake.spinUp(),
                         Instant {
                             shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)
-                            camera.initPattern()
+                            //camera.initPattern()
                         },
                         drive.goToCircle(ShootPose.Close.let { Pose(it.x, it.y, -0.2).mirroredIf(isRed) }),
                         Sleep(5.0)
                     ),
                     WaitUntil {
-                        camera.getPattern().let {
-                            if (it != null){
-                                indexTracker.pattern = it
-                                true
-                            } else {
-                                false
-                            }
-                        }
-
+//                        camera.getPattern().let {
+//                            if (it != null){
+//                                indexTracker.pattern = it
+//                                true
+//                            } else {
+//                                false
+//                            }
+//                        }
+                        true
                     }
                 ),
                 closeShootCycle(),

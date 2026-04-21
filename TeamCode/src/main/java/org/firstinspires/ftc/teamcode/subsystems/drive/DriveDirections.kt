@@ -6,10 +6,13 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
+import org.firstinspires.ftc.teamcode.util.Reference
+import org.firstinspires.ftc.teamcode.util.storedRed
 import org.firstinspires.ftc.teamcode.util.toDouble
 
 @TeleOp(name = "Drive Debugger", group = "Drive")
@@ -23,7 +26,8 @@ class DriveDebugger: LinearOpMode() {
         val telemetry = MultipleTelemetry(telemetry, dash.telemetry)
 
         waitForStart()
-        drive.localizer.pose = farStartPose
+        drive.localizer.pose = closeStartPose.mirrored()
+        storedRed = Reference(true)
         while (opModeIsActive()){
             reads.update()
 

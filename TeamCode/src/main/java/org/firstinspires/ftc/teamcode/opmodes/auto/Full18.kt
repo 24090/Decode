@@ -35,7 +35,7 @@ open class Full18(isRed: Boolean): Auto(
                 intake.spinUp(),
                 Instant {
                     shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)
-                    camera.initPattern()
+                    //camera.initPattern()
                 },
                 closeShootCycle(),
             ),
@@ -55,9 +55,8 @@ open class Full18(isRed: Boolean): Auto(
             Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCycle(),
 
-            shooter.stop(),
-            spikeIntakeCycleClose(2),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Park.distance)},
+            spikeIntakeCycle(2, ShootPose.Park),
             leaveShootCycle(),
 
             name = "Auto"

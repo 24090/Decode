@@ -49,7 +49,7 @@ fun getTeleopTranslational(
             PDLT(error.vector(), dError, xyP, xyD, kS, xyT)
         } else {
             var v = Vector.fromCartesian(-gamepad.left_stick_x.toDouble(), gamepad.left_stick_y.toDouble())
-            v = v * v.length * 1.67
+            v = v * v.length * v.length * 1.8
             if (!isRed.get()) v = v.rotated(PI)
             lastLockTranslational.set(false)
             v.rotated(-localizer.heading)
@@ -67,12 +67,16 @@ fun getTeleopFollower(
     teleopTranslational: (dError: Vector) -> Vector
 ): () -> DriveVectors {
     val heading = { dError: Pose ->
-        if (gamepad.right_stick_x.toDouble() == 0.0){
+        if (gamepad.right_stick_x.toDouble() == 0.0 && !gamepad.right_stick_button){
             if (!lastLockHeading.get()){
                 targetPose.set(Pose(targetPose.get().x, targetPose.get().y, localizer.heading))
             }
             lastLockHeading.set(true)
             PDLT(AngleUnit.normalizeRadians(targetPose.get().heading - localizer.heading), dError.heading, hP, hD, hS, hT)
+        } else if (gamepad.right_stick_button && (gamepad.left_stick_x.toDouble() != 0.0 || gamepad.left_stick_y.toDouble() != 0.0)) {
+            lastLockHeading.set(false)
+            val target = Vector.fromCartesian(-gamepad.left_stick_x.toDouble(), gamepad.left_stick_y.toDouble()).angle
+            PDLT(target - localizer.heading, dError.heading, hP, hD, hS, hT)
         } else {
             lastLockHeading.set(false)
             -gamepad.right_stick_x.toDouble()
