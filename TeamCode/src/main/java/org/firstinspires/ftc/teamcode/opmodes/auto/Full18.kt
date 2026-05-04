@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
 
@@ -32,8 +33,8 @@ open class Full18(isRed: Boolean): Auto(
         }, "Reads" ),
         Sequence(
            Parallel(
-                intake.spinUp(),
                 Instant {
+                    intake.behaviour = Intake.IntakeBehaviour.Greedy
                     shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)
                     //camera.initPattern()
                 },
@@ -54,6 +55,11 @@ open class Full18(isRed: Boolean): Auto(
             gateIntakeCycleClose(),
             Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCycle(),
+
+//            shooter.stop(),
+//            gateIntakeCycleClose(),
+//            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
+//            closeShootCycle(),
 
             Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Park.distance)},
             spikeIntakeCycle(2, ShootPose.Park),

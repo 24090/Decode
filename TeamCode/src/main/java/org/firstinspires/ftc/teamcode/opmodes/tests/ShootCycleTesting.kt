@@ -55,17 +55,14 @@ class ShootCycleTesting: LinearOpMode() {
                     intake.releaseDual(),
                     intake.setAdjustThird()
                 ),
+                Sleep(pusherWait/2),
                 Parallel(
-                    Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy },
-                    Sleep(pusherWait),
-                ),
-                Parallel(
+                    Instant { intake.behaviour = Intake.IntakeBehaviour.HyperGreedy },
                     shooter.waitForVelocity(),
-                    Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy },
+                    Sleep(0.05),
                 ),
                 intake.releaseDual(),
                 Instant { intake.behaviour = Intake.IntakeBehaviour.Grab },
-                Sleep(1.0)
             )
         ))
         telemetry.addData("left shot", shooter.shootCounterLeft)

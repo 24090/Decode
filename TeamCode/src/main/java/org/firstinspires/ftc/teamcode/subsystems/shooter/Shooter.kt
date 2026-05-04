@@ -20,7 +20,7 @@ class Shooter(hwMap: HardwareMap) {
 
     companion object Params {
         @JvmField var kP = 0.005
-        @JvmField var velocityThreshold: Double = 60.0
+        @JvmField var velocityThreshold: Double = 30.0
     }
     val shootCounterLeft = ShootCounter(150.0)
     val shootCounterRight = ShootCounter(150.0)
@@ -44,25 +44,25 @@ class Shooter(hwMap: HardwareMap) {
 
     val distanceToVelocityLeftLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 1040.0), // 0 in
-        Pair(36*sqrt(2.0), 1040.0 ), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1160.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1260.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1350.0),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 1440.0),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 1510.0),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 1650.0),
-        Pair(120*sqrt(2.0), 1750.0),
+        Pair(36*sqrt(2.0), 1040.0 - 10.0 ), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1160.0 - 10.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1260.0 - 10.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1350.0 - 10.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 1440.0 - 10.0),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 1520.0 - 10.0),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 1660.0 - 10.0),
+        Pair(120*sqrt(2.0), 1760.0 - 10.0),
         ))
     val distanceToVelocityRightLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 1040.0), // 0 in
-        Pair(36*sqrt(2.0), 1040.0), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1160.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1260.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1350.0),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 1440.0),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 1510.0),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 1650.0),
-        Pair(120*sqrt(2.0), 1750.0),
+        Pair(36*sqrt(2.0), 1040.0 - 10.0), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1160.0 - 10.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1260.0 - 10.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1350.0 - 10.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 1440.0 - 10.0),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 1520.0 - 10.0),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 1660.0 - 10.0),
+        Pair(120*sqrt(2.0), 1760.0 - 10.0),
         ))
 
     val distanceToAngleLUT = InterpolatedLUT(mapOf(
@@ -72,9 +72,9 @@ class Shooter(hwMap: HardwareMap) {
         Pair(60*sqrt(2.0), 0.0),  // 60 sqrt 2 in
         Pair(72*sqrt(2.0), 0.2),  // 72 sqrt 2 in
         Pair(84*sqrt(2.0), 0.3),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 0.45),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 0.6),
-        Pair(120*sqrt(2.0), 0.7),
+        Pair(96*sqrt(2.0), 0.4),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 0.5),
+        Pair(120*sqrt(2.0), 0.6),
         ))
 
     val exitVelocityToLeftVelocityLUT = InterpolatedLUT(mapOf(
@@ -150,8 +150,8 @@ class Shooter(hwMap: HardwareMap) {
     }, "Shooter:SpinDown")
 
     fun velocitiesInThreshold(threshold: Double = velocityThreshold) =
-        abs(targetVelocityLeft - motorLeft.velocity) <= velocityThreshold
-        && abs((targetVelocityRight) - motorRight.velocity) <= velocityThreshold
+        abs(targetVelocityLeft - motorLeft.velocity) <= threshold
+        && abs((targetVelocityRight) - motorRight.velocity) <= threshold
 
     fun waitForRightVelocity(): Command = WaitUntil {
         abs(targetVelocityRight - motorRight.velocity) <= velocityThreshold
@@ -160,5 +160,5 @@ class Shooter(hwMap: HardwareMap) {
     fun waitForLeftVelocity(): Command = WaitUntil {
         abs(targetVelocityLeft - motorLeft.velocity) <= velocityThreshold
     }
-    fun waitForVelocity(): Command = WaitUntil ({velocitiesInThreshold(velocityThreshold)}, "WaitForVelocity")
+    fun waitForVelocity(): Command = WaitUntil ({velocitiesInThreshold()}, "WaitForVelocity")
 }

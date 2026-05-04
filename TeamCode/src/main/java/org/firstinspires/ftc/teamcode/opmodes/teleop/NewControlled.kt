@@ -74,14 +74,13 @@ class NewControlled: Teleop( { opmode ->
     }
 
     val translationalFunction = getTeleopTranslational(opmode.gamepad1, drive.localizer, lastLockTranslational, targetPose, isRed)
-    val normalFollow = getTeleopFollower(opmode.gamepad1, drive.localizer, isRed, lastLockHeading, targetPose, translationalFunction)
+    val normalFollow = getTeleopFollower(opmode.gamepad1, opmode.gamepad2, drive.localizer, isRed, lastLockHeading, targetPose, translationalFunction)
     val headingLockFollow = getHeadingLockTeleop({ getScoreAngle(getPredictedPosition(), isRed.get()) }, opmode.gamepad1, drive.localizer, translationalFunction, isRed, targetPose)
 
 
     val changeShootingMode = {
         shootingMode = !shootingMode
         drive.follow = if (shootingMode) headingLockFollow else normalFollow
-        opmode.gamepad1.rumble(1.0, 1.0, 150)
     }
 
     drive.follow = normalFollow
@@ -223,6 +222,12 @@ class NewControlled: Teleop( { opmode ->
             )
             changeShootingMode()
             intake.spinUp().update()
+        }
+
+        if (!shootingMode && intake.isStalling()) {
+            opmode.gamepad1.rumble(100)
+        } else {
+            opmode.gamepad1.stopRumble()
         }
 
         if (opmode.gamepad1.leftBumperWasPressed()){

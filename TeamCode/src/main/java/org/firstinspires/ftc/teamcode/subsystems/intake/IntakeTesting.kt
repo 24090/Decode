@@ -51,7 +51,6 @@ class IntakeTesting(): LinearOpMode(){
         shooter.motorLeft.power = 0.12
         shooter.motorRight.power = 0.12
         while (opModeIsActive()){
-            reads.update()
 
             shooter.motorLeft.power = 0.12
             shooter.motorRight.power = 0.12

@@ -13,14 +13,6 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
 import kotlin.math.PI
 
-class mockSysID() : SysIDRoutine<Unit>(
-    name = "mockSysID",
-    dataHeaders = arrayOf(),
-    initSystem = {},
-    updateSignal = {v -> println(v); arrayOf()},
-    endCondition = {signal, t -> println(t); false}
-)
-
 fun main(){
-    mockSysID().runOpMode()
+    println(ShootPose.Far.distance)
 }

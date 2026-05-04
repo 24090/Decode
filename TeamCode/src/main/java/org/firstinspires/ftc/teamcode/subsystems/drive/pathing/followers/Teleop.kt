@@ -60,6 +60,7 @@ fun getTeleopTranslational(
 
 fun getTeleopFollower(
     gamepad: Gamepad,
+    gamepad2: Gamepad,
     localizer: Localizer,
     isRed: Reference<Boolean>,
     lastLockHeading: Reference<Boolean>,
@@ -75,19 +76,26 @@ fun getTeleopFollower(
             PDLT(AngleUnit.normalizeRadians(targetPose.get().heading - localizer.heading), dError.heading, hP, hD, hS, hT)
         } else if (gamepad.right_stick_button && (gamepad.left_stick_x.toDouble() != 0.0 || gamepad.left_stick_y.toDouble() != 0.0)) {
             lastLockHeading.set(false)
-            val target = Vector.fromCartesian(-gamepad.left_stick_x.toDouble(), gamepad.left_stick_y.toDouble()).angle
-            PDLT(target - localizer.heading, dError.heading, hP, hD, hS, hT)
+            val target = (Vector.fromCartesian(-gamepad.left_stick_x.toDouble(), gamepad.left_stick_y.toDouble())).angle + if (isRed.get()) 0.0 else PI
+            PDLT(AngleUnit.normalizeRadians(target - localizer.heading), dError.heading, hP, hD, hS, hT)
         } else {
             lastLockHeading.set(false)
             -gamepad.right_stick_x.toDouble()
         }
     }
-
+    val adjustPose = { direction: Vector ->
+        localizer.pose = (localizer.pose).let { Pose(it.x + direction.x, it.y + direction.y, it.heading) }
+    }
     return {
         if (gamepad.backWasPressed()) {
             localizer.pose = Pose(robotWidth/2.0, -72.0 + robotLength/2.0 + 2.5, -PI/2).mirroredIf(isRed.get())
             targetPose.set(Pose(robotWidth/2.0, -72.0 + robotLength/2.0 + 2.5, -PI/2).mirroredIf(isRed.get()))
         }
+        if (gamepad2.dpadUpWasPressed()) adjustPose(Vector.fromCartesian(0.0, 1.0).rotated(if (isRed.get()) 0 else PI))
+        if (gamepad2.dpadDownWasPressed()) adjustPose(Vector.fromCartesian(0.0, -1.0).rotated(if (isRed.get()) 0 else PI))
+        if (gamepad2.dpadLeftWasPressed()) adjustPose(Vector.fromCartesian(-1.0, 0.0).rotated(if (isRed.get()) 0 else PI))
+        if (gamepad2.dpadRightWasPressed()) adjustPose(Vector.fromCartesian(1.0, 0.0).rotated(if (isRed.get()) 0 else PI))
+
         val dError = -getRelativeVelocity(localizer.pose, localizer.poseVel)
         processTurnTranslational(heading(dError), teleopTranslational(dError.vector()), localizer.pose, localizer.poseVel)
     }

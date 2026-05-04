@@ -34,7 +34,7 @@ class Intake(hwMap: HardwareMap) {
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
     var stopPosition: Int? = null
     val stallTest: StallTest = StallTest(40)
-    fun isStalling() = (stallTest.get() < 1050) && (stallTest.deriv().absoluteValue < 100) && (stallTest.get() > 500)
+    fun isStalling() = (stallTest.get() < 1000) && (stallTest.deriv().absoluteValue < 100) && (stallTest.get() > 500)
     private var nextShootTime: Long? = null
 
     init {
@@ -46,8 +46,12 @@ class Intake(hwMap: HardwareMap) {
     }
     sealed class IntakeBehaviour() {
         object Greedy: IntakeBehaviour()
+        object HyperGreedy: IntakeBehaviour()
+
         object Grab: IntakeBehaviour()
         object Hold: IntakeBehaviour()
+        object MidShoot: IntakeBehaviour()
+
         object Eject: IntakeBehaviour()
         object Stop: IntakeBehaviour()
         class Wheelie(val fl: DcMotor, val fr: DcMotor): IntakeBehaviour()
@@ -87,7 +91,7 @@ class Intake(hwMap: HardwareMap) {
         stopPosition = null
         motor.power = clamp(PV(runVelocity, motor.velocity, kP, frontF), -1.0, powerMax)
     }
-    private fun runBack() { motorBack.power = clamp(PV(runVelocity, motorBack.velocity, kP, backF), -1.0, powerMax) }
+    private fun runBack() { motorBack.power = clamp(PV(runVelocityBack, motorBack.velocity, kP, backF), -1.0, powerMax) }
 
     fun update() {
         val behaviour = behaviour
@@ -121,6 +125,15 @@ class Intake(hwMap: HardwareMap) {
             is IntakeBehaviour.Wheelie -> {
                 motor.power = -(behaviour.fl.power + behaviour.fr.power)/10.0
             }
+            IntakeBehaviour.MidShoot -> {
+                runFront()
+                motorBack.power = 0.0
+            }
+
+            IntakeBehaviour.HyperGreedy -> {
+                runFront()
+                motorBack.power = 1.0
+            }
         }
     }
 
@@ -129,7 +142,7 @@ class Intake(hwMap: HardwareMap) {
     }, "SpinUp")
 
     fun setAdjustThird(): Command = Instant({
-        behaviour = IntakeBehaviour.Hold
+        behaviour = IntakeBehaviour.MidShoot
     }, "SetAdjustThird")
     fun fullAdjustThird(): Command = Sequence(
         setAdjustThird(),

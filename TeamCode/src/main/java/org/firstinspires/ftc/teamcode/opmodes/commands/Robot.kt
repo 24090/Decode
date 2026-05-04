@@ -80,22 +80,21 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             intake.releaseDual(),
         )
     fun shootAll() = Sequence(
-        shooter.waitForVelocity(),
-        Parallel(
-            intake.releaseDual(),
-            intake.setAdjustThird()
-        ),
-        Parallel(
-            Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy },
-            Sleep(pusherWait),
-        ),
-        Parallel(
+        Sequence(
             shooter.waitForVelocity(),
-            Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy },
-            Sleep(0.05),
+            Parallel(
+                intake.releaseDual(),
+                intake.setAdjustThird()
+            ),
+            Sleep(pusherWait/2),
+            Parallel(
+                Instant { intake.behaviour = Intake.IntakeBehaviour.HyperGreedy },
+                shooter.waitForVelocity(),
+                Sleep(0.05),
+            ),
+            intake.releaseDual(),
+            Instant { intake.behaviour = Intake.IntakeBehaviour.Grab },
         ),
-        intake.releaseDual(),
-        Instant { intake.behaviour = Intake.IntakeBehaviour.Grab },
         name = "ShootCycle"
     )
     fun shootPattern(): Command = Future {
@@ -245,8 +244,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         )
         val shootPoint = shootPose
         return Sequence(
-            intake.spinUp(),
-
+            Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy},
             Race(
                 drive.followPath(PurePursuitPath(
                     listOf(
@@ -293,21 +291,37 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             ),
             drive.goToCircle(
                 Pose(
-                    59.4,
-                    56.12 + 1.85,
-                    1.06
+                    59.4 + 0.5,
+                    56.12 + 1.35,
+                    1.15
                 ).mirroredIf(red),
             ),
         ),
         Race(
             Sequence(
                 intake.waitForStall(),
-                intake.waitForStall(),
+                Sleep(0.2),
                 intake.waitForStall(),
             ),
             Sequence(
-                Sleep(1.8)
-            )
+                Sleep(1.8),
+                drive.goToCircle(
+                    Pose(
+                        59.4 - 4,
+                        56.12 - 1.0,
+                        0.95
+                    ).mirroredIf(red),
+                ),
+                drive.goToCircle(
+                    Pose(
+                        59.4 - 2,
+                        56.12 + 2.0,
+                        PI/2
+                    ).mirroredIf(red),
+                ),
+            ),
+            Sleep(3.2)
+
         ),
         Instant {
             indexTracker.processObservation(Observation.GateOpened)
@@ -333,8 +347,8 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                     HeadingBehaviour.Interpolate
                 ),
                 listOf(
-                    20.0,
-                    20.0
+                    25.0,
+                    25.0
                 )
             )),
             WaitUntil {drive.localizer.pose.inCircle(shootPose.mirroredIf(red), 5.0, 0.1)}
