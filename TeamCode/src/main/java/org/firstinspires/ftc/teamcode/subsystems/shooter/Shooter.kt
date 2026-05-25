@@ -24,8 +24,8 @@ class Shooter(hwMap: HardwareMap) {
     }
     val shootCounterLeft = ShootCounter(150.0)
     val shootCounterRight = ShootCounter(150.0)
-    val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)
-    val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), true, 0.02)
+    val motorLeft: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterLeft"), false, 0.02)
+    val motorRight: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "shooterRight"), false, 0.02)
 
     val hoodServoLeft: Servo = hwMap.get(Servo::class.java, "hoodServoLeft")
     val hoodServoRight: Servo = hwMap.get(Servo::class.java, "hoodServoRight")
@@ -44,25 +44,25 @@ class Shooter(hwMap: HardwareMap) {
 
     val distanceToVelocityLeftLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 1040.0), // 0 in
-        Pair(36*sqrt(2.0), 1040.0 - 10.0 ), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1160.0 - 10.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1260.0 - 10.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1350.0 - 10.0),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 1440.0 - 10.0),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 1520.0 - 10.0),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 1660.0 - 10.0),
-        Pair(120*sqrt(2.0), 1760.0 - 10.0),
+        Pair(36*sqrt(2.0), 1040.0 - 20.0 ), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1160.0 - 20.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1260.0 - 20.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1350.0 - 20.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 1440.0 + 20.0),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 1520.0 + 20.0),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 1680.0),
+        Pair(120*sqrt(2.0), 1790.0),
         ))
     val distanceToVelocityRightLUT = InterpolatedLUT(mapOf(
         Pair(0.0, 1040.0), // 0 in
-        Pair(36*sqrt(2.0), 1040.0 - 10.0), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1160.0 - 10.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1260.0 - 10.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1350.0 - 10.0),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 1440.0 - 10.0),  // 84 sqrt 2 in
-        Pair(96*sqrt(2.0), 1520.0 - 10.0),  // 96 sqrt 2 in
-        Pair(108*sqrt(2.0), 1660.0 - 10.0),
-        Pair(120*sqrt(2.0), 1760.0 - 10.0),
+        Pair(36*sqrt(2.0), 1040.0 - 25.0 ), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1160.0 - 25.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1260.0 - 25.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1350.0 - 25.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 1440.0 + 20.0),  // 84 sqrt 2 in
+        Pair(96*sqrt(2.0), 1520.0 + 20.0),  // 96 sqrt 2 in
+        Pair(108*sqrt(2.0), 1660.0 + 20.0),
+        Pair(120*sqrt(2.0), 1760.0 + 20.0),
         ))
 
     val distanceToAngleLUT = InterpolatedLUT(mapOf(

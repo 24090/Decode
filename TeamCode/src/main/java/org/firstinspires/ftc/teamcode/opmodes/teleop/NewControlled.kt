@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.Future
 import org.firstinspires.ftc.teamcode.commands.Instant
@@ -75,7 +76,26 @@ class NewControlled: Teleop( { opmode ->
 
     val translationalFunction = getTeleopTranslational(opmode.gamepad1, drive.localizer, lastLockTranslational, targetPose, isRed)
     val normalFollow = getTeleopFollower(opmode.gamepad1, opmode.gamepad2, drive.localizer, isRed, lastLockHeading, targetPose, translationalFunction)
-    val headingLockFollow = getHeadingLockTeleop({ getScoreAngle(getPredictedPosition(), isRed.get()) }, opmode.gamepad1, drive.localizer, translationalFunction, isRed, targetPose)
+    val headingLockFollow = getHeadingLockTeleop({
+        val predictedPosition = getStopPosition(
+            drive.localizer.pose,
+            drive.localizer.poseVel
+        )
+        if (inLaunchZone(getScorePose(predictedPosition), 1.5)){
+            getScoreAngle(predictedPosition, isRed.get())
+        } else {
+            val joystickAngle = (Vector.fromCartesian(
+                -opmode.gamepad1.left_stick_x.toDouble(),
+                opmode.gamepad1.left_stick_y.toDouble()
+            )).angle
+
+            if (AngleUnit.normalizeRadians(joystickAngle - drive.localizer.heading) > PI/2) {
+                joystickAngle + PI
+            } else {
+                joystickAngle
+            }
+        }
+    }, opmode.gamepad1, drive.localizer, translationalFunction, isRed, targetPose)
 
 
     val changeShootingMode = {
@@ -177,9 +197,30 @@ class NewControlled: Teleop( { opmode ->
             if (!isRed.get()) opmode.gamepad1::dpadRightWasPressed else opmode.gamepad1::dpadLeftWasPressed, {if (!isRed.get()) opmode.gamepad1.dpad_right else opmode.gamepad1.dpad_left}
         )
 
-        if (inLaunchZone(drive.localizer.pose, threshold = 1.5) && shootingMode && getScoreDistance(drive.localizer.pose.vector(), isRed.get()) > 50.0) {
+        if (inLaunchZone(
+                getScorePose(
+                    getStopPosition(
+                        drive.localizer.pose,
+                        drive.localizer.poseVel
+                    ),
+                    isRed.get()
+                ),
+                threshold = 1.5
+            )
+            && shootingMode
+            && getScoreDistance(drive.localizer.pose.vector(), isRed.get()) > 40.0
+        ) {
             runBlocking(Race(
-                WaitUntil { opmode.gamepad1.leftBumperWasPressed() || !inLaunchZone(drive.localizer.pose, -1.5) },
+                WaitUntil { opmode.gamepad1.leftBumperWasPressed() || (
+                        !inLaunchZone(drive.localizer.pose, -1.5) && !inLaunchZone(
+                            getScorePose(
+                                getStopPosition(
+                                    drive.localizer.pose,
+                                    drive.localizer.poseVel
+                                ),
+                                isRed.get()
+                            ), -1.5))
+              },
                 Forever {
                     val packet = TelemetryPacket()
                     reads.update()

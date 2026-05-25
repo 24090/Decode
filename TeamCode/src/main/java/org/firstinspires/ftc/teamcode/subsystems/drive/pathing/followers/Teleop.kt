@@ -76,8 +76,29 @@ fun getTeleopFollower(
             PDLT(AngleUnit.normalizeRadians(targetPose.get().heading - localizer.heading), dError.heading, hP, hD, hS, hT)
         } else if (gamepad.right_stick_button && (gamepad.left_stick_x.toDouble() != 0.0 || gamepad.left_stick_y.toDouble() != 0.0)) {
             lastLockHeading.set(false)
-            val target = (Vector.fromCartesian(-gamepad.left_stick_x.toDouble(), gamepad.left_stick_y.toDouble())).angle + if (isRed.get()) 0.0 else PI
-            PDLT(AngleUnit.normalizeRadians(target - localizer.heading), dError.heading, hP, hD, hS, hT)
+            val target = (Vector.fromCartesian(
+                -gamepad.left_stick_x.toDouble(),
+                gamepad.left_stick_y.toDouble()
+            )).angle + if (isRed.get()) 0.0 else PI
+            PDLT(
+                AngleUnit.normalizeRadians(target - localizer.heading),
+                dError.heading,
+                hP,
+                hD,
+                hS,
+                hT
+            )
+        } else if (gamepad.left_trigger > 0.5) {
+            lastLockHeading.set(false)
+            val target = 1.15 * if (isRed.get()) -1.0 else 1.0
+            PDLT(
+                AngleUnit.normalizeRadians(target - localizer.heading),
+                dError.heading,
+                hP,
+                hD,
+                hS,
+                hT
+            )
         } else {
             lastLockHeading.set(false)
             -gamepad.right_stick_x.toDouble()

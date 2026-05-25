@@ -22,6 +22,9 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
     fun maxRadius(t: Double) = maxRadii[clamp(t, 0.0, maxRadii.size.toDouble() - 1).toInt()]
     fun headingBehaviour(t: Double) = headingBehaviours[clamp(t, 0.0, maxRadii.size.toDouble() - 1).toInt()]
 
+    fun projectPoint(){
+
+    }
 
     fun getFollowPoint(currentPosition: Vector, tThresh: Double, updateLastT: Boolean = true): Pose {
         if ((lastT > (lines.size-1))&&((currentPosition - points.last()).length < maxRadius(lastT) * 2.0)){

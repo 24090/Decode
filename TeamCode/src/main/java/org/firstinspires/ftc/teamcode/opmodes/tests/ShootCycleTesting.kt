@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
+import org.firstinspires.ftc.teamcode.util.timeSeconds
 
 @TeleOp
 @Config
@@ -38,6 +39,7 @@ class ShootCycleTesting: LinearOpMode() {
         telemetry.addData("right vel", shooter.targetVelocityRight)
         telemetry.update()
         waitForStart()
+        var startTime = 0.0
         runBlocking(Race(
             Forever {
                 reads.update()
@@ -51,6 +53,9 @@ class ShootCycleTesting: LinearOpMode() {
             },
             Sequence(
                 shooter.waitForVelocity(),
+                Instant {
+                    startTime = timeSeconds()
+                },
                 Parallel(
                     intake.releaseDual(),
                     intake.setAdjustThird()
@@ -65,6 +70,7 @@ class ShootCycleTesting: LinearOpMode() {
                 Instant { intake.behaviour = Intake.IntakeBehaviour.Grab },
             )
         ))
+        telemetry.addData("time", timeSeconds() - startTime)
         telemetry.addData("left shot", shooter.shootCounterLeft)
         telemetry.addData("right shot", shooter.shootCounterRight)
         telemetry.update()

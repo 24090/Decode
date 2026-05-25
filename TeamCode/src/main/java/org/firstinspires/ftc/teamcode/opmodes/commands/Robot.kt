@@ -202,12 +202,12 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         drive.goToSquare(Pose(62.0, 48.0, PI/2.0).mirroredIf(red), 1.5, 1.5, 0.1),
         Race(
             drive.goToSquare(Pose(65.0, 54.0, PI/2.0).mirroredIf(red)),
-            Sleep(1.75)
+            Sleep(0.75)
         ),
         drive.followPath(PurePursuitPath(
-            listOf(ShootPose.Close.mirroredIf(red), Pose(58.0, 25.0, PI/2.0).mirroredIf(red)),
-            listOf(HeadingBehaviour.Tangent(0.0)),
-            listOf(30.0)
+            listOf(Pose(65.0, 54.0, PI/2.0).mirroredIf(red), Pose(65.0, 14.0, PI/2.0).mirroredIf(red), ShootPose.Close.mirroredIf(red)),
+            listOf(HeadingBehaviour.Tangent(0.0), HeadingBehaviour.Interpolate),
+            listOf(40.0, 40.0)
         ), 5.0, 0.1),
     )
     fun grabAndOpenCycleFar() = Sequence(
@@ -250,13 +250,18 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                     listOf(
                         Pose(
                             endPoint.x,
-                            30.0,
+                            15.0,
+                            PI/2
+                        ).mirroredIf(red),
+                        Pose(
+                            endPoint.x,
+                            45.0,
                             PI/2
                         ).mirroredIf(red),
                         endPoint.mirroredIf(red)
                     ),
-                    listOf(HeadingBehaviour.Tangent(0.0)),
-                    listOf(30.0)
+                    listOf(HeadingBehaviour.Tangent(0.0), HeadingBehaviour.Tangent(0.0)),
+                    listOf(20.0, 40.0),
                 )),
                 WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
                 WaitUntil{ drive.localizer.poseVel.vector().length < 1.0 && drive.localizer.pose.mirroredIf(red).y > 48},
@@ -271,7 +276,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                         HeadingBehaviour.Interpolate,
                     ),
                     listOf(
-                        30.0
+                        40.0
                     ),
                 )),
                 WaitUntil{drive.localizer.pose.inCircle(shootPoint.mirroredIf(red), 5.0, 1.0)},
@@ -289,18 +294,35 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 Sleep(0.3),
                 WaitUntil{drive.localizer.poseVel.vector().length < 0.5},
             ),
-            drive.goToCircle(
-                Pose(
-                    59.4 + 0.5,
-                    56.12 + 1.35,
-                    1.15
-                ).mirroredIf(red),
-            ),
+            drive.followPath(
+                PurePursuitPath(
+                    listOf(
+                        shootPose.mirroredIf(red),
+                        Pose(
+                            59.4 + 0.5,
+                            47.0,
+                            1.15
+                        ).mirroredIf(red),
+                        Pose(
+                                59.4 + 0.5,
+                                56.12 + 1.35,
+                                1.15
+                        ).mirroredIf(red),
+                    ),
+                    listOf(
+                        HeadingBehaviour.Interpolate,
+                        HeadingBehaviour.Tangent(0.0)
+                    ),
+                    listOf(
+                        40.0,
+                        40.0
+                    ),
+                )
+            )
+
         ),
         Race(
             Sequence(
-                intake.waitForStall(),
-                Sleep(0.2),
                 intake.waitForStall(),
             ),
             Sequence(
@@ -347,8 +369,8 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                     HeadingBehaviour.Interpolate
                 ),
                 listOf(
-                    25.0,
-                    25.0
+                    40.0,
+                    40.0
                 )
             )),
             WaitUntil {drive.localizer.pose.inCircle(shootPose.mirroredIf(red), 5.0, 0.1)}
