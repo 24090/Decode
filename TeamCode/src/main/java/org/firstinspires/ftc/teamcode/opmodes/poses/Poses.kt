@@ -23,7 +23,10 @@ fun getScoreDistance(position: Vector, isRed: Boolean = false) =
 
 
 fun getScoreAngle(position: Vector, isRed: Boolean = false) =
-    (scorePosition.plus(Vector.fromCartesian(0.0, -6.0/72.0 * clamp((72.0 - position.x), 0.0, 72.0))).mirroredIf(isRed) - position).angle
+    (scorePosition.plus(Vector.fromCartesian(
+        -6.0/72.0 * clamp(-position.y, 0.0, 72.0),
+        -6.0/72.0 * clamp((72.0 - position.x), 0.0, 72.0)
+    )).mirroredIf(isRed) - position).angle
 
 
 fun getScorePose(position: Vector, isRed: Boolean = false) =

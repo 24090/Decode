@@ -93,7 +93,10 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 Sleep(0.05),
             ),
             intake.releaseDual(),
-            Instant { intake.behaviour = Intake.IntakeBehaviour.Grab },
+            Instant {
+                intake.behaviour = Intake.IntakeBehaviour.Grab
+                intake.stallTest.resetCount()
+            },
         ),
         name = "ShootCycle"
     )
@@ -181,6 +184,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             },
             Instant {
                 lights.turnOff()
+                intake.stallTest.resetCount()
             }
 //            Instant {
 //                indexTracker.processObservation(Observation.Shot(shooter.shootCounterLeft.count + shooter.shootCounterRight.count - startCount))
@@ -266,6 +270,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
                 WaitUntil{ drive.localizer.poseVel.vector().length < 1.0 && drive.localizer.pose.mirroredIf(red).y > 48},
             ),
+            Instant{shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)},
             Race(
                 drive.followPath(PurePursuitPath(
                     listOf(
@@ -304,8 +309,8 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                             1.15
                         ).mirroredIf(red),
                         Pose(
-                                59.4 + 0.5,
-                                56.12 + 1.35,
+                                59.4 + 1.0,
+                                56.12 + 1.3,
                                 1.15
                         ).mirroredIf(red),
                     ),
@@ -326,17 +331,17 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 intake.waitForStall(),
             ),
             Sequence(
-                Sleep(1.8),
+                Sleep(1.4),
                 drive.goToCircle(
                     Pose(
-                        59.4 - 4,
+                        59.4 - 2,
                         56.12 - 1.0,
                         0.95
                     ).mirroredIf(red),
                 ),
                 drive.goToCircle(
                     Pose(
-                        59.4 - 2,
+                        59.4,
                         56.12 + 2.0,
                         PI/2
                     ).mirroredIf(red),
@@ -348,6 +353,8 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         Instant {
             indexTracker.processObservation(Observation.GateOpened)
             intake.behaviour = Intake.IntakeBehaviour.Grab
+            shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)
+
         },
         Race(
             drive.followPath(PurePursuitPath(
@@ -369,7 +376,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                     HeadingBehaviour.Interpolate
                 ),
                 listOf(
-                    40.0,
+                    30.0,
                     40.0
                 )
             )),
@@ -400,20 +407,20 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
 
     fun closeShootCyclePattern() = Sequence(
         Instant{lights.turnOn()},
-        drive.goToCircle(ShootPose.Close.mirroredIf(red), 2.0),
+        drive.goToCircle(ShootPose.Close.mirroredIf(red), 2.0, 0.05),
         shootPattern(),
         Instant{lights.turnOff()},
         name = "CloseShootCycle"
     )
 
     fun closeShootCycle() = Sequence(
-        drive.goToCircle(ShootPose.Close.mirroredIf(red), 2.0),
+        drive.goToCircle(ShootPose.Close.mirroredIf(red), 3.0, 0.06),
         shootAll(),
         name = "CloseShootCycle"
     )
 
     fun farShootCycle() = Sequence(
-        drive.goToCircle(ShootPose.Far.mirroredIf(red), 2.0),
+        drive.goToCircle(ShootPose.Far.mirroredIf(red), 3.0, 0.03),
         shootAll(),
         name = "FarShootCycle"
     )
@@ -428,7 +435,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
 
     fun leaveShootCycle() = Sequence(
         //Instant{lights.turnOn()},
-        drive.goToCircle(ShootPose.Park.mirroredIf(red), 2.0),
+        drive.goToCircle(ShootPose.Park.mirroredIf(red), 3.0, 0.06),
         shootAll(),
         //Instant{lights.turnOff()},
         name = "CloseShootCycle"

@@ -208,21 +208,21 @@ class NewControlled: Teleop( { opmode ->
                     ),
                     isRed.get()
                 ),
-                threshold = 1.5
+                threshold = 3.0
             )
             && shootingMode
             && getScoreDistance(drive.localizer.pose.vector(), isRed.get()) > 36.0
         ) {
             runBlocking(Race(
                 WaitUntil { opmode.gamepad1.leftBumperWasPressed() || (
-                        !inLaunchZone(drive.localizer.pose, -1.5) && !inLaunchZone(
+                        !inLaunchZone(drive.localizer.pose, 0.0) && !inLaunchZone(
                             getScorePose(
                                 getStopPosition(
                                     drive.localizer.pose,
                                     drive.localizer.poseVel.vector()
                                 ),
                                 isRed.get()
-                            ), -1.5))
+                            ), 0.0))
               },
                 Forever {
                     val packet = TelemetryPacket()
@@ -241,7 +241,7 @@ class NewControlled: Teleop( { opmode ->
                             )
                         )
                         shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance(targetPose.get().vector(), isRed.get()))
-                        return@Future drive.goToCircle(targetPose.get())
+                        return@Future drive.goToCircle(targetPose.get(), 3.0, 0.05)
                     },
                     Parallel(
                         Instant {relocalize()} ,

@@ -33,8 +33,8 @@ class Intake(hwMap: HardwareMap) {
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
     var stopPosition: Int? = null
-    val stallTest: StallTest = StallTest(40)
-    fun isStalling() = (stallTest.get() < 1000) && (stallTest.deriv().absoluteValue < 100) && (stallTest.get() > 500)
+    val stallTest: StallTest = StallTest(80)
+    fun isStalling() = stallTest.isStalling()
     private var nextShootTime: Long? = null
 
     init {
@@ -43,6 +43,7 @@ class Intake(hwMap: HardwareMap) {
         motorBack.direction = DcMotorSimple.Direction.FORWARD
         pusherLeft.position = pusherLeftBack
         pusherRight.position = pusherRightBack
+        stallTest.resetCount()
     }
     sealed class IntakeBehaviour() {
         object Greedy: IntakeBehaviour()

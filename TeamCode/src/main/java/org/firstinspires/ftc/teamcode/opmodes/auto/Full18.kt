@@ -43,25 +43,20 @@ open class Full18(isRed: Boolean): Auto(
 
             shooter.stop(),
             spikeIntakeCycleClose(1),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCycle(),
 
             shooter.stop(),
             gateIntakeCycleClose(),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCycle(),
 
             shooter.stop(),
             gateIntakeCycleClose(),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCycle(),
 
             shooter.stop(),
             gateIntakeCycleClose(),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
             closeShootCycle(),
 
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Park.distance)},
             spikeIntakeCycle(2, ShootPose.Park),
             leaveShootCycle(),
 

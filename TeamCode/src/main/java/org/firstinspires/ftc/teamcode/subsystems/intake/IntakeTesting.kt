@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.subsystems.intake
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.commands.Forever
@@ -34,8 +33,8 @@ class IntakeTesting(): LinearOpMode(){
             telemetry.addData("stalling", intake.isStalling())
             telemetry.addData("max", 2000)
             telemetry.addData("min", 0)
-            telemetry.addData("avg", intake.stallTest.get())
-            telemetry.addData("deriv", intake.stallTest.deriv())
+            telemetry.addData("count", intake.stallTest.count)
+            telemetry.addData("avg", intake.stallTest.getAvg(45))
             telemetry.update()
         }
 

@@ -41,7 +41,7 @@ class Drive(hwMap: HardwareMap) {
 
         @JvmField var kA = 0.04
         @JvmField var hP = 2.5
-        @JvmField var hD = 0.1
+        @JvmField var hD = 0.15
         @JvmField var hT = 0.02
         @JvmField var hS = 0.09
 
