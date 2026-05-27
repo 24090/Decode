@@ -22,7 +22,9 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getStopPosition
 import org.firstinspires.ftc.teamcode.util.Reference
+import org.firstinspires.ftc.teamcode.util.clamp
 import kotlin.math.PI
+import kotlin.math.max
 
 
 fun getTeleopTranslational(
@@ -33,7 +35,7 @@ fun getTeleopTranslational(
     isRed: Reference<Boolean>
 ): (dError: Vector) -> Vector {
     val isLockTranslational = {
-        gamepad.left_stick_x.toDouble() == 0.0 && gamepad.left_stick_y.toDouble() == 0.0// && ((drive.localizer.xVel < 0.2 && drive.localizer.yVel < 0.2) || lastLockTranslational)
+        gamepad.left_stick_x.toDouble() == 0.0 && gamepad.left_stick_y.toDouble() == 0.0 && ((localizer.xVel < 0.2 && localizer.yVel < 0.2) || lastLockTranslational.get())
     }
 
     return { dError: Vector ->
@@ -41,9 +43,12 @@ fun getTeleopTranslational(
         val lockTranslational = isLockTranslational()
         if (lockTranslational) {
             if (!lastLockTranslational.get()) {
-                targetPose.set(getStopPosition(localizer.pose, localizer.poseVel).let{
-                    Pose(it.x, it.y, targetPose.get().heading)
-                })
+//                val velVec = localizer.poseVel.vector()
+//                val adjustedVelVec = Vector.fromPolar(velVec.angle, max(velVec.length-5.0, 0.0))
+//                targetPose.set(getStopPosition(localizer.pose, adjustedVelVec).let{
+//                    Pose(it.x, it.y, targetPose.get().heading)
+//                })
+                targetPose.set(localizer.pose.let{Pose(it.x, it.y, targetPose.get().heading)})
             }
             lastLockTranslational.set(true)
             PDLT(error.vector(), dError, xyP, xyD, kS, xyT)
@@ -68,7 +73,18 @@ fun getTeleopFollower(
     teleopTranslational: (dError: Vector) -> Vector
 ): () -> DriveVectors {
     val heading = { dError: Pose ->
-        if (gamepad.right_stick_x.toDouble() == 0.0 && !gamepad.right_stick_button){
+        if (gamepad.left_trigger > 0.5) {
+            lastLockHeading.set(false)
+            val target = (1.05) * (if (isRed.get()) -1.0 else 1.0)
+            PDLT(
+                AngleUnit.normalizeRadians(target - localizer.heading),
+                dError.heading,
+                hP,
+                hD,
+                hS,
+                hT
+            )
+        } else if (gamepad.right_stick_x.toDouble() == 0.0 && !gamepad.right_stick_button){
             if (!lastLockHeading.get()){
                 targetPose.set(Pose(targetPose.get().x, targetPose.get().y, localizer.heading))
             }
@@ -80,17 +96,6 @@ fun getTeleopFollower(
                 -gamepad.left_stick_x.toDouble(),
                 gamepad.left_stick_y.toDouble()
             )).angle + if (isRed.get()) 0.0 else PI
-            PDLT(
-                AngleUnit.normalizeRadians(target - localizer.heading),
-                dError.heading,
-                hP,
-                hD,
-                hS,
-                hT
-            )
-        } else if (gamepad.left_trigger > 0.5) {
-            lastLockHeading.set(false)
-            val target = 1.15 * if (isRed.get()) -1.0 else 1.0
             PDLT(
                 AngleUnit.normalizeRadians(target - localizer.heading),
                 dError.heading,

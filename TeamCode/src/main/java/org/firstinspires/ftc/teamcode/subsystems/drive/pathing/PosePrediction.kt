@@ -18,10 +18,10 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sign
 
-fun minStopDistance(heading: Double, errorAngle: Double, velocity: Pose, minAccelX: Double, maxAccelX: Double): Double{
+fun minStopDistance(heading: Double, errorAngle: Double, velocity: Vector, minAccelX: Double, maxAccelX: Double): Double{
     val errorNorm = Vector.fromPolar(errorAngle, 1.0)
-    val v = errorNorm.scalarProjection(velocity.vector())
-    val vX = Vector.fromPose(velocity).rotated(-heading).x
+    val v = errorNorm.scalarProjection(velocity)
+    val vX = velocity.rotated(-heading).x
     val uncorrectedPower = DriveVectors
         .fromTranslation(errorNorm * -100)
         .trimmed(controlHubVoltage / 14.0)
@@ -46,7 +46,7 @@ fun minStopDistance(heading: Double, errorAngle: Double, velocity: Pose, minAcce
     )
     val s = 0 + t * v + t.pow(2)/2 * constantAccel
     val newVelocity = v + constantAccel * t
-    return s + minStopDistanceWithoutTipCorrection(errorAngle, newVelocity) * 1.5
+    return (s + minStopDistanceWithoutTipCorrection(errorAngle, newVelocity))
 }
 
 fun minStopDistanceWithoutTipCorrection(errorAngle: Double, velocity: Double): Double{
@@ -58,8 +58,8 @@ fun minStopDistanceWithoutTipCorrection(errorAngle: Double, velocity: Double): D
     return  kA/kV * ((velocity - k1)*ln((k1 - velocity)/k1) - velocity)
 }
 
-fun getStopPosition(pose: Pose, velocity: Pose): Vector{
-    return pose.vector() + velocity.vector().norm() * minStopDistance(pose.heading, velocity.vector().angle, velocity, tipAccelBackward, tipAccelForward)
+fun getStopPosition(pose: Pose, velocity: Vector): Vector{
+    return pose.vector() + velocity.norm() * minStopDistance(pose.heading, velocity.angle, velocity, tipAccelBackward, tipAccelForward)
 }
 
 fun predictedShootPosition(minimumTime: Double, currentPose: Pose, fieldVelocity: Pose, estimatedAcceleration: Vector): Vector{
@@ -91,7 +91,7 @@ fun predictedShootPosition(minimumTime: Double, currentPose: Pose, fieldVelocity
             if (fieldVelocity.x != 0.0) (closestIntersection - movementStart).x/fieldVelocity.x
             else if (fieldVelocity.y != 0.0) (closestIntersection - movementStart).y/fieldVelocity.y
             else 0.0
-        getStopPosition(intersectionPose, fieldVelocity + acceleration * t)
+        getStopPosition(intersectionPose, (fieldVelocity + acceleration * t).vector())
     } ?: movementEnd
 
 }

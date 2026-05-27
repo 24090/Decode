@@ -20,7 +20,7 @@ fun scaryPathing(pose: Pose, velocity: Pose, targetPose: Pose): DriveVectors{
         return pointToPoint(pose, velocity, targetPose, true)
     }
 
-    val minStopDistance = minStopDistance(pose.heading, error.vector().angle, velocity, tipAccelBackward, tipAccelForward)
+    val minStopDistance = minStopDistance(pose.heading, error.vector().angle, velocity.vector(), tipAccelBackward, tipAccelForward)
     val tooScary = (minStopDistance) > error.vector().length
 
     return if (tooScary){

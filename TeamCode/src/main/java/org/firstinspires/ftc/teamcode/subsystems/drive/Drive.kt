@@ -36,10 +36,10 @@ class Drive(hwMap: HardwareMap) {
     companion object DriveConstants {
         @JvmField var lateralFactor = 0.7
 
-        @JvmField var kS = 0.12
-        @JvmField var kV = 0.012
+        @JvmField var kS = 0.13
+        @JvmField var kV = 0.0065
 
-        @JvmField var kA = 0.0065
+        @JvmField var kA = 0.04
         @JvmField var hP = 2.5
         @JvmField var hD = 0.1
         @JvmField var hT = 0.02
@@ -48,8 +48,8 @@ class Drive(hwMap: HardwareMap) {
         @JvmField var xyP = 0.13
         @JvmField var xyD = 0.025
         @JvmField var xyT = 0.5
-        @JvmField var tipAccelForward = 450.0
-        @JvmField var tipAccelBackward = -140.0
+        @JvmField var tipAccelForward = 900.0
+        @JvmField var tipAccelBackward = -200.0
     }
      val flMotor: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "fl"), true, 0.01)
     fun setFlPower(power: Double) { flMotor.power = power }
@@ -127,7 +127,7 @@ class Drive(hwMap: HardwareMap) {
             localizer.setDefaultBulkreadScope()
         }
     )
-    fun  followPath(path: PurePursuitPath, distanceTolerance: Double = xyT * 4, headingTolerance: Double = hT * 4)=
+    fun followPath(path: PurePursuitPath, distanceTolerance: Double = xyT * 4, headingTolerance: Double = hT * 4)=
         Sequence (
             Instant {follow = getPurePursuit(path, localizer)},
             WaitUntil{(path.lastT >= path.lines.size.toDouble() -0.01) && localizer.pose.inCircle(path.poses.last(), distanceTolerance, headingTolerance)}

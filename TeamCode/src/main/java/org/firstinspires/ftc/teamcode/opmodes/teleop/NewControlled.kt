@@ -29,6 +29,8 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.Reference
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
 
 @TeleOp(group = "A", name="NewControlled")
 class NewControlled: Teleop( { opmode ->
@@ -79,21 +81,22 @@ class NewControlled: Teleop( { opmode ->
     val headingLockFollow = getHeadingLockTeleop({
         val predictedPosition = getStopPosition(
             drive.localizer.pose,
-            drive.localizer.poseVel
+            drive.localizer.poseVel.vector()
         )
-        if (inLaunchZone(getScorePose(predictedPosition), 1.5)){
+        val scoreAngle = getScoreAngle(predictedPosition, isRed.get())
+        val joystickAngle = (Vector.fromCartesian(
+            -opmode.gamepad1.left_stick_x.toDouble(),
+            opmode.gamepad1.left_stick_y.toDouble()
+        )).angle.let { if (abs(AngleUnit.normalizeRadians(it - drive.localizer.heading)) > PI/2) {
+            it + PI
+        } else {
+            it
+        } }
+
+        if (inLaunchZone(getScorePose(predictedPosition), threshold = -15.0 - cos(scoreAngle - drive.localizer.heading) * 5.0 + cos(joystickAngle - drive.localizer.heading) * 5)){
             getScoreAngle(predictedPosition, isRed.get())
         } else {
-            val joystickAngle = (Vector.fromCartesian(
-                -opmode.gamepad1.left_stick_x.toDouble(),
-                opmode.gamepad1.left_stick_y.toDouble()
-            )).angle
-
-            if (AngleUnit.normalizeRadians(joystickAngle - drive.localizer.heading) > PI/2) {
-                joystickAngle + PI
-            } else {
-                joystickAngle
-            }
+            joystickAngle
         }
     }, opmode.gamepad1, drive.localizer, translationalFunction, isRed, targetPose)
 
@@ -201,14 +204,14 @@ class NewControlled: Teleop( { opmode ->
                 getScorePose(
                     getStopPosition(
                         drive.localizer.pose,
-                        drive.localizer.poseVel
+                        drive.localizer.poseVel.vector()
                     ),
                     isRed.get()
                 ),
                 threshold = 1.5
             )
             && shootingMode
-            && getScoreDistance(drive.localizer.pose.vector(), isRed.get()) > 40.0
+            && getScoreDistance(drive.localizer.pose.vector(), isRed.get()) > 36.0
         ) {
             runBlocking(Race(
                 WaitUntil { opmode.gamepad1.leftBumperWasPressed() || (
@@ -216,7 +219,7 @@ class NewControlled: Teleop( { opmode ->
                             getScorePose(
                                 getStopPosition(
                                     drive.localizer.pose,
-                                    drive.localizer.poseVel
+                                    drive.localizer.poseVel.vector()
                                 ),
                                 isRed.get()
                             ), -1.5))
@@ -232,7 +235,7 @@ class NewControlled: Teleop( { opmode ->
                             getScorePose(
                                 getStopPosition(
                                     drive.localizer.pose,
-                                    drive.localizer.poseVel
+                                    drive.localizer.poseVel.vector()
                                 ),
                                 isRed.get()
                             )
@@ -283,6 +286,8 @@ class NewControlled: Teleop( { opmode ->
         }
         shooter.update()
         intake.update()
+
+        telemetry.addData("joyx", opmode.gamepad1.x)
         telemetry.addData("pose", drive.localizer.pose)
         telemetry.addData("Shooter Velocity: ", "L: ${shooter.motorLeft.velocity}(${shooter.targetVelocityLeft}) R: ${shooter.motorRight.velocity}(${shooter.targetVelocityRight})")
         telemetry.update()
