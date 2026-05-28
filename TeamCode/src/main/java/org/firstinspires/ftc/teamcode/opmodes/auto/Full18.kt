@@ -7,9 +7,11 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
@@ -34,11 +36,11 @@ open class Full18(isRed: Boolean): Auto(
         Sequence(
            Parallel(
                 Instant {
-                    intake.behaviour = Intake.IntakeBehaviour.Greedy
-                    shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)
                     //camera.initPattern()
                 },
-                closeShootCycle(),
+                drive.goToCircle(ShootPose.Close),
+                Forever { shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.7), red))},
+                shootAll()
             ),
 
             shooter.stop(),

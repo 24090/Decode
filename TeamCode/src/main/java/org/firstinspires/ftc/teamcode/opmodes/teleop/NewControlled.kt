@@ -208,7 +208,7 @@ class NewControlled: Teleop( { opmode ->
                     ),
                     isRed.get()
                 ),
-                threshold = 3.0
+                threshold = 5.0
             )
             && shootingMode
             && getScoreDistance(drive.localizer.pose.vector(), isRed.get()) > 36.0
