@@ -42,6 +42,8 @@ class ShootCycleTesting: LinearOpMode() {
         val a = TelemetryPacket()
         telemetry.addData("left vel", shooter.targetVelocityLeft)
         telemetry.addData("right vel", shooter.targetVelocityRight)
+        telemetry.addData("left vel real", shooter.motorLeft.velocity)
+        telemetry.addData("right vel real", shooter.motorRight.velocity)
         telemetry.update()
         waitForStart()
         var startTime = 0.0
@@ -50,6 +52,8 @@ class ShootCycleTesting: LinearOpMode() {
                 reads.update()
                 intake.update()
                 shooter.update()
+                telemetry.addData("left vel real", shooter.motorLeft.velocity)
+                telemetry.addData("right vel real", shooter.motorRight.velocity)
                 telemetry.addData("left vel", shooter.targetVelocityLeft)
                 telemetry.addData("right vel", shooter.targetVelocityRight)
                 telemetry.update()
@@ -61,7 +65,7 @@ class ShootCycleTesting: LinearOpMode() {
                 },
                 Parallel(
                     intake.releaseDual(), // 0.05
-                    intake.setAdjustThird() // 0.00
+                   // intake.setAdjustThird() // 0.00
                 ),
                 Sleep(pusherWait/2), // 0.025
                 Parallel(

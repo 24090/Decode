@@ -335,12 +335,12 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                         Pose(
                             59.4 + 0.5,
                             47.0,
-                            1.15
+                            1.05
                         ).mirroredIf(red),
                         Pose(
                                 59.4 + 1.0,
                                 56.12 + 1.3,
-                                1.15
+                                1.05
                         ).mirroredIf(red),
                     ),
                     listOf(
