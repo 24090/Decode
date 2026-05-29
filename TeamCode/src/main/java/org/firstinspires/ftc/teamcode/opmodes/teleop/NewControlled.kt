@@ -93,7 +93,7 @@ class NewControlled: Teleop( { opmode ->
             it
         } }
 
-        if (inLaunchZone(getScorePose(predictedPosition), threshold = -15.0 - cos(scoreAngle - drive.localizer.heading) * 5.0 + cos(joystickAngle - drive.localizer.heading) * 5)){
+        if (inLaunchZone(getScorePose(predictedPosition), threshold = -15.0 - cos(scoreAngle - drive.localizer.heading) * 30.0 + cos(joystickAngle - drive.localizer.heading) * 10)){
             getScoreAngle(predictedPosition, isRed.get())
         } else {
             joystickAngle
@@ -104,6 +104,7 @@ class NewControlled: Teleop( { opmode ->
     val changeShootingMode = {
         shootingMode = !shootingMode
         drive.follow = if (shootingMode) headingLockFollow else normalFollow
+        if (shootingMode) lights.turnYellow() else lights.turnOff()
     }
 
     drive.follow = normalFollow

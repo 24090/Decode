@@ -167,10 +167,8 @@ class Intake(hwMap: HardwareMap) {
     }
 
     fun releaseDual(): Command = Parallel(
-        Instant { nextShootTime = System.currentTimeMillis() + (pusherWait * 1000).toLong()},
         releaseLeft(),
         releaseRight(),
-        Instant { nextShootTime = null},
         name = "ReleaseDual"
     )
     fun waitForStall(): Command =
@@ -183,10 +181,11 @@ class Intake(hwMap: HardwareMap) {
         pusherRight.position = pusherRightBack
     }
     fun releaseLeft(): Command = Sequence(
-        Instant { pusherLeft.position = pusherLeftForward },
-        Sleep(pusherWait),
+        Parallel(
+            Instant { pusherLeft.position = pusherLeftForward },
+            Sleep(pusherWait),
+        ),
         Instant { pusherLeft.position = pusherLeftBack },
-
         name = "ReleaseLeft"
     )
 

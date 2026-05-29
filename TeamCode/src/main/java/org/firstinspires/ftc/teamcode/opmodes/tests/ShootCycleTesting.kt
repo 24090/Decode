@@ -23,18 +23,23 @@ import org.firstinspires.ftc.teamcode.util.timeSeconds
 @Config
 class ShootCycleTesting: LinearOpMode() {
     companion object {
-        @JvmField var targetValue = 1400.0
+        @JvmField var velocity = 1400.0
+        @JvmField var velocity2 = 1400.0
+
+        @JvmField var hood = 0.0
+        @JvmField var hood2 = 0.0
+
+
     }
     override fun runOpMode() {
         val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
         val intake = Intake(hardwareMap)
         val shooter = Shooter(hardwareMap)
+        shooter.setHoodAngles(hood)
         val reads = Reads(hardwareMap)
-        shooter.setTargetVelocities(targetValue)
+        shooter.setTargetVelocities(velocity)
         intake.behaviour = Intake.IntakeBehaviour.Grab
         val a = TelemetryPacket()
-        telemetry.addData("left shot", shooter.shootCounterLeft)
-        telemetry.addData("right shot", shooter.shootCounterRight)
         telemetry.addData("left vel", shooter.targetVelocityLeft)
         telemetry.addData("right vel", shooter.targetVelocityRight)
         telemetry.update()
@@ -45,8 +50,6 @@ class ShootCycleTesting: LinearOpMode() {
                 reads.update()
                 intake.update()
                 shooter.update()
-                telemetry.addData("left shot", shooter.shootCounterLeft)
-                telemetry.addData("right shot", shooter.shootCounterRight)
                 telemetry.addData("left vel", shooter.targetVelocityLeft)
                 telemetry.addData("right vel", shooter.targetVelocityRight)
                 telemetry.update()
@@ -57,20 +60,27 @@ class ShootCycleTesting: LinearOpMode() {
                     startTime = timeSeconds()
                 },
                 Parallel(
-                    intake.releaseDual(),
-                    intake.setAdjustThird()
+                    intake.releaseDual(), // 0.05
+                    intake.setAdjustThird() // 0.00
                 ),
-                Sleep(pusherWait/2),
+                Sleep(pusherWait/2), // 0.025
                 Parallel(
-                    Instant { intake.behaviour = Intake.IntakeBehaviour.HyperGreedy },
+                    Instant {
+                        intake.behaviour = Intake.IntakeBehaviour.HyperGreedy
+                        shooter.setHoodAngles(hood2)
+                        shooter.setTargetVelocities(velocity2)
+                    },
                     shooter.waitForVelocity(),
                     Sleep(0.05),
                 ),
                 intake.releaseDual(),
-                Instant { intake.behaviour = Intake.IntakeBehaviour.Grab },
+                Instant {
+                    intake.behaviour = Intake.IntakeBehaviour.Grab
+                    startTime = timeSeconds() - startTime
+                },
             )
         ))
-        telemetry.addData("time", timeSeconds() - startTime)
+        telemetry.addData("time", startTime)
         telemetry.addData("left shot", shooter.shootCounterLeft)
         telemetry.addData("right shot", shooter.shootCounterRight)
         telemetry.update()

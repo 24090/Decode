@@ -75,7 +75,7 @@ fun getTeleopFollower(
     val heading = { dError: Pose ->
         if (gamepad.left_trigger > 0.5) {
             lastLockHeading.set(false)
-            val target = (1.15) * (if (isRed.get()) -1.0 else 1.0)
+            val target = (1.06) * (if (isRed.get()) -1.0 else 1.0)
             PDLT(
                 AngleUnit.normalizeRadians(target - localizer.heading),
                 dError.heading,

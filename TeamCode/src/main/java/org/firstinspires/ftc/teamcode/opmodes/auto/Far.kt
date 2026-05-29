@@ -5,34 +5,46 @@ import org.firstinspires.ftc.teamcode.commands.Forever
 import org.firstinspires.ftc.teamcode.commands.ForeverCommand
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Race
-import org.firstinspires.ftc.teamcode.commands.RepeatCommandUntil
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
-import org.firstinspires.ftc.teamcode.util.timeSeconds
 
-@Autonomous(name="PartnerAutoRed", group="Auto")
-class PartnerAutoRed: PartnerAuto(true)
+@Autonomous(name="FarAutoRed", group="Auto")
+class FarRed: Far(true)
 
-@Autonomous(name="PartnerAutoBlue", group="Auto")
-class PartnerAutoBlue: PartnerAuto(false)
+@Autonomous(name="FarAutoBlue", group="Auto")
+class FarBlue: Far(false)
 
-open class PartnerAuto(val isRed: Boolean): Auto(isRed, farStartPose, {Race(
+open class Far(val isRed: Boolean): Auto(isRed, farStartPose, {Race(
     Forever({
         recordTime("other")
         reads.update()
         recordTime("reads")
         telemetry.addData("currentPose", drive.localizer.pose)
     }, "Reads" ),
-    ForeverCommand {
-        Sequence(
-            Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
+    Sequence(
+            drive.goToCircle(ShootPose.Far.mirroredIf(red), 3.0, 0.03),
+            shootAll(),
+
+            spikeIntakeCycleFar(0),
             farShootCycle(),
-            shooter.stop(),
+
             loadZoneCycle(),
-        )
-    },
+            farShootCycle(),
+
+            spikeIntakeCycleFar(0),
+            farShootCycle(),
+
+            loadZoneCycle(),
+            farShootCycle(),
+
+            spikeIntakeCycleFar(0),
+            farShootCycle(),
+
+            loadZoneCycle(),
+            farShootCycle(),
+    ),
     Forever({
         drive.update(); recordTime("drive")
         shooter.update(); recordTime("shooter")

@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors.Companion.processTurnTranslational
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import kotlin.math.PI
@@ -48,10 +49,8 @@ class MoveTest: LinearOpMode() {
             },
             ForeverCommand {
                 Sequence (
-                    drive.goToCircle(Pose(0.0, 0.0, 0.0)),
-                    Sleep(2.0),
-                    drive.goToCircle(Pose(40.0, 0.0, 0.0)),
-                    Sleep(2.0)
+                    drive.goToCircle(Pose(0.0, 0.0, PI/4)),
+                    drive.goToCircle(Pose(40.0, 0.0, PI/4)),
                 )
             }
         ))

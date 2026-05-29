@@ -100,6 +100,35 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         ),
         name = "ShootCycle"
     )
+    fun shootAll(distance: Double) = shootAll(shooter.distanceToVelocityLeftLUT.get(distance), shooter.secondaryDistanceToVelocityLeftLUT.get(distance), shooter.distanceToAngleLUT.get(distance), shooter.secondaryDistanceToAngleLUT.get(distance))
+    fun shootAll(velocity1: Double, velocity2: Double, hood1: Double, hood2: Double) = Sequence(
+        Sequence(
+            Parallel(
+                Instant{ shooter.setTargetVelocities(velocity1); shooter.setHoodAngles(hood1)},
+                shooter.waitForVelocity()
+            ),
+            Parallel(
+                intake.releaseDual(),
+                intake.setAdjustThird()
+            ),
+            Sleep(pusherWait/2),
+            Parallel(
+                Instant {
+                    shooter.setTargetVelocities(velocity2);
+                    shooter.setHoodAngles(hood2)
+                    intake.behaviour = Intake.IntakeBehaviour.HyperGreedy
+                },
+                shooter.waitForVelocity(),
+                Sleep(0.05),
+            ),
+            intake.releaseDual(),
+            Instant {
+                intake.behaviour = Intake.IntakeBehaviour.Grab
+                intake.stallTest.resetCount()
+            },
+        ),
+        name = "ShootCycle"
+    )
     fun shootPattern(): Command = Future {
         //huskyLens.update()
         val reload = {
@@ -315,8 +344,8 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                         ).mirroredIf(red),
                     ),
                     listOf(
-                        HeadingBehaviour.Interpolate,
-                        HeadingBehaviour.Tangent(0.0)
+                        HeadingBehaviour.Tangent(0.0),
+                        HeadingBehaviour.Tangent(0.0),
                     ),
                     listOf(
                         40.0,
@@ -415,13 +444,13 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
 
     fun closeShootCycle() = Sequence(
         drive.goToCircle(ShootPose.Close.mirroredIf(red), 3.0, 0.06),
-        shootAll(),
+        shootAll(ShootPose.Close.distance),
         name = "CloseShootCycle"
     )
 
     fun farShootCycle() = Sequence(
         drive.goToCircle(ShootPose.Far.mirroredIf(red), 3.0, 0.03),
-        shootAll(),
+        shootAll(ShootPose.Far.distance),
         name = "FarShootCycle"
     )
 

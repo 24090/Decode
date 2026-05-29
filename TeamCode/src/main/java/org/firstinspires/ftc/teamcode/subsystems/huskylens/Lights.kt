@@ -15,6 +15,11 @@ class Lights(hwMap: HardwareMap) {
         right.position = 0.0
     }
 
+    fun turnYellow(){
+        left.position = 0.35
+        right.position = 0.35
+    }
+
     fun turnOn(){
         left.position = 1.0
         right.position = 1.0

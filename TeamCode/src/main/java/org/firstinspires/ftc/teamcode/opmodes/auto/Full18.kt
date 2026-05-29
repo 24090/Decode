@@ -12,6 +12,9 @@ import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getPurePursuit
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
@@ -37,10 +40,20 @@ open class Full18(isRed: Boolean): Auto(
            Parallel(
                 Instant {
                     //camera.initPattern()
+                    drive.follow = getPurePursuit(
+                        PurePursuitPath(
+                            listOf(closeStartPose.mirroredIf(red), ShootPose.Close.mirroredIf(red)),
+                            listOf(HeadingBehaviour.Snap),
+                            listOf(10.0),
+                        ),
+                        drive.localizer
+                    )
                 },
-                drive.goToCircle(ShootPose.Close),
-                Forever { shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.7), red))},
-                shootAll()
+               drive.goToCircle(ShootPose.Close.mirroredIf(red), 5.0, 0.2),
+               Race(
+                    Forever { shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.7), red))},
+                    shootAll()
+                )
             ),
 
             shooter.stop(),
