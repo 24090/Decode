@@ -25,7 +25,7 @@ open class Far(val isRed: Boolean): Auto(isRed, farStartPose, {Race(
     }, "Reads" ),
     Sequence(
             drive.goToCircle(ShootPose.Far.mirroredIf(red), 3.0, 0.03),
-            shootAll(),
+            shootAll(ShootPose.Far.distance),
 
             spikeIntakeCycleFar(0),
             farShootCycle(),

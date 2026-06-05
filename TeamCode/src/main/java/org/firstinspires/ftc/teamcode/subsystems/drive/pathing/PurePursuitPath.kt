@@ -27,7 +27,7 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
     }
 
     fun getFollowPoint(currentPosition: Vector, tThresh: Double, updateLastT: Boolean = true): Pose {
-        if ((lastT > (lines.size-1))&&((currentPosition - points.last()).length < maxRadius(lastT) * 2.0)){
+        if ((lastT > (lines.size-1))&&((currentPosition - points.last()).length < maxRadius(lastT) * 0.75)){
             if (updateLastT) lastT = lines.size.toDouble()
             return poses.last()
         }

@@ -33,8 +33,7 @@ class IntakeTesting(): LinearOpMode(){
             telemetry.addData("stalling", intake.isStalling())
             telemetry.addData("max", 2000)
             telemetry.addData("min", 0)
-            telemetry.addData("count", intake.stallTest.count)
-            telemetry.addData("avg", intake.stallTest.getAvg(45))
+            telemetry.addData("avg", intake.threeBallTest.getAvg(45))
             telemetry.update()
         }
 

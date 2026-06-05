@@ -7,17 +7,20 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getPurePursuit
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
+import kotlin.math.max
 
 @Autonomous(name="Red - Close - 18 indiscriminate", group="Auto")
 class Full18Red: Full18(true)
@@ -44,14 +47,18 @@ open class Full18(isRed: Boolean): Auto(
                         PurePursuitPath(
                             listOf(closeStartPose.mirroredIf(red), ShootPose.Close.mirroredIf(red)),
                             listOf(HeadingBehaviour.Snap),
-                            listOf(10.0),
+                            listOf(5.0),
                         ),
                         drive.localizer
                     )
                 },
-               drive.goToCircle(ShootPose.Close.mirroredIf(red), 5.0, 0.2),
                Race(
-                    Forever { shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.7), red))},
+                    Forever {
+                        shooter.setHoodAngleAndVelocityFromDistance(max(
+                            getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.7), red),
+                            48.0
+                        ))
+                    },
                     shootAll()
                 )
             ),
@@ -65,14 +72,14 @@ open class Full18(isRed: Boolean): Auto(
             closeShootCycle(),
 
             shooter.stop(),
-            gateIntakeCycleClose(),
+            spikeIntakeCycle(2, ShootPose.Close),
             closeShootCycle(),
 
             shooter.stop(),
             gateIntakeCycleClose(),
             closeShootCycle(),
 
-            spikeIntakeCycle(2, ShootPose.Park),
+            gateIntakeCycle(ShootPose.Park),
             leaveShootCycle(),
 
             name = "Auto"

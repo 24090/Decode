@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.hardware.DigitalChannel
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import dev.frozenmilk.dairy.cachinghardware.CachingServo
@@ -15,14 +16,12 @@ import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PD
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PDL
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.PV
-import org.firstinspires.ftc.teamcode.subsystems.controlsystems.StallTest
+import org.firstinspires.ftc.teamcode.subsystems.controlsystems.ThreeBallTest
 import org.firstinspires.ftc.teamcode.subsystems.controlsystems.VoltageCompensatedMotor
 import org.firstinspires.ftc.teamcode.util.clamp
 import kotlin.math.abs
-import kotlin.math.absoluteValue
 
 @Config
 class Intake(hwMap: HardwareMap) {
@@ -30,12 +29,16 @@ class Intake(hwMap: HardwareMap) {
     val motorBack: VoltageCompensatedMotor = VoltageCompensatedMotor(hwMap.get(DcMotorEx::class.java, "intakeBack"), false, 0.02)
     val pusherLeft: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherLeft"))
     val pusherRight: CachingServo = CachingServo(hwMap.get(Servo::class.java, "pusherRight"))
+    val detectorLeft: DigitalChannel = hwMap.get(DigitalChannel::class.java, "detectorLeft")
+    val detectorRight: DigitalChannel = hwMap.get(DigitalChannel::class.java, "detectorRight")
+
 
     var behaviour: IntakeBehaviour = IntakeBehaviour.Stop
     var stopPosition: Int? = null
-    val stallTest: StallTest = StallTest(80)
-    fun isStalling() = stallTest.isStalling()
+    val threeBallTest: ThreeBallTest = ThreeBallTest(80)
+    fun isStalling() = threeBallTest.isStalling()
     private var nextShootTime: Long? = null
+
 
     init {
         motor.mode = RunMode.RUN_WITHOUT_ENCODER
@@ -43,7 +46,8 @@ class Intake(hwMap: HardwareMap) {
         motorBack.direction = DcMotorSimple.Direction.FORWARD
         pusherLeft.position = pusherLeftBack
         pusherRight.position = pusherRightBack
-        stallTest.resetCount()
+        detectorLeft.mode = DigitalChannel.Mode.INPUT
+        detectorRight.mode = DigitalChannel.Mode.INPUT
     }
     sealed class IntakeBehaviour() {
         object Greedy: IntakeBehaviour()
@@ -74,8 +78,8 @@ class Intake(hwMap: HardwareMap) {
         @JvmField var pusherLeftForward = 0.0
         @JvmField var pusherLeftBack = 0.95
 
-        @JvmField var pusherRightForward = 0.6
-        @JvmField var pusherRightBack = 0.0
+        @JvmField var pusherRightForward = 0.0
+        @JvmField var pusherRightBack = 0.76
         @JvmField var pusherWait = 0.05
     }
 
@@ -96,7 +100,7 @@ class Intake(hwMap: HardwareMap) {
 
     fun update() {
         val behaviour = behaviour
-        stallTest.update(motorBack.velocity.toInt(), System.currentTimeMillis())
+        threeBallTest.update(motorBack.velocity.toInt(), !detectorLeft.state, !detectorRight.state, System.currentTimeMillis())
         when (behaviour) {
             IntakeBehaviour.Hold -> {
                 runBack()
@@ -165,6 +169,21 @@ class Intake(hwMap: HardwareMap) {
             (nextShootTime - System.currentTimeMillis())/1000.0
         }
     }
+
+    fun releaseDualSlow(): Command = Sequence(
+        Parallel(
+            Instant {
+                pusherLeft.position = pusherLeftForward
+                pusherRight.position = pusherRightForward
+            },
+            Sleep(0.5),
+        ),
+        Instant {
+            pusherLeft.position = pusherLeftBack
+            pusherRight.position = pusherRightBack
+        },
+        name = "ReleaseDual"
+    )
 
     fun releaseDual(): Command = Parallel(
         releaseLeft(),

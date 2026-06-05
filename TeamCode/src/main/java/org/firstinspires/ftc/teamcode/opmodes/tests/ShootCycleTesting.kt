@@ -37,7 +37,7 @@ class ShootCycleTesting: LinearOpMode() {
         val shooter = Shooter(hardwareMap)
         shooter.setHoodAngles(hood)
         val reads = Reads(hardwareMap)
-        shooter.setTargetVelocities(velocity)
+        shooter.setTargetVelocities(velocity, velocity2)
         intake.behaviour = Intake.IntakeBehaviour.Grab
         val a = TelemetryPacket()
         telemetry.addData("left vel", shooter.targetVelocityLeft)
@@ -59,13 +59,13 @@ class ShootCycleTesting: LinearOpMode() {
                 telemetry.update()
             },
             Sequence(
-                shooter.waitForVelocity(),
+                shooter.waitForLeftVelocity(),
                 Instant {
                     startTime = timeSeconds()
                 },
                 Parallel(
-                    intake.releaseDual(), // 0.05
-                   // intake.setAdjustThird() // 0.00
+                    intake.releaseLeft(), // 0.05
+                    intake.setAdjustThird()
                 ),
                 Sleep(pusherWait/2), // 0.025
                 Parallel(

@@ -32,7 +32,7 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 
-@TeleOp(group = "A", name="NewControlled")
+@TeleOp(group = "A", name="0BallControlled")
 class NewControlled: Teleop( { opmode ->
     val isRed = Reference(false)
     var useStoredPose = false
@@ -77,7 +77,7 @@ class NewControlled: Teleop( { opmode ->
     }
 
     val translationalFunction = getTeleopTranslational(opmode.gamepad1, drive.localizer, lastLockTranslational, targetPose, isRed)
-    val normalFollow = getTeleopFollower(opmode.gamepad1, opmode.gamepad2, drive.localizer, isRed, lastLockHeading, targetPose, translationalFunction)
+    val normalFollow = getTeleopFollower(opmode.gamepad1, opmode.gamepad2, intake, drive.localizer, isRed, lastLockHeading, targetPose, translationalFunction)
     val headingLockFollow = getHeadingLockTeleop({
         val predictedPosition = getStopPosition(
             drive.localizer.pose,
@@ -93,7 +93,7 @@ class NewControlled: Teleop( { opmode ->
             it
         } }
 
-        if (inLaunchZone(getScorePose(predictedPosition), threshold = -15.0 - cos(scoreAngle - drive.localizer.heading) * 30.0 + cos(joystickAngle - drive.localizer.heading) * 10)){
+        if (inLaunchZone(getScorePose(predictedPosition), threshold = -15.0 - cos(scoreAngle - drive.localizer.heading) * 10.0 + cos(joystickAngle - drive.localizer.heading) * 10)){
             getScoreAngle(predictedPosition, isRed.get())
         } else {
             joystickAngle
@@ -250,7 +250,7 @@ class NewControlled: Teleop( { opmode ->
                             if (patternMode){
                                 shootPattern()
                             } else {
-                                shootAll()
+                                shootAll(getScoreDistance(targetPose.get().vector(), isRed.get()))
                             }
                         }
                     )
@@ -270,7 +270,7 @@ class NewControlled: Teleop( { opmode ->
         }
 
         if (!shootingMode && intake.isStalling()) {
-            opmode.gamepad1.rumble(100)
+            opmode.gamepad1.rumble(30)
         } else {
             opmode.gamepad1.stopRumble()
         }

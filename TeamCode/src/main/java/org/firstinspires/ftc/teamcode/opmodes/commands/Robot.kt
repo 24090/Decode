@@ -23,23 +23,18 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
-import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.pointToPoint
-import org.firstinspires.ftc.teamcode.subsystems.huskylens.HuskyLens
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.Lights
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
-import org.firstinspires.ftc.teamcode.subsystems.vision.Camera
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Observation
 import org.firstinspires.ftc.teamcode.util.Pattern
 import org.firstinspires.ftc.teamcode.util.Reference
-import org.firstinspires.ftc.teamcode.util.clamp
 import org.firstinspires.ftc.teamcode.util.storedRed
 import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.min
 
 open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
     val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
@@ -95,7 +90,6 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             intake.releaseDual(),
             Instant {
                 intake.behaviour = Intake.IntakeBehaviour.Grab
-                intake.stallTest.resetCount()
             },
         ),
         name = "ShootCycle"
@@ -104,11 +98,11 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
     fun shootAll(velocity1: Double, velocity2: Double, hood1: Double, hood2: Double) = Sequence(
         Sequence(
             Parallel(
-                Instant{ shooter.setTargetVelocities(velocity1); shooter.setHoodAngles(hood1)},
-                shooter.waitForVelocity()
+                Instant{ shooter.setTargetVelocities(velocity1, velocity2); shooter.setHoodAngles(hood1)},
+                shooter.waitForLeftVelocity()
             ),
             Parallel(
-                intake.releaseDual(),
+                intake.releaseLeft(),
                 intake.setAdjustThird()
             ),
             Sleep(pusherWait/2),
@@ -124,7 +118,6 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             intake.releaseDual(),
             Instant {
                 intake.behaviour = Intake.IntakeBehaviour.Grab
-                intake.stallTest.resetCount()
             },
         ),
         name = "ShootCycle"
@@ -213,7 +206,6 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             },
             Instant {
                 lights.turnOff()
-                intake.stallTest.resetCount()
             }
 //            Instant {
 //                indexTracker.processObservation(Observation.Shot(shooter.shootCounterLeft.count + shooter.shootCounterRight.count - startCount))
@@ -355,10 +347,11 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             )
 
         ),
+        Instant {
+            intake.behaviour = Intake.IntakeBehaviour.Grab
+        },
         Race(
-            Sequence(
-                intake.waitForStall(),
-            ),
+            intake.waitForStall(),
             Sequence(
                 Sleep(1.4),
                 drive.goToCircle(
@@ -381,9 +374,8 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         ),
         Instant {
             indexTracker.processObservation(Observation.GateOpened)
-            intake.behaviour = Intake.IntakeBehaviour.Grab
             shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)
-
+            intake.behaviour = Intake.IntakeBehaviour.Stop
         },
         Race(
             drive.followPath(PurePursuitPath(
@@ -402,11 +394,11 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 ),
                 listOf(
                     HeadingBehaviour.Tangent(PI),
-                    HeadingBehaviour.Interpolate
+                    HeadingBehaviour.Tangent(PI),
                 ),
                 listOf(
-                    30.0,
-                    40.0
+                    35.0,
+                    35.0
                 )
             )),
             WaitUntil {drive.localizer.pose.inCircle(shootPose.mirroredIf(red), 5.0, 0.1)}

@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativePose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getRelativeVelocity
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getStopPosition
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.Reference
 import org.firstinspires.ftc.teamcode.util.clamp
 import kotlin.math.PI
@@ -66,6 +67,7 @@ fun getTeleopTranslational(
 fun getTeleopFollower(
     gamepad: Gamepad,
     gamepad2: Gamepad,
+    intake: Intake,
     localizer: Localizer,
     isRed: Reference<Boolean>,
     lastLockHeading: Reference<Boolean>,
@@ -75,7 +77,7 @@ fun getTeleopFollower(
     val heading = { dError: Pose ->
         if (gamepad.left_trigger > 0.5) {
             lastLockHeading.set(false)
-            val target = (1.06) * (if (isRed.get()) -1.0 else 1.0)
+            val target = (if (intake.isStalling()) PI/2 else 1.06) * (if (isRed.get()) -1.0 else 1.0)
             PDLT(
                 AngleUnit.normalizeRadians(target - localizer.heading),
                 dError.heading,
