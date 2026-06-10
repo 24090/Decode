@@ -26,6 +26,11 @@ class IntakeTesting(): LinearOpMode(){
             reads.update()
             intake.update()
             telemetry.addData("velocity", intake.motor.velocity)
+            telemetry.addData("increasing", intake.threeBallTest.increasing())
+            telemetry.addData("detectorLeft", intake.detectorLeft.state)
+            telemetry.addData("detectorRight", intake.detectorRight.state)
+
+
             telemetry.addData("velocityBack", intake.motorBack.velocity)
             telemetry.addData("targetVelocity", runVelocity)
             telemetry.addData("back feedforward", Intake.backF * runVelocityBack)

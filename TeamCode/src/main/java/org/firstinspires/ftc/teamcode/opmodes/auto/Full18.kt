@@ -14,12 +14,14 @@ import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.closeStartPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveVectors
+import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.PurePursuitPath
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getPurePursuit
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import org.firstinspires.ftc.teamcode.util.storedPose
+import kotlin.math.PI
 import kotlin.math.max
 
 @Autonomous(name="Red - Close - 18 indiscriminate", group="Auto")
@@ -55,7 +57,7 @@ open class Full18(isRed: Boolean): Auto(
                Race(
                     Forever {
                         shooter.setHoodAngleAndVelocityFromDistance(max(
-                            getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.7), red),
+                            getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.4), red),
                             48.0
                         ))
                     },
@@ -72,15 +74,16 @@ open class Full18(isRed: Boolean): Auto(
             closeShootCycle(),
 
             shooter.stop(),
-            spikeIntakeCycle(2, ShootPose.Close),
+            spikeIntakeCycleClose(2),
             closeShootCycle(),
 
             shooter.stop(),
             gateIntakeCycleClose(),
             closeShootCycle(),
 
-            gateIntakeCycle(ShootPose.Park),
-            leaveShootCycle(),
+            gateIntakeCycleClose(),
+            closeShootCycle(),
+            drive.goToCircle(Pose(70.0, 40.0, PI/2).mirroredIf(red)),
 
             name = "Auto"
         ),

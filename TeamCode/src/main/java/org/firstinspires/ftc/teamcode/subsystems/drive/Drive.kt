@@ -99,30 +99,15 @@ class Drive(hwMap: HardwareMap) {
     fun doWheelie(intake: Intake) = Sequence(
         Instant {
             localizer.setWheelieBulkreadScope()
-            follow = { DriveVectors.fromTranslation(Vector.fromCartesian(5.0, 0.0)) }
-        },
-        WaitUntil {
-            getRelativeVelocity(localizer.pose, localizer.poseVel).x >= 60.0
-        },
-        Instant {
-            intake.behaviour = Intake.IntakeBehaviour.Wheelie(flMotor, frMotor)
-            follow = { DriveVectors.fromTranslation(Vector.fromCartesian(-2.0, 0.0)) }
+            flMotor.power = -1.5
+            frMotor.power = -1.5
+            blMotor.power = -1.0
+            brMotor.power = -1.0
+
         },
         WaitUntil {
             localizer.pinpoint.getPitch(AngleUnit.RADIANS) > 0.7
         },
-        Instant {
-            val startTime = System.currentTimeMillis()
-            follow = {
-                val t: Double = (System.currentTimeMillis() - startTime)/800.0
-                DriveVectors.fromTranslation(Vector.fromCartesian(-1.0 * (1 - t), 0.0))
-            }
-        },
-        Sleep(0.8),
-        Instant {
-            follow = { DriveVectors.fromTranslation(Vector.fromCartesian(0.0, 0.0))}
-        },
-        Sleep(0.5),
         Instant {
             localizer.setDefaultBulkreadScope()
         }

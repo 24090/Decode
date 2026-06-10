@@ -75,11 +75,11 @@ class Intake(hwMap: HardwareMap) {
 
 
         @JvmField var powerMax = 0.67
-        @JvmField var pusherLeftForward = 0.0
+        @JvmField var pusherLeftForward = 0.55
         @JvmField var pusherLeftBack = 0.95
 
-        @JvmField var pusherRightForward = 0.0
-        @JvmField var pusherRightBack = 0.76
+        @JvmField var pusherRightForward = 0.35
+        @JvmField var pusherRightBack = 0.53
         @JvmField var pusherWait = 0.05
     }
 
@@ -209,8 +209,10 @@ class Intake(hwMap: HardwareMap) {
     )
 
     fun releaseRight(): Command = Sequence(
-        Instant { pusherRight.position = pusherRightForward },
-        Sleep(pusherWait),
+        Parallel(
+            Instant { pusherRight.position = pusherRightForward },
+            Sleep(pusherWait),
+        ),
         Instant { pusherRight.position = pusherRightBack },
         name = "ReleaseRight"
     )

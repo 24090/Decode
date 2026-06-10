@@ -30,8 +30,7 @@ fun getPurePursuit(path: PurePursuitPath, localizer: Localizer): () -> DriveVect
 }
 
 fun purePursuit(path: PurePursuitPath, pose: Pose, velocity: Pose): DriveVectors{
-    val followPoint = path.getFollowPoint(pose.vector(), 42.0)
-    Log.i("follow point", followPoint.toString())
+    val followPoint = path.getFollowPoint(pose.vector(), 48.0)
     return pointToPoint(pose, velocity, followPoint)
 }
 

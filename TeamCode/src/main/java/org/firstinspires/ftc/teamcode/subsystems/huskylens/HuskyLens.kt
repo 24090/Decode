@@ -77,7 +77,7 @@ class HuskyLensTesting: LinearOpMode() {
         val huskyLens = HuskyLens(hardwareMap)
         val lights = Lights(hardwareMap)
         val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
-        lights.turnYellow()
+        lights.turnOn()
         waitForStart()
         while (opModeIsActive()){
             huskyLens.update()

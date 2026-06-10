@@ -289,7 +289,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                     listOf(20.0, 40.0),
                 )),
                 WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
-                WaitUntil{ drive.localizer.poseVel.vector().length < 1.0 && drive.localizer.pose.mirroredIf(red).y > 48},
+                WaitUntil{ drive.localizer.poseVel.vector().length < 1.0 && drive.localizer.pose.mirroredIf(red).y > 36},
             ),
             Instant{shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)},
             Race(
@@ -302,7 +302,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                         HeadingBehaviour.Interpolate,
                     ),
                     listOf(
-                        40.0
+                        30.0
                     ),
                 )),
                 WaitUntil{drive.localizer.pose.inCircle(shootPoint.mirroredIf(red), 5.0, 1.0)},
@@ -315,6 +315,9 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
     fun gateIntakeCycleFar() = gateIntakeCycle(ShootPose.Far)
 
     fun gateIntakeCycle(shootPose: ShootPose) = Sequence(
+        Instant {
+            intake.behaviour = Intake.IntakeBehaviour.Stop
+        },
         Race(
             Sequence(
                 Sleep(0.3),
@@ -336,16 +339,15 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                         ).mirroredIf(red),
                     ),
                     listOf(
-                        HeadingBehaviour.Tangent(0.0),
-                        HeadingBehaviour.Tangent(0.0),
+                        HeadingBehaviour.Interpolate,
+                        HeadingBehaviour.Interpolate,
                     ),
                     listOf(
-                        40.0,
+                        35.0,
                         40.0
                     ),
                 )
             )
-
         ),
         Instant {
             intake.behaviour = Intake.IntakeBehaviour.Grab
@@ -375,26 +377,25 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         Instant {
             indexTracker.processObservation(Observation.GateOpened)
             shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)
-            intake.behaviour = Intake.IntakeBehaviour.Stop
         },
         Race(
             drive.followPath(PurePursuitPath(
                 listOf(
                     Pose(
                         59.4,
-                        56.12 + 1.85,
+                        56.12 - 2.0,
                         1.06
                     ).mirroredIf(red),
                     Pose(
                         59.4,
                         35.0,
-                        PI/2
+                        1.06
                     ).mirroredIf(red),
                     shootPose.mirroredIf(red)
                 ),
                 listOf(
-                    HeadingBehaviour.Tangent(PI),
-                    HeadingBehaviour.Tangent(PI),
+                    HeadingBehaviour.Snap,
+                    HeadingBehaviour.Snap,
                 ),
                 listOf(
                     35.0,

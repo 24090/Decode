@@ -32,7 +32,7 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 
-@TeleOp(group = "A", name="0BallControlled")
+@TeleOp(group = "0", name="70BallControlled")
 class NewControlled: Teleop( { opmode ->
     val isRed = Reference(false)
     var useStoredPose = false
@@ -84,7 +84,7 @@ class NewControlled: Teleop( { opmode ->
             drive.localizer.poseVel.vector()
         )
         val scoreAngle = getScoreAngle(predictedPosition, isRed.get())
-        val joystickAngle = (Vector.fromCartesian(
+        var joystickAngle = (Vector.fromCartesian(
             -opmode.gamepad1.left_stick_x.toDouble(),
             opmode.gamepad1.left_stick_y.toDouble()
         )).angle.let { if (abs(AngleUnit.normalizeRadians(it - drive.localizer.heading)) > PI/2) {
@@ -93,7 +93,11 @@ class NewControlled: Teleop( { opmode ->
             it
         } }
 
-        if (inLaunchZone(getScorePose(predictedPosition), threshold = -15.0 - cos(scoreAngle - drive.localizer.heading) * 10.0 + cos(joystickAngle - drive.localizer.heading) * 10)){
+        if (opmode.gamepad1.left_stick_x.toDouble() == 0.0 && opmode.gamepad1.left_stick_y.toDouble() == 0.0){
+            joystickAngle = drive.localizer.heading
+        }
+
+        if (inLaunchZone(getScorePose(predictedPosition), threshold = -45.0 - cos(scoreAngle - drive.localizer.heading) * 30.0 + cos(joystickAngle - drive.localizer.heading) * 10)){
             getScoreAngle(predictedPosition, isRed.get())
         } else {
             joystickAngle
@@ -104,7 +108,7 @@ class NewControlled: Teleop( { opmode ->
     val changeShootingMode = {
         shootingMode = !shootingMode
         drive.follow = if (shootingMode) headingLockFollow else normalFollow
-        if (shootingMode) lights.turnYellow() else lights.turnOff()
+        if (shootingMode) lights.turnOff() else lights.turnOff()
     }
 
     drive.follow = normalFollow
@@ -136,7 +140,22 @@ class NewControlled: Teleop( { opmode ->
         telemetry.addData("pattern", indexTracker.pattern)
         telemetry.addLine("--------------------------")
     }
-
+    val wheelieButton = {
+        if (opmode.gamepad1.guide){
+            runBlocking(Race(
+                Forever{
+                    reads.update()
+                    updateP2()
+                },
+                drive.doWheelie(intake),
+                Forever {
+                    intake.update()
+                    shooter.update()
+                    telemetry.update()
+                }
+            ))
+        }
+    }
     val parkButton = { pose: Pose, wasPressed: () -> Boolean, isPressed: () -> Boolean ->
         if (wasPressed()){
             shooter.setTargetVelocities(0.0)
@@ -183,7 +202,7 @@ class NewControlled: Teleop( { opmode ->
         if (opmode.gamepad1.rightBumperWasReleased()){
             intake.behaviour = Intake.IntakeBehaviour.Grab
         }
-
+        wheelieButton()
         parkButton(
             Pose(36.0, -42.0 + robotLength/2.0, -PI/2),
             opmode.gamepad1::dpadDownWasPressed, {opmode.gamepad1.dpad_down}

@@ -3,21 +3,21 @@ package org.firstinspires.ftc.teamcode.subsystems.controlsystems
 import java.util.Collections.max
 import java.util.Collections.min
 import java.util.LinkedList
-import kotlin.math.max
 import kotlin.math.min
 
 class ThreeBallTest(val storeCount: Int) {
     private var pastStates = LinkedList<Double>()
-    var lastLeft: Int = 10
-    var lastRight: Int = 10
+    val detectorThresh = 20;
+    var lastLeft: Int = detectorThresh
+    var lastRight: Int = detectorThresh
     var baseline: Double = 0.0
-    fun isStalling() = (min(pastStates.takeLast(min(5, pastStates.size))+listOf(1500.0)) < 1050) && lastLeft < 10 && lastRight < 10 && increasing() < 300
+    fun isStalling() = (min(pastStates.takeLast(min(5, pastStates.size))+listOf(1500.0)) < 900) && lastLeft < detectorThresh && lastRight < detectorThresh && increasing() < 600
     fun increasing() = max(pastStates.takeLast(min(5, pastStates.size))) - min(pastStates.takeLast(min(25, pastStates.size)))
     fun update(newState: Number, newLeftDetected: Boolean, newRightDetected: Boolean, time: Long){
-        if (newRightDetected && lastLeft < 10 && lastRight > 10){
+        if (newRightDetected && lastLeft < detectorThresh && lastRight >= detectorThresh){
             baseline = newState.toDouble()
         }
-        if (newLeftDetected && lastLeft < 10 && lastRight > 10){
+        if (newLeftDetected && lastRight < detectorThresh && lastLeft >= detectorThresh){
             baseline = newState.toDouble()
         }
         lastLeft = if (newLeftDetected) 0 else lastLeft+1
