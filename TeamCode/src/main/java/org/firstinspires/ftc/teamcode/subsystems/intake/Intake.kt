@@ -51,11 +51,14 @@ class Intake(hwMap: HardwareMap) {
     }
     sealed class IntakeBehaviour() {
         object Greedy: IntakeBehaviour()
-        object HyperGreedy: IntakeBehaviour()
+        object TransferQuick: IntakeBehaviour()
 
         object Grab: IntakeBehaviour()
+        object HoldIdle: IntakeBehaviour()
+
+
         object Hold: IntakeBehaviour()
-        object MidShoot: IntakeBehaviour()
+        object Idle: IntakeBehaviour()
 
         object Eject: IntakeBehaviour()
         object Stop: IntakeBehaviour()
@@ -130,14 +133,19 @@ class Intake(hwMap: HardwareMap) {
             is IntakeBehaviour.Wheelie -> {
                 motor.power = -(behaviour.fl.power + behaviour.fr.power)/10.0
             }
-            IntakeBehaviour.MidShoot -> {
-                runFront()
+            IntakeBehaviour.Idle -> {
+                motor.power = 0.0
                 motorBack.power = 0.0
             }
 
-            IntakeBehaviour.HyperGreedy -> {
-                runFront()
+            IntakeBehaviour.TransferQuick -> {
+                motor.power = 0.0
                 motorBack.power = 1.0
+            }
+
+            IntakeBehaviour.HoldIdle -> {
+                runBack()
+                motor.power = 0.0
             }
         }
     }
@@ -147,7 +155,7 @@ class Intake(hwMap: HardwareMap) {
     }, "SpinUp")
 
     fun setAdjustThird(): Command = Instant({
-        behaviour = IntakeBehaviour.MidShoot
+        behaviour = IntakeBehaviour.Idle
     }, "SetAdjustThird")
     fun fullAdjustThird(): Command = Sequence(
         setAdjustThird(),

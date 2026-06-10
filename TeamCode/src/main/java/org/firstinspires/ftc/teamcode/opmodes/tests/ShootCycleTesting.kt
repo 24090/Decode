@@ -70,7 +70,7 @@ class ShootCycleTesting: LinearOpMode() {
                 Sleep(pusherWait/2), // 0.025
                 Parallel(
                     Instant {
-                        intake.behaviour = Intake.IntakeBehaviour.HyperGreedy
+                        intake.behaviour = Intake.IntakeBehaviour.TransferQuick
                         shooter.setHoodAngles(hood2)
                         shooter.setTargetVelocities(velocity2)
                     },

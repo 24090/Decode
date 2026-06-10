@@ -34,9 +34,11 @@ class Camera(hwMap: HardwareMap) {
     init {
         initPattern()
         sendPostRequest("/update-imumode", "3")
+        limelight.shutdown()
     }
 
     fun initLocalize() {
+        limelight.start()
         limelight.pipelineSwitch(2)
         limelight.setPollRateHz(20)
         limelight.start()

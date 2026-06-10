@@ -83,7 +83,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             ),
             Sleep(pusherWait/2),
             Parallel(
-                Instant { intake.behaviour = Intake.IntakeBehaviour.HyperGreedy },
+                Instant { intake.behaviour = Intake.IntakeBehaviour.TransferQuick },
                 shooter.waitForVelocity(),
                 Sleep(0.05),
             ),
@@ -110,7 +110,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 Instant {
                     shooter.setTargetVelocities(velocity2);
                     shooter.setHoodAngles(hood2)
-                    intake.behaviour = Intake.IntakeBehaviour.HyperGreedy
+                    intake.behaviour = Intake.IntakeBehaviour.TransferQuick
                 },
                 shooter.waitForVelocity(),
                 Sleep(0.05),
@@ -269,29 +269,38 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         )
         val shootPoint = shootPose
         return Sequence(
-            Instant { intake.behaviour = Intake.IntakeBehaviour.Greedy},
-            Race(
-                drive.followPath(PurePursuitPath(
-                    listOf(
-                        Pose(
-                            endPoint.x,
-                            15.0,
-                            PI/2
-                        ).mirroredIf(red),
-                        Pose(
-                            endPoint.x,
-                            45.0,
-                            PI/2
-                        ).mirroredIf(red),
-                        endPoint.mirroredIf(red)
-                    ),
-                    listOf(HeadingBehaviour.Tangent(0.0), HeadingBehaviour.Tangent(0.0)),
-                    listOf(20.0, 40.0),
-                )),
-                WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
-                WaitUntil{ drive.localizer.poseVel.vector().length < 1.0 && drive.localizer.pose.mirroredIf(red).y > 36},
+            Parallel(
+                Sequence(
+                    Instant {intake.behaviour = Intake.IntakeBehaviour.Idle},
+                    WaitUntil {drive.localizer.pose.mirroredIf(red).y > 24.0},
+                    Instant {intake.behaviour = Intake.IntakeBehaviour.Grab},
+                ),
+                Race(
+                    drive.followPath(PurePursuitPath(
+                        listOf(
+                            Pose(
+                                endPoint.x,
+                                15.0,
+                                PI/2
+                            ).mirroredIf(red),
+                            Pose(
+                                endPoint.x,
+                                45.0,
+                                PI/2
+                            ).mirroredIf(red),
+                            endPoint.mirroredIf(red)
+                        ),
+                        listOf(HeadingBehaviour.Tangent(0.0), HeadingBehaviour.Tangent(0.0)),
+                        listOf(20.0, 40.0),
+                    )),
+                    WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
+                    WaitUntil{ drive.localizer.poseVel.vector().length < 1.0 && drive.localizer.pose.mirroredIf(red).y > 36},
+                ),
             ),
-            Instant{shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)},
+            Instant{
+                shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)
+                intake.behaviour = Intake.IntakeBehaviour.HoldIdle
+            },
             Race(
                 drive.followPath(PurePursuitPath(
                     listOf(
@@ -316,7 +325,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
 
     fun gateIntakeCycle(shootPose: ShootPose) = Sequence(
         Instant {
-            intake.behaviour = Intake.IntakeBehaviour.Stop
+            intake.behaviour = Intake.IntakeBehaviour.Idle
         },
         Race(
             Sequence(
@@ -376,6 +385,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         ),
         Instant {
             indexTracker.processObservation(Observation.GateOpened)
+            intake.behaviour = Intake.IntakeBehaviour.HoldIdle
             shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)
         },
         Race(

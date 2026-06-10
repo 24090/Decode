@@ -5,6 +5,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.Heading
 import org.firstinspires.ftc.teamcode.util.Line
 import org.firstinspires.ftc.teamcode.util.clamp
 import kotlin.math.abs
+import kotlin.math.min
 
 class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<HeadingBehaviour>, val maxRadii: List<Double>) {
     val points = poses.map(Pose::vector)
@@ -17,6 +18,18 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
     fun adjustT(t: Double): Double{
         val t = clamp(t, 0.0, lines.size.toDouble() - 1e-10)
         return (0..t.toInt()).sumOf { lines[it].length } + lines[t.toInt()].length * (t%1)
+    }
+
+    fun unadjustT(adjustedT: Double): Double{
+        var adjustedT = adjustedT
+        var t = 0.0
+        for (line in lines){
+            val step = min(line.length, adjustedT)
+            t += step/line.length
+            adjustedT -= step
+            if (adjustedT < 0.01) break
+        }
+        return t
     }
 
     fun maxRadius(t: Double) = maxRadii[clamp(t, 0.0, maxRadii.size.toDouble() - 1).toInt()]
@@ -49,7 +62,9 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
             .reduce{ a, b -> a+b }
             .filter { abs(adjustT(it.first) - adjustT(t)) <= tThresh }
             .reduceOrNull{ a, b -> if(a.first > b.first) a else b }
-            ?: Pair(t + 1, getPosition(t + 1))
+            ?: unadjustT(adjustT(t) + maxRadius(t)).let {
+                Pair(it, getPosition(it))
+            }
     }
 
     fun getFollowPose(currentPosition: Vector, tThresh: Double): Pose {
