@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers
 
-import android.util.Log
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kA
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kS
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drive.DriveConstants.kV
@@ -30,7 +29,7 @@ fun getPurePursuit(path: PurePursuitPath, localizer: Localizer): () -> DriveVect
 }
 
 fun purePursuit(path: PurePursuitPath, pose: Pose, velocity: Pose): DriveVectors{
-    val followPoint = path.getFollowPoint(pose.vector(), 48.0)
+    val followPoint = path.getFollowPose(pose.vector(), 48.0)
     return pointToPoint(pose, velocity, followPoint)
 }
 
