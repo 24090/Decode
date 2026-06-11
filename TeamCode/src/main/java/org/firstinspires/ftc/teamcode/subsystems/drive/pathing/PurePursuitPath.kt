@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive.pathing
 
+import android.util.Log
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
 import org.firstinspires.ftc.teamcode.util.Line
@@ -17,7 +18,7 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
 
     fun adjustT(t: Double): Double{
         val t = clamp(t, 0.0, lines.size.toDouble() - 1e-10)
-        return (0..t.toInt()).sumOf { lines[it].length } + lines[t.toInt()].length * (t%1)
+        return (0..< t.toInt()).sumOf { lines[it].length } + lines[t.toInt()].length * (t%1)
     }
 
     fun unadjustT(adjustedT: Double): Double{
@@ -49,7 +50,7 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
     }
 
     fun getFollowPoint(currentPosition: Vector, t: Double, tThresh: Double): Pair<Double, Vector>{
-        return lines
+        val options =  lines
             .mapIndexed { index, line ->
                 line.circleIntersection(
                     currentPosition,
@@ -60,11 +61,10 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
                 )}
             }
             .reduce{ a, b -> a+b }
-            .filter { abs(adjustT(it.first) - adjustT(t)) <= tThresh }
-            .reduceOrNull{ a, b -> if(a.first > b.first) a else b }
-            ?: unadjustT(adjustT(t) + maxRadius(t)).let {
-                Pair(it, getPosition(it))
-            }
+            .filter { abs(adjustT(it.first) - adjustT(t)) <= tThresh } +
+            listOf(unadjustT(adjustT(t) + maxRadius(t)).let { Pair(it - 0.001, getPosition(it - 0.001)) })
+
+        return options.maxBy { it.first }
     }
 
     fun getFollowPose(currentPosition: Vector, tThresh: Double): Pose {
@@ -73,6 +73,7 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
             return poses.last()
         }
         val (followT, followPoint) = getFollowPoint(currentPosition, t,  tThresh)
+        Log.i("followT", "$followT")
         val headingBehaviour = headingBehaviour(t)
         val heading = when (headingBehaviour){
             is HeadingBehaviour.Tangent -> AngleUnit.normalizeRadians((followPoint - currentPosition).angle + headingBehaviour.angle)

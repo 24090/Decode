@@ -14,5 +14,11 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.Heading
 import kotlin.math.PI
 
 fun main(){
-    println(ShootPose.Far.distance)
+    val path = PurePursuitPath(
+        listOf(Pose(0.0, 0.0, 0.0), Pose(50.0, 0.0, 0.0)),
+        listOf(HeadingBehaviour.Snap),
+        listOf(5.0)
+    )
+
+    println(path.getFollowPoint(Vector.fromCartesian(0.0, 0.0), 0.0, 48.0))
 }

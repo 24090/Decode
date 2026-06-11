@@ -278,20 +278,16 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 Race(
                     drive.followPath(PurePursuitPath(
                         listOf(
+                            shootPose,
                             Pose(
                                 endPoint.x,
-                                15.0,
-                                PI/2
-                            ).mirroredIf(red),
-                            Pose(
-                                endPoint.x,
-                                45.0,
+                                20.0,
                                 PI/2
                             ).mirroredIf(red),
                             endPoint.mirroredIf(red)
                         ),
-                        listOf(HeadingBehaviour.Tangent(0.0), HeadingBehaviour.Tangent(0.0)),
-                        listOf(20.0, 40.0),
+                        listOf(HeadingBehaviour.Interpolate, HeadingBehaviour.Snap, HeadingBehaviour.Snap),
+                        listOf(30.0, 30.0, 30.0),
                     )),
                     WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
                     WaitUntil{ drive.localizer.poseVel.vector().length < 1.0 && drive.localizer.pose.mirroredIf(red).y > 36},
