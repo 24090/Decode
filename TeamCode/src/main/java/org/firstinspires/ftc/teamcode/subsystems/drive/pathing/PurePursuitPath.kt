@@ -39,13 +39,11 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
     fun getTValue(point: Vector, lastT: Double, tThresh: Double): Double{
         return lines
             .mapIndexed { index, line ->
-                val projectedPoint = line.projectPoint(
-                        point
-                    )
-                index.toDouble() + line.getTvalue(projectedPoint)
+                val projectedPoint = line.projectPoint(point)
+                index.toDouble() + clamp(line.getTvalue(projectedPoint), 0.0, 1 - 1e-5)
             }
             .filter { abs(adjustT(it) - adjustT(lastT)) <= tThresh }
-            .reduceOrNull{ a, b -> if(a > b) a else b }
+            .minBy { (getPosition(it) - point).length }
             ?: lastT
     }
 
@@ -62,7 +60,10 @@ class PurePursuitPath(val poses: List<Pose>, val headingBehaviours: List<Heading
             }
             .reduce{ a, b -> a+b }
             .filter { abs(adjustT(it.first) - adjustT(t)) <= tThresh } +
-            listOf(unadjustT(adjustT(t) + maxRadius(t)).let { Pair(it - 0.001, getPosition(it - 0.001)) })
+            listOf(unadjustT(adjustT(t) + maxRadius(t)).let { Pair(it - 0.001, getPosition(it - 0.001)) }).also {
+            }
+
+
 
         return options.maxBy { it.first }
     }

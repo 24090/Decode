@@ -98,11 +98,11 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
     fun shootAll(velocity1: Double, velocity2: Double, hood1: Double, hood2: Double) = Sequence(
         Sequence(
             Parallel(
-                Instant{ shooter.setTargetVelocities(velocity1, velocity2); shooter.setHoodAngles(hood1)},
-                shooter.waitForLeftVelocity()
+                Instant{ shooter.setTargetVelocities(velocity2, velocity1); shooter.setHoodAngles(hood1)},
+                shooter.waitForRightVelocity()
             ),
             Parallel(
-                intake.releaseLeft(),
+                intake.releaseRight(),
                 intake.setAdjustThird()
             ),
             Sleep(pusherWait/2),
@@ -338,9 +338,9 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                             1.05
                         ).mirroredIf(red),
                         Pose(
-                                59.4 + 1.0,
-                                56.12 + 1.3,
-                                1.05
+                            59.4 + 1.0,
+                            56.12 + 1.3,
+                            1.05
                         ).mirroredIf(red),
                     ),
                     listOf(
@@ -481,13 +481,14 @@ open class Auto(val red: Boolean, val startPose: Pose, val command: Robot.() -> 
             telemetry.update()
         }
 
+        robot.drive.localizer.pose = startPose.mirroredIf(storedRed.get())
+
         waitForStart()
 
         if (!opModeIsActive()){
             return
         }
 
-        robot.drive.localizer.pose = startPose.mirroredIf(storedRed.get())
         robot.drive.startP2PWithTargetPose(ShootPose.Close.mirroredIf(storedRed.get()))
         //robot.camera.sendHeading(startPose.heading)
         runBlocking(command)

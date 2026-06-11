@@ -22,7 +22,7 @@ class Line(val start: Vector, val end: Vector) {
     }
 
     fun projectPoint(point: Vector): Vector {
-        val result = (end - start).projection(point) + start
+        val result = (end - start).projection(point - start) + start
         return if (getTvalue(result) > 1) {
             end
         } else if (getTvalue(result) < 0) {

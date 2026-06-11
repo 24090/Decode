@@ -43,12 +43,12 @@ class Shooter(hwMap: HardwareMap) {
     ))
 
     val distanceToVelocityLeftLUT = InterpolatedLUT(mapOf(
-        Pair(0.0, 1040.0), // 0 in
-        Pair(36*sqrt(2.0), 1470.0 ), // 36 sqrt 2 in
-        Pair(48*sqrt(2.0), 1380.0), // 48 sqrt 2 in
-        Pair(60*sqrt(2.0), 1420.0),  // 60 sqrt 2 in
-        Pair(72*sqrt(2.0), 1440.0),  // 72 sqrt 2 in
-        Pair(84*sqrt(2.0), 1600.0),  // 84 sqrt 2 in
+        Pair(0.0, 1030.0), // 0 in
+        Pair(36*sqrt(2.0), 1460.0 ), // 36 sqrt 2 in
+        Pair(48*sqrt(2.0), 1370.0), // 48 sqrt 2 in
+        Pair(60*sqrt(2.0), 1410.0),  // 60 sqrt 2 in
+        Pair(72*sqrt(2.0), 1430.0),  // 72 sqrt 2 in
+        Pair(84*sqrt(2.0), 1590.0),  // 84 sqrt 2 in
         Pair(96*sqrt(2.0), 1750.0),  // 96 sqrt 2 in
         Pair(108*sqrt(2.0), 1700.0),
         Pair(120*sqrt(2.0), 1800.0),

@@ -37,9 +37,6 @@ fun minStopDistance(heading: Double, errorAngle: Double, velocity: Vector, minAc
 
 
     val constantAccel = if (minPower > uncorrectedPower) minAccel else if (maxPower < uncorrectedPower) maxAccel else uncorrectedAccel
-    println("minAccel: $minAccelX")
-    println("maxAccel: $maxAccelX")
-    println("constantAccel: $constantAccel")
     val t = max(
         (uncorrectedPower - (constantAccel * kA + v * kV + kS * sign(v)))/(constantAccel * kV),
         0.0

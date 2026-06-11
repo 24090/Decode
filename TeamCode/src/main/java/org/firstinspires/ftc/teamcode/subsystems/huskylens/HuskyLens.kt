@@ -29,8 +29,7 @@ class HuskyLens(hwMap: HardwareMap) {
 
         val valid_blocks = camera
             .blocks()
-            .filter{ block -> block.width * block.height >= 400 }
-            .sortedBy{ block -> -(block.width*block.height*(240 - block.y)) }
+            .sortedBy{ block -> -(block.width*block.height) }
 
         for (block in valid_blocks) {
             if ((left != null) && (right != null)){
@@ -43,11 +42,11 @@ class HuskyLens(hwMap: HardwareMap) {
                 else -> throw UnsupportedOperationException("id > 2 is invalid")
             }
 
-            if ((block.x < 160) && (right == null)) {
+            if ((block.x < 0) && (right == null)) {
                 right = color
             }
 
-            if ((block.x > 160) && (left == null)) {
+            if ((block.x > 0) && (left == null)) {
                 left = color
             }
         }

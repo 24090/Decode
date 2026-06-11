@@ -114,7 +114,7 @@ class Intake(hwMap: HardwareMap) {
                 if (!isStalling()) {
                     runFront()
                 } else {
-                    holdFront()
+                    motor.power = -0.2
                 }
 
             }
