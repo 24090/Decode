@@ -160,7 +160,7 @@ class Camera(hwMap: HardwareMap) {
     }
 }
 
-@TeleOp(name = "VisionTesting")
+@TeleOp(name = "VisionTesting", group = "Testing")
 class VisionTesting: LinearOpMode() {
     override fun runOpMode() {
         val camera = Camera(hardwareMap)

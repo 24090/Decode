@@ -38,7 +38,7 @@ class ColorSensor(hwMap: HardwareMap) {
     }
 }
 
-@TeleOp
+@TeleOp(group = "Testing")
 class ColorSensorTesting: LinearOpMode(){
     override fun runOpMode() {
         val colorSensor = ColorSensor(hardwareMap)

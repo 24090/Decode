@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.commands
 
 class Future(val f: () -> Command, name: String): OverrideButtonCommand(name) {
+    override fun nextInstant() = command?.nextInstant() ?: false
     private var command: Command? = null
     override fun run(): CommandResult {
         command = command ?: f()

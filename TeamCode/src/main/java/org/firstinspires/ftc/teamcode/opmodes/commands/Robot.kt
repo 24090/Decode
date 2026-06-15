@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.commands.Command
+import org.firstinspires.ftc.teamcode.commands.Forever
+import org.firstinspires.ftc.teamcode.commands.ForeverCommand
 import org.firstinspires.ftc.teamcode.commands.Future
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
@@ -15,6 +17,7 @@ import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
+import org.firstinspires.ftc.teamcode.opmodes.poses.getScoreDistance
 import org.firstinspires.ftc.teamcode.opmodes.poses.getScorePose
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotLength
 import org.firstinspires.ftc.teamcode.opmodes.poses.robotWidth
@@ -25,9 +28,14 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.HeadingBehaviour
 import org.firstinspires.ftc.teamcode.subsystems.huskylens.Lights
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
-import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.minTransfer
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWaitDown
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
+import org.firstinspires.ftc.teamcode.subsystems.shooter.distanceToAngleLUT
+import org.firstinspires.ftc.teamcode.subsystems.shooter.distanceToVelocityLeftLUT
+import org.firstinspires.ftc.teamcode.subsystems.shooter.secondaryDistanceToAngleLUT
+import org.firstinspires.ftc.teamcode.subsystems.shooter.secondaryDistanceToVelocityLeftLUT
 import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Observation
 import org.firstinspires.ftc.teamcode.util.Pattern
@@ -65,7 +73,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 && shooter.velocitiesInThreshold(50.0)
             },
             intake.releaseDual(),
-            Sleep(pusherWait),
+            Sleep(pusherWaitDown),
             intake.spinUp(),
             Sleep(1.0),
             WaitUntil {
@@ -77,15 +85,13 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
     fun shootAll() = Sequence(
         Sequence(
             shooter.waitForVelocity(),
+            intake.releaseDual(),
+            intake.setAdjustThird(),
+            Sleep(pusherWaitDown),
+            Instant { intake.behaviour = Intake.IntakeBehaviour.TransferQuick },
             Parallel(
-                intake.releaseDual(),
-                intake.setAdjustThird()
-            ),
-            Sleep(pusherWait/2),
-            Parallel(
-                Instant { intake.behaviour = Intake.IntakeBehaviour.TransferQuick },
                 shooter.waitForVelocity(),
-                Sleep(0.05),
+                Sleep(minTransfer),
             ),
             intake.releaseDual(),
             Instant {
@@ -94,26 +100,22 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         ),
         name = "ShootCycle"
     )
-    fun shootAll(distance: Double) = shootAll(shooter.distanceToVelocityLeftLUT.get(distance), shooter.secondaryDistanceToVelocityLeftLUT.get(distance), shooter.distanceToAngleLUT.get(distance), shooter.secondaryDistanceToAngleLUT.get(distance))
+    fun shootAll(distance: Double) = shootAll(distanceToVelocityLeftLUT.get(distance), secondaryDistanceToVelocityLeftLUT.get(distance), distanceToAngleLUT.get(distance), secondaryDistanceToAngleLUT.get(distance))
     fun shootAll(velocity1: Double, velocity2: Double, hood1: Double, hood2: Double) = Sequence(
         Sequence(
+            Instant{ shooter.setTargetVelocities(velocity2, velocity1); shooter.setHoodAngles(hood1)},
+            shooter.waitForRightVelocity(),
+            intake.releaseRight(),
+            intake.setAdjustThird(),
+            Sleep(pusherWaitDown),
+            Instant {
+                shooter.setTargetVelocities(velocity2);
+                shooter.setHoodAngles(hood2)
+                intake.behaviour = Intake.IntakeBehaviour.TransferQuick
+            },
             Parallel(
-                Instant{ shooter.setTargetVelocities(velocity2, velocity1); shooter.setHoodAngles(hood1)},
-                shooter.waitForRightVelocity()
-            ),
-            Parallel(
-                intake.releaseRight(),
-                intake.setAdjustThird()
-            ),
-            Sleep(pusherWait/2),
-            Parallel(
-                Instant {
-                    shooter.setTargetVelocities(velocity2);
-                    shooter.setHoodAngles(hood2)
-                    intake.behaviour = Intake.IntakeBehaviour.TransferQuick
-                },
                 shooter.waitForVelocity(),
-                Sleep(0.05),
+                Sleep(minTransfer),
             ),
             intake.releaseDual(),
             Instant {
@@ -145,7 +147,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 Pair(Pattern.GPP, Pattern.GPP) -> Sequence(
                     // left right+3
                     intake.releaseLeft(),
-                    Parallel(reload(), Sleep(indexWait)),
+                    Parallel(reload()),
                     intake.releaseDual()
                 )
 
@@ -170,7 +172,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 Pair(Pattern.PGP, Pattern.GPP) -> Sequence(
                     // right left+3
                     intake.releaseRight(),
-                    Parallel(reload(), Sleep(indexWait)),
+                    Parallel(reload()),
                     intake.releaseDual()
                 )
 
@@ -233,7 +235,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             listOf(Pose(65.0, 54.0, PI/2.0).mirroredIf(red), Pose(65.0, 14.0, PI/2.0).mirroredIf(red), ShootPose.Close.mirroredIf(red)),
             listOf(HeadingBehaviour.Tangent(0.0), HeadingBehaviour.Interpolate),
             listOf(40.0, 40.0)
-        ), 5.0, 0.1),
+        ), 4.5, 0.1),
     )
     fun grabAndOpenCycleFar() = Sequence(
         intake.spinUp(),
@@ -272,7 +274,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             Parallel(
                 Sequence(
                     Instant {intake.behaviour = Intake.IntakeBehaviour.Idle},
-                    WaitUntil {drive.localizer.pose.mirroredIf(red).y > 24.0},
+                    WaitUntil {drive.localizer.pose.mirroredIf(red).y > 20.0},
                     Instant {intake.behaviour = Intake.IntakeBehaviour.Grab},
                 ),
                 Race(
@@ -281,12 +283,12 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                             shootPose,
                             Pose(
                                 endPoint.x,
-                                20.0,
+                                18.0,
                                 PI/2
                             ).mirroredIf(red),
                             endPoint.mirroredIf(red)
                         ),
-                        listOf(HeadingBehaviour.Interpolate, HeadingBehaviour.Snap, HeadingBehaviour.Snap),
+                        listOf(HeadingBehaviour.Snap, HeadingBehaviour.Tangent(0.0), HeadingBehaviour.Tangent(0.0)),
                         listOf(30.0, 30.0, 30.0),
                     )),
                     WaitUntil { intake.isStalling() && drive.localizer.pose.mirroredIf(red).y > 48 },
@@ -294,7 +296,8 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 ),
             ),
             Instant{
-                shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)
+                shooter.setHoodAngles(shootPose.initialAngle)
+                shooter.setTargetVelocities(shootPose.secondaryVelocity, shootPose.initialVelocity)
                 intake.behaviour = Intake.IntakeBehaviour.HoldIdle
             },
             Race(
@@ -321,7 +324,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
 
     fun gateIntakeCycle(shootPose: ShootPose) = Sequence(
         Instant {
-            intake.behaviour = Intake.IntakeBehaviour.Idle
+            intake.behaviour = Intake.IntakeBehaviour.Grab
         },
         Race(
             Sequence(
@@ -339,7 +342,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                         ).mirroredIf(red),
                         Pose(
                             59.4 + 1.0,
-                            56.12 + 1.3,
+                            56.12 + 1.3 + 1.0,
                             1.05
                         ).mirroredIf(red),
                     ),
@@ -354,35 +357,29 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 )
             )
         ),
-        Instant {
-            intake.behaviour = Intake.IntakeBehaviour.Grab
-        },
         Race(
             intake.waitForStall(),
-            Sequence(
-                Sleep(1.4),
-                drive.goToCircle(
-                    Pose(
-                        59.4 - 2,
-                        56.12 - 1.0,
-                        0.95
-                    ).mirroredIf(red),
-                ),
-                drive.goToCircle(
-                    Pose(
-                        59.4,
-                        56.12 + 2.0,
-                        PI/2
-                    ).mirroredIf(red),
-                ),
-            ),
-            Sleep(3.2)
-
+            ForeverCommand { Sequence(
+                Instant{drive.startP2PWithTargetPose(Pose(
+                    59.4 + 1.0,
+                    56.12 + 1.3 + 1.0,
+                    1.05
+                ).mirroredIf(red))},
+                Sleep(0.2),
+                Instant{drive.startP2PWithTargetPose(Pose(
+                    59.4 + 1.0 + 1.0,
+                    56.12 + 1.3 + 1.0 - 1.0,
+                    1.3
+                ).mirroredIf(red))},
+            )},
+            Sleep(2.5)
         ),
         Instant {
             indexTracker.processObservation(Observation.GateOpened)
             intake.behaviour = Intake.IntakeBehaviour.HoldIdle
-            shooter.setHoodAngleAndVelocityFromDistance(shootPose.distance)
+            shooter.setHoodAngles(shootPose.initialAngle)
+            shooter.setTargetVelocities(shootPose.secondaryVelocity, shootPose.initialVelocity)
+
         },
         Race(
             drive.followPath(PurePursuitPath(
@@ -440,10 +437,15 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         Instant{lights.turnOff()},
         name = "CloseShootCycle"
     )
-
+    fun shootCycle(pose: ShootPose) = Sequence(
+        drive.goToCircle(pose.mirroredIf(red), 5.0, 0.06),
+        shootAll(pose.initialVelocity, pose.secondaryVelocity, pose.initialAngle, pose.secondaryAngle),
+        Sleep(0.01),
+    )
     fun closeShootCycle() = Sequence(
-        drive.goToCircle(ShootPose.Close.mirroredIf(red), 3.0, 0.06),
+        drive.goToCircle(ShootPose.Close.mirroredIf(red), 5.0, 0.06),
         shootAll(ShootPose.Close.distance),
+        Sleep(0.01),
         name = "CloseShootCycle"
     )
 

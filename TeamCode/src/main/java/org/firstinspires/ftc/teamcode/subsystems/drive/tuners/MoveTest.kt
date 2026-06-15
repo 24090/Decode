@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import kotlin.math.PI
 
-@TeleOp
+@TeleOp(group = "Testing")
 class MoveTest: LinearOpMode() {
     override fun runOpMode() {
         val telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)

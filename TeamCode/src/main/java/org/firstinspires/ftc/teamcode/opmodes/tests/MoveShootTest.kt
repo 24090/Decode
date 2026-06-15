@@ -23,9 +23,11 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRigh
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherRightForward
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
+import org.firstinspires.ftc.teamcode.subsystems.shooter.exitVelocityToLeftVelocityLUT
+import org.firstinspires.ftc.teamcode.subsystems.shooter.exitVelocityToRightVelocityLUT
 import org.firstinspires.ftc.teamcode.util.calculatePredictiveMoveShoot
 
-@TeleOp
+@TeleOp(group = "Testing")
 class MoveShootTest: LinearOpMode(){
     override fun runOpMode() {
         val reads = Reads(hardwareMap)
@@ -64,8 +66,8 @@ class MoveShootTest: LinearOpMode(){
                 drive.update()
                 val relativePose = (scorePosition - Vector.fromPose(drive.localizer.pose))
                 shooter.setTargetVelocities(
-                    shooter.exitVelocityToLeftVelocityLUT.get(moveShootOutputs?.first ?: 1000.0),
-                    shooter.exitVelocityToRightVelocityLUT.get(moveShootOutputs?.first ?: 1000.0)
+                    exitVelocityToLeftVelocityLUT.get(moveShootOutputs?.first ?: 1000.0),
+                    exitVelocityToRightVelocityLUT.get(moveShootOutputs?.first ?: 1000.0)
                 )
                 telemetry.addData("target exit velocity", moveShootOutputs?.first)
                 telemetry.addData("target heading", moveShootOutputs?.second)

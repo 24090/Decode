@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.util.IndexTracker
 import org.firstinspires.ftc.teamcode.util.Pattern
 import kotlin.math.sqrt
 
-@TeleOp()
+@TeleOp(group = "Testing")
 class IndexedShootingTest: LinearOpMode(){
     override fun runOpMode() {
         val robot = Robot(hardwareMap, telemetry)

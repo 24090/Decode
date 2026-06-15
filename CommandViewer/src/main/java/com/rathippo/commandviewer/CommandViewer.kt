@@ -28,29 +28,29 @@ object CommandViewer : Notifications {
     val active: Boolean = server?.sockets?.isEmpty() ?: false
 
     @JvmStatic fun start(context: Context?) {
-        val getFile = { path: String -> context!!.assets.open(path).bufferedReader().readText()}
-        val page = newFixedLengthResponse(
-            getFile("main.html")
-            .replace(
-                "@INSERT_JSONPATCH",
-                getFile("jsonpatch.min.js")
-            )
-            .replace(
-                "@INSERT_JS",
-                getFile("main.js")
-            )
-            .replace(
-                "@INSERT_CSS",
-                getFile("style.css")
-            )
-            .replace(
-                "@INSERT_CUSTOMCSS",
-                CommandViewerParams.customCss
-            )
-        )
-        if (server == null && context != null) {
-            server = Server(page)
-        }
+//        val getFile = { path: String -> context!!.assets.open(path).bufferedReader().readText()}
+//        val page = newFixedLengthResponse(
+//            getFile("main.html")
+//            .replace(
+//                "@INSERT_JSONPATCH",
+//                getFile("jsonpatch.min.js")
+//            )
+//            .replace(
+//                "@INSERT_JS",
+//                getFile("main.js")
+//            )
+//            .replace(
+//                "@INSERT_CSS",
+//                getFile("style.css")
+//            )
+//            .replace(
+//                "@INSERT_CUSTOMCSS",
+//                CommandViewerParams.customCss
+//            )
+//        )
+//        if (server == null && context != null) {
+//            server = Server(page)
+//        }
     }
 
     @OnCreateEventLoop
@@ -74,6 +74,7 @@ object CommandViewer : Notifications {
     fun sanitizeString(s: String): String{
         return s.replace("\\","\\\\")
     }
+
     fun update(){
         if (!active) return
 
@@ -126,14 +127,14 @@ object CommandViewer : Notifications {
     override fun onOpModePreInit(opMode: OpMode?) {}
     override fun onOpModePreStart(opMode: OpMode?) {}
     override fun onOpModePostStop(opMode: OpMode?) {
-        commandLog.clear()
-        functions.clear()
+//        commandLog.clear()
+//        functions.clear()
     }
 }
 
 sealed class CommandMessage{
     fun send(){
-        commandLog.add(this)
+//        commandLog.add(this)
     }
 
     /**

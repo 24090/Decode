@@ -1,8 +1,13 @@
 package org.firstinspires.ftc.teamcode.opmodes.poses
 
 import com.sun.tools.javac.util.Position
+import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose.Close.distance
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Vector
+import org.firstinspires.ftc.teamcode.subsystems.shooter.distanceToAngleLUT
+import org.firstinspires.ftc.teamcode.subsystems.shooter.distanceToVelocityLeftLUT
+import org.firstinspires.ftc.teamcode.subsystems.shooter.secondaryDistanceToAngleLUT
+import org.firstinspires.ftc.teamcode.subsystems.shooter.secondaryDistanceToVelocityLeftLUT
 import org.firstinspires.ftc.teamcode.util.clamp
 import kotlin.math.PI
 
@@ -10,9 +15,18 @@ const val robotWidth = 18.0
 const val robotLength = 13.38
 val scorePosition = Vector.fromCartesian(144.0, 72.0)
 
-sealed class ShootPose(val position: Vector): Pose(position.x, position.y, getScoreAngle(position)) {
+sealed class ShootPose(
+    val position: Vector,
+    val initialVelocity: Double = distanceToVelocityLeftLUT.get(distance),
+    val secondaryVelocity: Double = secondaryDistanceToVelocityLeftLUT.get(distance),
+    val initialAngle: Double = distanceToAngleLUT.get(distance),
+    val secondaryAngle: Double = secondaryDistanceToAngleLUT.get(distance)
+
+): Pose(position.x, position.y, getScoreAngle(position)) {
     object Far: ShootPose(Vector.fromCartesian(14.0, 14.0))
-    object Close: ShootPose(Vector.fromCartesian(84.5, 17.0))
+    object Close: ShootPose(Vector.fromCartesian(84.5, 17.0), 1350.0, 1210.0, 0.0, 0.2)
+    object Closer: ShootPose(Vector.fromCartesian(84.5 + 12.0, 17.0 + 12.0), 1350.0, 1210.0, 0.2, 0.0)
+
     object Park: ShootPose(Vector.fromCartesian(106.0, 12.0))
 
     val distance = getScoreDistance(position)

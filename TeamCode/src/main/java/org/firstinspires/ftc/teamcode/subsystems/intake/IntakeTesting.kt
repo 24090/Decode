@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.runVelocit
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 
-@TeleOp
+@TeleOp(name = "IntakeTesting", group = "Testing")
 @Config
 class IntakeTesting(): LinearOpMode(){
     override fun runOpMode() {

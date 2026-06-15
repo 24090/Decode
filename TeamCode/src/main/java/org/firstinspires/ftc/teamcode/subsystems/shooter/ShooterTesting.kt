@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.expansionHubVoltage
 
 
-@TeleOp
+@TeleOp(group = "Testing")
 @Config
 class ShooterTesting(): LinearOpMode(){
     companion object {

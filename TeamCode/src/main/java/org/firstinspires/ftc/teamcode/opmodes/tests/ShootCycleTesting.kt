@@ -14,12 +14,13 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
-import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.minTransfer
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWaitDown
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 import org.firstinspires.ftc.teamcode.util.timeSeconds
 
-@TeleOp
+@TeleOp(group = "Testing")
 @Config
 class ShootCycleTesting: LinearOpMode() {
     companion object {
@@ -37,8 +38,8 @@ class ShootCycleTesting: LinearOpMode() {
         val shooter = Shooter(hardwareMap)
         shooter.setHoodAngles(hood)
         val reads = Reads(hardwareMap)
-        shooter.setTargetVelocities(velocity, velocity2)
-        intake.behaviour = Intake.IntakeBehaviour.Grab
+        shooter.setTargetVelocities(velocity2, velocity)
+        intake.behaviour = Intake.IntakeBehaviour.HoldIdle
         val a = TelemetryPacket()
         telemetry.addData("left vel", shooter.targetVelocityLeft)
         telemetry.addData("right vel", shooter.targetVelocityRight)
@@ -59,23 +60,21 @@ class ShootCycleTesting: LinearOpMode() {
                 telemetry.update()
             },
             Sequence(
-                shooter.waitForLeftVelocity(),
+                shooter.waitForRightVelocity(),
                 Instant {
                     startTime = timeSeconds()
                 },
+                intake.setAdjustThird(),
+                intake.releaseRight(),
+                Sleep(pusherWaitDown),
+                Instant {
+                    intake.behaviour = Intake.IntakeBehaviour.TransferQuick
+                    shooter.setHoodAngles(hood2)
+                    shooter.setTargetVelocities(velocity2)
+                },
                 Parallel(
-                    intake.releaseLeft(), // 0.05
-                    intake.setAdjustThird()
-                ),
-                Sleep(pusherWait/2), // 0.025
-                Parallel(
-                    Instant {
-                        intake.behaviour = Intake.IntakeBehaviour.TransferQuick
-                        shooter.setHoodAngles(hood2)
-                        shooter.setTargetVelocities(velocity2)
-                    },
                     shooter.waitForVelocity(),
-                    Sleep(0.05),
+                    Sleep(minTransfer),
                 ),
                 intake.releaseDual(),
                 Instant {

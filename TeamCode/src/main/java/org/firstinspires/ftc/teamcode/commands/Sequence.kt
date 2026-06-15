@@ -1,9 +1,10 @@
 package org.firstinspires.ftc.teamcode.commands
 
 class Sequence(vararg commands: Command, name: String = "Sequence"): OverrideButtonCommand(name, true){
+    override fun nextInstant() = currentCommand.nextInstant()
     private val pastCommands: ArrayList<DeadCommand> = ArrayList()
     private val futureCommands:  ArrayList<Command> = ArrayList()
-    private var currentCommand: Command?
+    private var currentCommand: Command
     init {
         commands.toCollection(futureCommands)
         currentCommand = futureCommands.removeAt(0)
@@ -30,8 +31,6 @@ class Sequence(vararg commands: Command, name: String = "Sequence"): OverrideBut
     override fun run(): CommandResult {
         // uses local val so only one null-check necessary per loop
         val currentCommand = currentCommand
-            ?: return CommandResult.End(Result.success("No Commands Left"))
-
         // show dead past commands
         for (command in pastCommands) {
             command.update()
@@ -51,9 +50,10 @@ class Sequence(vararg commands: Command, name: String = "Sequence"): OverrideBut
                 this.currentCommand = try {
                     futureCommands.removeAt(0)
                 } catch (e: IndexOutOfBoundsException) {
-                    null
+                    return CommandResult.End(Result.success("No Commands Left"))
                 }
-                return CommandResult.Continue
+
+                return run()
             }
         }
     }

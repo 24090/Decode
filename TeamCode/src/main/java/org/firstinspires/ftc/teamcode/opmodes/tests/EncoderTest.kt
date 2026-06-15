@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter
 
-@TeleOp()
+@TeleOp(group = "Testing")
 class EncoderTest: LinearOpMode(){
     override fun runOpMode() {
         val reads = Reads(hardwareMap)

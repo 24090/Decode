@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.commands
 
 class WaitUntil(val f: () -> Boolean, name: String = "WaitUntil"): OverrideButtonCommand(name) {
+    override fun nextInstant() = f()
     override fun getButtons(): ArrayList<Pair<Int, String>> {
         val buttons = super.getButtons()
         return buttons

@@ -4,7 +4,7 @@ import com.rathippo.commandviewer.CommandViewer
 
 open class RepeatCommandUntil(val f: () -> Command, val c: () -> Boolean, name: String = "RepeatUntil"): OverrideButtonCommand(name) {
     val pastCommands: ArrayList<DeadCommand> = arrayListOf()
-    val clearDead = CommandViewer.registerFunction { pastCommands.clear() }
+    val clearDead = 0//CommandViewer.registerFunction { pastCommands.clear() }
     var currentCommand: Command? = f.invoke()
     override fun getButtons(): ArrayList<Pair<Int, String>> {
         val buttons = super.getButtons()

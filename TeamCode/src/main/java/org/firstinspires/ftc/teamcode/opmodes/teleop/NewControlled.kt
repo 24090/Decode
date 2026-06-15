@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Parallel
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.WaitUntil
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.opmodes.commands.Teleop
@@ -26,7 +27,11 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getTele
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.getStopPosition
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.predictedShootPosition
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
+import org.firstinspires.ftc.teamcode.subsystems.shooter.distanceToVelocityRightLUT
+import org.firstinspires.ftc.teamcode.subsystems.shooter.secondaryDistanceToVelocityLeftLUT
+import org.firstinspires.ftc.teamcode.util.Pattern
 import org.firstinspires.ftc.teamcode.util.Reference
+import org.firstinspires.ftc.teamcode.util.patternFromG
 import org.firstinspires.ftc.teamcode.util.storedPattern
 import kotlin.math.PI
 import kotlin.math.abs
@@ -73,7 +78,12 @@ class NewControlled: Teleop( { opmode ->
         drive.estimateAcceleration()
     )}
     val setShooters = { position: Vector ->
-        shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance(position, isRed.get()))
+        val distance = getScoreDistance(position, isRed.get())
+        if (!patternMode){
+            shooter.setHoodAngleAndVelocityFromDistance(distance)
+        } else {
+            shooter.setTargetVelocities(secondaryDistanceToVelocityLeftLUT.get(distance), distanceToVelocityRightLUT.get(distance))
+        }
     }
 
     val translationalFunction = getTeleopTranslational(opmode.gamepad1, drive.localizer, lastLockTranslational, targetPose, isRed)
@@ -127,8 +137,14 @@ class NewControlled: Teleop( { opmode ->
         if (opmode.gamepad2.guideWasPressed()) {
             isRed.set(!isRed.get())
         }
+        if (opmode.gamepad2.bWasPressed()){
+            intake.behaviour = Intake.IntakeBehaviour.Eject
+        }
         if (opmode.gamepad2.xWasPressed()){
             indexTracker.rampCount = ((indexTracker.rampCount + 1)%9 + 9)%9
+        }
+        if (opmode.gamepad2.backWasPressed()){
+            indexTracker.pattern = patternFromG(indexTracker.pattern.n + 1)
         }
         if (opmode.gamepad2.yWasPressed()){
             indexTracker.rampCount = ((indexTracker.rampCount - 1)%9 + 9)%9
@@ -137,7 +153,7 @@ class NewControlled: Teleop( { opmode ->
         telemetry.addData("red? (center button/guide)", isRed.get())
         telemetry.addData("rampCount (x and y)", indexTracker.rampCount)
         telemetry.addData("patternMode (a)", patternMode)
-        telemetry.addData("pattern", indexTracker.pattern)
+        telemetry.addData("pattern (back to change)", indexTracker.pattern)
         telemetry.addLine("--------------------------")
     }
     val wheelieButton = {
@@ -159,7 +175,7 @@ class NewControlled: Teleop( { opmode ->
     val parkButton = { pose: Pose, wasPressed: () -> Boolean, isPressed: () -> Boolean ->
         if (wasPressed()){
             shooter.setTargetVelocities(0.0)
-            targetPose.set(pose.mirroredIf(isRed.get()))
+            targetPose.set(pose.mirroredIf(true))
             runBlocking(Race(
                 WaitUntil { !isPressed() },
                 Forever {
@@ -197,7 +213,7 @@ class NewControlled: Teleop( { opmode ->
             runBlocking(intake.stop())
         }
         if (opmode.gamepad1.rightBumperWasPressed()){
-            intake.behaviour = Intake.IntakeBehaviour.Eject
+            intake.behaviour = Intake.IntakeBehaviour.FixJam
         }
         if (opmode.gamepad1.rightBumperWasReleased()){
             intake.behaviour = Intake.IntakeBehaviour.Grab
@@ -260,11 +276,10 @@ class NewControlled: Teleop( { opmode ->
                                 isRed.get()
                             )
                         )
-                        shooter.setHoodAngleAndVelocityFromDistance(getScoreDistance(targetPose.get().vector(), isRed.get()))
-                        return@Future drive.goToCircle(targetPose.get(), 3.0, 0.05)
+                        setShooters(targetPose.get().vector())
+                        return@Future drive.goToCircle(targetPose.get(), 5.0, 0.05)
                     },
                     Parallel(
-                        Instant {relocalize()} ,
                         Future {
                             if (patternMode){
                                 shootPattern()
@@ -272,7 +287,8 @@ class NewControlled: Teleop( { opmode ->
                                 shootAll(getScoreDistance(targetPose.get().vector(), isRed.get()))
                             }
                         }
-                    )
+                    ),
+                    Sleep(0.01)
                 ),
                 Forever {
                     intake.update()

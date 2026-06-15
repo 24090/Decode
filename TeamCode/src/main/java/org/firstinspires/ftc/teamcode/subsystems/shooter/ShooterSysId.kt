@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.sysid.SysIDRouti
 import org.firstinspires.ftc.teamcode.subsystems.reads.VoltageReader.expansionHubVoltage
 import kotlin.math.abs
 
-@TeleOp(name = "Shooter SysID")
+@TeleOp(name = "Shooter SysID", group = "tuning")
 class ShooterSysId : SysIDRoutine<Robot>(
     "Shooter",
     arrayOf("positionLeft", "positionRight"),
@@ -33,5 +33,5 @@ class ShooterSysId : SysIDRoutine<Robot>(
 )
 
 
-@TeleOp
+@TeleOp(group = "Testing")
 class shooterLeftSysID: MotorSysID("shooterLeft", {VoltageCompensatedMotor(get(DcMotorEx::class.java, "shooterLeft"), true, 0.02)})

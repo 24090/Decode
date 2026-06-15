@@ -37,16 +37,16 @@ class HuskyLens(hwMap: HardwareMap) {
             }
             val color = when (block.id){
                 3 -> Optional.empty()
-                2 -> Optional.of(BallColor.PURPLE)
-                1 -> Optional.of(BallColor.GREEN)
+                1 -> Optional.of(BallColor.PURPLE)
+                2 -> Optional.of(BallColor.GREEN)
                 else -> throw UnsupportedOperationException("id > 2 is invalid")
             }
 
-            if ((block.x < 0) && (right == null)) {
+            if ((block.x < 100) && (right == null)) {
                 right = color
             }
 
-            if ((block.x > 0) && (left == null)) {
+            if ((block.x > 100) && (left == null)) {
                 left = color
             }
         }
@@ -70,7 +70,7 @@ class HuskyLens(hwMap: HardwareMap) {
     }
 }
 
-@TeleOp
+@TeleOp(group = "Testing")
 class HuskyLensTesting: LinearOpMode() {
     override fun runOpMode() {
         val huskyLens = HuskyLens(hardwareMap)

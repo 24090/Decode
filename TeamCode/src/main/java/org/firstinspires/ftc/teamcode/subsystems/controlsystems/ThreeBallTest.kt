@@ -11,7 +11,7 @@ class ThreeBallTest(val storeCount: Int) {
     var lastLeft: Int = detectorThresh
     var lastRight: Int = detectorThresh
     var baseline: Double = 0.0
-    fun isStalling() = (min(pastStates.takeLast(min(5, pastStates.size))+listOf(1500.0)) < 900) && lastLeft < detectorThresh && lastRight < detectorThresh && increasing() < 600
+    fun isStalling() = (min(pastStates.takeLast(min(5, pastStates.size))+listOf(1500.0)) < 900) && lastLeft < detectorThresh && lastRight < detectorThresh && increasing() < 500
     fun increasing() = max(pastStates.takeLast(min(5, pastStates.size))) - min(pastStates.takeLast(min(25, pastStates.size)))
     fun update(newState: Number, newLeftDetected: Boolean, newRightDetected: Boolean, time: Long){
         if (newRightDetected && lastLeft < detectorThresh && lastRight >= detectorThresh){

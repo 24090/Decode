@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import org.firstinspires.ftc.teamcode.util.storedPose
 
-@TeleOp
+@TeleOp(group = "Testing")
 class StoredPoseTesting: LinearOpMode() {
     override fun runOpMode() {
         storedPose = storedPose?.plus(Pose(10.0, 10.0, 0.0)) ?: Pose(0.0, 0.0, 0.0)

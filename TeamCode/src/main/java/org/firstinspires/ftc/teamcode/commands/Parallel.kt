@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.commands
 
 class Parallel(vararg commands: Command, name: String = "Parallel"): OverrideButtonCommand(name, true){
     val commands = ArrayList(commands.map {c -> c})
+    override fun nextInstant() = commands.map(Command::nextInstant).reduce(Boolean::and)
     override fun getFuture(): FutureCommand{
         return FutureCommand(commands.map(Command::getFuture), name, selfCondense, uid)
     }
@@ -33,9 +34,13 @@ class Parallel(vararg commands: Command, name: String = "Parallel"): OverrideBut
                 }
             }
         }
+
         return if (allDead) {
             CommandResult.End(Result.success("No Commands Left"))
         } else {
+            if (nextInstant()){
+                return run()
+            }
             CommandResult.Continue
         }
     }

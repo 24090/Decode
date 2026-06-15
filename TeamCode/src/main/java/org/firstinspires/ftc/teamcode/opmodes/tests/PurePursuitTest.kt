@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.Heading
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getPurePursuit
 import kotlin.math.PI
 
-@TeleOp
+@TeleOp(group = "Testing")
 class PurePursuitTest: Auto(false, Pose(0.0, 0.0, 0.0), { Race(
     Forever {
         reads.update()

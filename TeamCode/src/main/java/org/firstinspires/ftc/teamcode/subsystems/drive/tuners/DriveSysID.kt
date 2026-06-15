@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.subsystems.controlsystems.sysid.SysIDRouti
 import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.Pose
 import kotlin.math.abs
 
-@TeleOp(name = "Drive SysID")
+@TeleOp(name = "Drive SysID", group = "Tuning")
 class DriveSysID() : SysIDRoutine<Robot>(
     "Drive",
     arrayOf("x", "y", "heading"),

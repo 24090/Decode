@@ -59,6 +59,7 @@ class Intake(hwMap: HardwareMap) {
 
         object Hold: IntakeBehaviour()
         object Idle: IntakeBehaviour()
+        object FixJam: IntakeBehaviour()
 
         object Eject: IntakeBehaviour()
         object Stop: IntakeBehaviour()
@@ -83,7 +84,11 @@ class Intake(hwMap: HardwareMap) {
 
         @JvmField var pusherRightForward = 0.35
         @JvmField var pusherRightBack = 0.53
-        @JvmField var pusherWait = 0.05
+        @JvmField var pusherWaitUp = 0.08
+        @JvmField var pusherWaitDown = 0.04
+        @JvmField var minTransfer = 0.12
+
+
     }
 
     private fun holdFront() {
@@ -147,6 +152,11 @@ class Intake(hwMap: HardwareMap) {
                 runBack()
                 motor.power = 0.0
             }
+
+            IntakeBehaviour.FixJam -> {
+                runBack()
+                motor.power = -1.0
+            }
         }
     }
 
@@ -172,7 +182,7 @@ class Intake(hwMap: HardwareMap) {
     fun getMinShootTime(): Double {
         val nextShootTime = nextShootTime
         return if (nextShootTime == null){
-            pusherWait
+            pusherWaitUp
         } else {
             (nextShootTime - System.currentTimeMillis())/1000.0
         }
@@ -193,9 +203,16 @@ class Intake(hwMap: HardwareMap) {
         name = "ReleaseDual"
     )
 
-    fun releaseDual(): Command = Parallel(
-        releaseLeft(),
-        releaseRight(),
+    fun releaseDual(): Command = Sequence(
+        Instant {
+            pusherLeft.position = pusherLeftForward
+            pusherRight.position = pusherRightForward
+        },
+        Sleep(pusherWaitUp),
+        Instant {
+            pusherLeft.position = pusherLeftBack
+            pusherRight.position = pusherRightBack
+        },
         name = "ReleaseDual"
     )
     fun waitForStall(): Command =
@@ -208,19 +225,15 @@ class Intake(hwMap: HardwareMap) {
         pusherRight.position = pusherRightBack
     }
     fun releaseLeft(): Command = Sequence(
-        Parallel(
-            Instant { pusherLeft.position = pusherLeftForward },
-            Sleep(pusherWait),
-        ),
+        Instant { pusherLeft.position = pusherLeftForward },
+        Sleep(pusherWaitUp),
         Instant { pusherLeft.position = pusherLeftBack },
         name = "ReleaseLeft"
     )
 
     fun releaseRight(): Command = Sequence(
-        Parallel(
-            Instant { pusherRight.position = pusherRightForward },
-            Sleep(pusherWait),
-        ),
+        Instant { pusherRight.position = pusherRightForward },
+        Sleep(pusherWaitUp),
         Instant { pusherRight.position = pusherRightBack },
         name = "ReleaseRight"
     )

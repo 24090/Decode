@@ -5,7 +5,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 
-@TeleOp
+@TeleOp(group = "Testing")
 class DetectorTesting: LinearOpMode() {
     override fun runOpMode() {
         val intake = Intake(hardwareMap)

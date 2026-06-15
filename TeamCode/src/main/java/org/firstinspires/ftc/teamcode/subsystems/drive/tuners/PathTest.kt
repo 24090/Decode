@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.pathing.followers.getFoll
 import org.firstinspires.ftc.teamcode.subsystems.reads.Reads
 import kotlin.math.PI
 
-@TeleOp
+@TeleOp(group = "Testing")
 class PathTest: LinearOpMode() {
     override fun runOpMode() {
         val telemetry = MultipleTelemetry()

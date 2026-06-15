@@ -8,9 +8,8 @@ import org.firstinspires.ftc.teamcode.commands.Sequence
 import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.commands.runBlocking
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake
-import org.firstinspires.ftc.teamcode.subsystems.intake.Intake.Params.pusherWait
 
-@TeleOp(name="67")
+@TeleOp(name="67", group = "testing")
 class Flapper67: LinearOpMode() {
     override fun runOpMode() {
         val intake = Intake(hardwareMap)

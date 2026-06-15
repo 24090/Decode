@@ -80,6 +80,9 @@ abstract class Command(
      * @see Command.update
      */
     protected abstract fun run(): CommandResult
+
+    open fun nextInstant(): Boolean = false
+
 }
 
 sealed interface CommandOverride{
@@ -96,6 +99,7 @@ class DeadCommand(
     uid: Int = registerCommandID(),
     cssClass: String = ""
 ): Command(name, selfCondense, uid, "$cssClass dead") {
+    override fun nextInstant() = true
     override fun run(): CommandResult {
         reason.result.fold(
             {v -> CommandMessage.Log(v).send()},
@@ -117,6 +121,8 @@ class FutureCommand(
     uid: Int = registerCommandID(),
     cssClass: String = ""
 ): Command(name, selfCondense, uid, "$cssClass future") {
+    override fun nextInstant() = true
+
     override fun run(): CommandResult {
         subcommands.forEach {c -> c.update()}
         return CommandResult.Continue
@@ -133,9 +139,9 @@ abstract class OverrideButtonCommand(
     uid: Int = registerCommandID(),
     cssClass: String = "",
 ): Command(name, selfCondense, uid, cssClass){
-    open val pause = registerFunction { commandOverride = CommandOverride.Pause }
-    open val skip = registerFunction { commandOverride = CommandOverride.Skip }
-    open val none = registerFunction { commandOverride = CommandOverride.None }
+    open val pause = 0//registerFunction { commandOverride = CommandOverride.Pause }
+    open val skip = 0//registerFunction { commandOverride = CommandOverride.Skip }
+    open val none = 0//registerFunction { commandOverride = CommandOverride.None }
     override fun getButtons(): ArrayList<Pair<Int, String>> {
         val buttons = ArrayList<Pair<Int, String>>()
         if (commandOverride != CommandOverride.None)  buttons.add(Pair(none, "▶"))

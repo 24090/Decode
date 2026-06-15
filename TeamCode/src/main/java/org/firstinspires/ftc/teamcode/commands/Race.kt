@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.commands
 
 class Race(vararg commands: Command): OverrideButtonCommand("Race", true){
+    override fun nextInstant() = commands.map(Command::nextInstant).reduce(Boolean::and)
+
     val commands = ArrayList(commands.map {c -> c})
     override fun getFuture(): FutureCommand{
         return FutureCommand(commands.map(Command::getFuture), name, selfCondense, uid)
@@ -36,6 +38,9 @@ class Race(vararg commands: Command): OverrideButtonCommand("Race", true){
         return if (!allLiving) {
             CommandResult.End(Result.success("A child won the race!"))
         } else {
+            if (nextInstant()){
+                return run()
+            }
             CommandResult.Continue
         }
     }
