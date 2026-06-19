@@ -26,12 +26,12 @@ import org.firstinspires.ftc.teamcode.util.storedPose
 import kotlin.math.PI
 import kotlin.math.max
 
-@Autonomous(name="Red - Close - 18 indiscriminate", group="Auto")
-class Full18Red: Full18(true)
+@Autonomous(name="Red - RampFiller", group="Auto")
+class RampFillerRed: RampFiller(true)
 
-@Autonomous(name="Blue - Close - 18 indiscriminate", group="Auto")
-class Full18Blue: Full18(false)
-open class Full18(isRed: Boolean): Auto(
+@Autonomous(name="Blue - RampFiller", group="Auto")
+class RampFillerBlue: RampFiller(false)
+open class RampFiller(isRed: Boolean): Auto(
     isRed,
     closeStartPose,
     {Race(
@@ -57,40 +57,40 @@ open class Full18(isRed: Boolean): Auto(
                     drive.localizer
                 )
             },
-           Sequence(
-               Race(
-                   Forever {
-                       shooter.setFirstHoodAngleAndVelocityFromDistance(max(
-                           getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.3), red),
-                           48.0
-                       ))
-                   },
-                   Sequence(
-                       shooter.waitForRightVelocity(),
-                       intake.releaseRight(),
-                   )
-               ),
-               Race(
-                   Forever {
-                       shooter.setSecondHoodAngleAndVelocityFromDistance(max(
-                           getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.3), red),
-                           48.0
-                       ))
-                   },
-                   Sequence(
-                       intake.setAdjustThird(),
-                       Sleep(pusherWaitDown),
-                       Instant { intake.behaviour = Intake.IntakeBehaviour.TransferQuick },
-                       Parallel(
-                           shooter.waitForVelocity(),
-                           Sleep(minTransfer),
-                       ),
-                       intake.releaseDual(),
-                       Instant {
-                           intake.behaviour = Intake.IntakeBehaviour.Grab
-                       },
-                   )
-               )
+            Sequence(
+                Race(
+                    Forever {
+                        shooter.setFirstHoodAngleAndVelocityFromDistance(max(
+                            getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.3), red),
+                            48.0
+                        ))
+                    },
+                    Sequence(
+                        shooter.waitForRightVelocity(),
+                        intake.releaseRight(),
+                    )
+                ),
+                Race(
+                    Forever {
+                        shooter.setSecondHoodAngleAndVelocityFromDistance(max(
+                            getScoreDistance((drive.localizer.pose.vector() + drive.localizer.poseVel.vector() * 0.3), red),
+                            48.0
+                        ))
+                    },
+                    Sequence(
+                        intake.setAdjustThird(),
+                        Sleep(pusherWaitDown),
+                        Instant { intake.behaviour = Intake.IntakeBehaviour.TransferQuick },
+                        Parallel(
+                            shooter.waitForVelocity(),
+                            Sleep(minTransfer),
+                        ),
+                        intake.releaseDual(),
+                        Instant {
+                            intake.behaviour = Intake.IntakeBehaviour.Grab
+                        },
+                    )
+                )
             ),
             Instant {recordTime("1")},
 
@@ -105,11 +105,6 @@ open class Full18(isRed: Boolean): Auto(
             Instant {recordTime("3")},
 
             shooter.stop(),
-            spikeIntakeCycle(2, ShootPose.Closer),
-            shootCycle(ShootPose.Closer),
-            Instant {recordTime("4")},
-
-            shooter.stop(),
             gateIntakeCycle(ShootPose.Closer),
             shootCycle(ShootPose.Closer),
             Instant {recordTime("5")},
@@ -119,7 +114,12 @@ open class Full18(isRed: Boolean): Auto(
             shootCycle(ShootPose.Closer),
             Instant {recordTime("6")},
 
-            gateIntakeCycle(ShootPose.Closer),
+            shooter.stop(),
+            spikeIntakeCycle(2, ShootPose.Closer),
+            shootCycle(ShootPose.Closer),
+            Instant {recordTime("4")},
+
+            spikeIntakeCycleClose(0),
             shootCycle(ShootPose.Closer),
             drive.goToCircle(Pose(70.0, 40.0, PI/2).mirroredIf(red)),
             Instant {

@@ -280,8 +280,9 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
                 Race(
                     drive.followPath(PurePursuitPath(
                         listOf(
-                            shootPose,
+                            shootPose.mirroredIf(red),
                             Pose(
+
                                 endPoint.x,
                                 18.0,
                                 PI/2
@@ -303,7 +304,7 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
             Race(
                 drive.followPath(PurePursuitPath(
                     listOf(
-                        Pose(endPoint.x, if (n == 1) 20.0 else 40.0, PI/2).mirroredIf(red),
+                        Pose(endPoint.x, 40.0, PI/2).mirroredIf(red),
                         shootPoint.mirroredIf(red)
                     ),
                     listOf(
@@ -438,21 +439,9 @@ open class Robot(hwMap: HardwareMap, telemetry: Telemetry) {
         name = "CloseShootCycle"
     )
     fun shootCycle(pose: ShootPose) = Sequence(
-        drive.goToCircle(pose.mirroredIf(red), 5.0, 0.06),
+        drive.goToCircle((pose + Pose(0.0, 0.0, pose.headingOffset)).mirroredIf(red), 5.0, 0.06),
         shootAll(pose.initialVelocity, pose.secondaryVelocity, pose.initialAngle, pose.secondaryAngle),
-        Sleep(0.01),
-    )
-    fun closeShootCycle() = Sequence(
-        drive.goToCircle(ShootPose.Close.mirroredIf(red), 5.0, 0.06),
-        shootAll(ShootPose.Close.distance),
-        Sleep(0.01),
-        name = "CloseShootCycle"
-    )
-
-    fun farShootCycle() = Sequence(
-        drive.goToCircle(ShootPose.Far.mirroredIf(red), 3.0, 0.03),
-        shootAll(ShootPose.Far.distance),
-        name = "FarShootCycle"
+        Sleep(0.02),
     )
 
     fun leaveShootCyclePattern() = Sequence(

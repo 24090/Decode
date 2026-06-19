@@ -58,12 +58,12 @@ open class Pattern15(isRed: Boolean): Auto(
                         true
                     }
                 ),
-                closeShootCycle(),
+                shootCycle(ShootPose.Close),
 
                 shooter.stop(),
                 grabAndOpenCycleClose(),
                 Instant{shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)},
-                closeShootCycle(),
+                shootCycle(ShootPose.Close),
 
                 shooter.stop(),
                 gateIntakeCycleClose(),

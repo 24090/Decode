@@ -47,7 +47,7 @@ open class AutoPushPattern12(val isRed: Boolean): Auto(
             Parallel(
                 intake.spinUp(),
                 Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance) },
-                closeShootCycle(),
+                shootCycle(ShootPose.Close),
             ),
             shooter.stop(),
             grabAndOpenCycleClose(),

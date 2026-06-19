@@ -36,12 +36,12 @@ open class RampCycleTesting(red: Boolean) : Auto(
                 intake.behaviour = Intake.IntakeBehaviour.Grab
                 shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance)
             },
-            closeShootCycle(),
+            shootCycle(ShootPose.Close),
             ForeverCommand { Sequence(
                 shooter.stop(),
                 gateIntakeCycleClose(),
                 Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Close.distance) },
-                closeShootCycle()
+                shootCycle(ShootPose.Close),
             ) }
         ),
         Forever({

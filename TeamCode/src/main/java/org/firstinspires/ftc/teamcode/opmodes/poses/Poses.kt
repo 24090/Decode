@@ -20,12 +20,13 @@ sealed class ShootPose(
     val initialVelocity: Double = distanceToVelocityLeftLUT.get(distance),
     val secondaryVelocity: Double = secondaryDistanceToVelocityLeftLUT.get(distance),
     val initialAngle: Double = distanceToAngleLUT.get(distance),
-    val secondaryAngle: Double = secondaryDistanceToAngleLUT.get(distance)
+    val secondaryAngle: Double = secondaryDistanceToAngleLUT.get(distance),
+    val headingOffset: Double = 0.0
 
 ): Pose(position.x, position.y, getScoreAngle(position)) {
-    object Far: ShootPose(Vector.fromCartesian(14.0, 14.0))
-    object Close: ShootPose(Vector.fromCartesian(84.5, 17.0), 1350.0, 1210.0, 0.0, 0.2)
-    object Closer: ShootPose(Vector.fromCartesian(84.5 + 12.0, 17.0 + 12.0), 1350.0, 1210.0, 0.2, 0.0)
+    object Far: ShootPose(Vector.fromCartesian(14.0, 14.0), 1800.0 , 1660.0, 0.8, 0.4, -0.03)
+    object Close: ShootPose(Vector.fromCartesian(84.5, 17.0), 1350.0 + 10.0, 1210.0 + 20.0, 0.0, 0.2, -0.05)
+    object Closer: ShootPose(Vector.fromCartesian(84.5 + 12.0, 17.0 + 12.0), 1350.0 - 10.0, 1210.0 - 10.0 , 0.2, 0.0, -0.03)
 
     object Park: ShootPose(Vector.fromCartesian(106.0, 12.0))
 

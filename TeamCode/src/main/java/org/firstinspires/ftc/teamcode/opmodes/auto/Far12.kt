@@ -56,27 +56,27 @@ open class Far12(isRed: Boolean): Auto(
                         true
                     }
                 ),
-                farShootCycle(),
+                shootCycle(ShootPose.Far),
 
                 shooter.stop(),
                 grabAndOpenCycleFar(),
                 Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
-                farShootCycle(),
+                shootCycle(ShootPose.Far),
 
                 shooter.stop(),
                 gateIntakeCycleFar(),
                 Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
-                farShootCycle(),
+                shootCycle(ShootPose.Far),
 
                 shooter.stop(),
                 spikeIntakeCycleFar(0),
                 Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
-                farShootCycle(),
+                shootCycle(ShootPose.Far),
 
                 shooter.stop(),
                 Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
                 loadZoneCycle(),
-                farShootCycle(),
+                shootCycle(ShootPose.Far),
 
                 name = "Auto"
             ),

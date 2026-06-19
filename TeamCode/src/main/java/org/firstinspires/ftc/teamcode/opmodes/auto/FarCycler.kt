@@ -26,7 +26,7 @@ open class PartnerAuto(val isRed: Boolean): Auto(isRed, farStartPose, {Race(
     ForeverCommand {
         Sequence(
             Instant { shooter.setHoodAngleAndVelocityFromDistance(ShootPose.Far.distance) },
-            farShootCycle(),
+            shootCycle(ShootPose.Far),
             shooter.stop(),
             loadZoneCycle(),
         )

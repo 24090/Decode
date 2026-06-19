@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.commands.ForeverCommand
 import org.firstinspires.ftc.teamcode.commands.Instant
 import org.firstinspires.ftc.teamcode.commands.Race
 import org.firstinspires.ftc.teamcode.commands.Sequence
+import org.firstinspires.ftc.teamcode.commands.Sleep
 import org.firstinspires.ftc.teamcode.opmodes.commands.Auto
 import org.firstinspires.ftc.teamcode.opmodes.poses.ShootPose
 import org.firstinspires.ftc.teamcode.opmodes.poses.farStartPose
@@ -26,24 +27,24 @@ open class Far(val isRed: Boolean): Auto(isRed, farStartPose, {Race(
     Sequence(
             drive.goToCircle(ShootPose.Far.mirroredIf(red), 3.0, 0.03),
             shootAll(ShootPose.Far.distance),
-
+            Sleep(0.01),
             spikeIntakeCycleFar(0),
-            farShootCycle(),
-
+            shootCycle(ShootPose.Far),
+            Sleep(0.01),
             loadZoneCycle(),
-            farShootCycle(),
-
+            shootCycle(ShootPose.Far),
+            Sleep(0.01),
             spikeIntakeCycleFar(0),
-            farShootCycle(),
-
+            shootCycle(ShootPose.Far),
+            Sleep(0.01),
             loadZoneCycle(),
-            farShootCycle(),
-
+            shootCycle(ShootPose.Far),
+            Sleep(0.01),
             spikeIntakeCycleFar(0),
-            farShootCycle(),
-
+            shootCycle(ShootPose.Far),
+            Sleep(0.01),
             loadZoneCycle(),
-            farShootCycle(),
+            shootCycle(ShootPose.Far),
     ),
     Forever({
         drive.update(); recordTime("drive")
