@@ -105,21 +105,22 @@ open class Full18(isRed: Boolean): Auto(
             Instant {recordTime("3")},
 
             shooter.stop(),
-            spikeIntakeCycle(2, ShootPose.Closer),
-            shootCycle(ShootPose.Closer),
-            Instant {recordTime("4")},
-
-            shooter.stop(),
-            gateIntakeCycle(ShootPose.Closer),
-            shootCycle(ShootPose.Closer),
+            gateIntakeCycle(ShootPose.Close),
+            shootCycle(ShootPose.Close),
             Instant {recordTime("5")},
 
             shooter.stop(),
-            gateIntakeCycle(ShootPose.Closer),
-            shootCycle(ShootPose.Closer),
+            gateIntakeCycle(ShootPose.Close),
+            shootCycle(ShootPose.Close),
             Instant {recordTime("6")},
 
-            gateIntakeCycle(ShootPose.Closer),
+            shooter.stop(),
+            gateIntakeCycle(ShootPose.Close),
+            shootCycle(ShootPose.Close),
+            Instant {recordTime("4")},
+
+            shooter.stop(),
+            spikeIntakeCycle(2, ShootPose.Closer),
             shootCycle(ShootPose.Closer),
             drive.goToCircle(Pose(70.0, 40.0, PI/2).mirroredIf(red)),
             Instant {
